@@ -18,7 +18,7 @@ class EndVoteAction(BaseAction):
         with self.controller.transaction():
             try:
                 vote_msg_id = self.controller.get_by_id(server_id).message_id
-            except pw.IntegrityError:
+            except pw.DoesNotExist:
                 await msg.channel.send("No vote started!")
                 return
             winning_movies = self.controller.end_vote(server_id)
