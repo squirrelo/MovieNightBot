@@ -27,10 +27,13 @@ class EndVoteAction(BaseAction):
         vote_msg = await msg.channel.fetch_message(vote_msg_id)
         await vote_msg.clear_reactions()
         if len(winning_movies) == 1:
+            winning_movie = winning_movies[0].movie_name
             embed = discord.Embed(
-                title=f"Wining movie: {winning_movies[0].movie_name}",
-                description=f"Use `m!set_watched {winning_movies[0].movie_name}` to set the movie as watched",
+                title=f"Wining movie: {winning_movie}",
+                description=f"Use `m!set_watched {winning_movie}` to set the movie as watched",
             )
+            await msg.channel.send(f"The winning vote was {winning_movie}! "
+                                   f"To set the movie as watched use the command m!set_watched {winning_movie}")
         else:
             await msg.channel.send(
                 "There was a tie! Check the vote message for new vote options"
