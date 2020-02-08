@@ -32,8 +32,8 @@ class EndVoteAction(BaseAction):
                 title=f"Wining movie: {winning_movie}",
                 description=f"Use `m!set_watched {winning_movie}` to set the movie as watched",
             )
-            await msg.channel.send(f"The winning vote was {winning_movie}! "
-                                   f"To set the movie as watched use the command m!set_watched {winning_movie}")
+            await msg.channel.send(f"The winning vote was `{winning_movie}`! "
+                                   f"To set the movie as watched use the command `m!set_watched {winning_movie}`")
         else:
             await msg.channel.send(
                 "There was a tie! Check the vote message for new vote options"
