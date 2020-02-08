@@ -45,9 +45,10 @@ class MoviesController(BaseController):
 def movie_score_weightings(server_id: int):
     num_votes_allowed = ServerController().get_by_id(server_id).num_votes_per_user
     scores_dict = defaultdict(float)
-    scores_dict.update(
-        {x: round(1 - ((1 / num_votes_allowed) * x), 2) for x in range(1, num_votes_allowed + 1)}
-    )
+    scores = [
+        round((1 / num_votes_allowed) * x, 2) for x in range(1, num_votes_allowed + 1)
+    ][::-1]
+    scores_dict.update({x + 1: s for x, s in enumerate(scores)})
     return scores_dict
 
 
@@ -144,12 +145,12 @@ class UserVoteController(BaseController):
             # Add score to movie
             movie_vote = user_vote.movie_vote
             scores = movie_score_weightings(server_id=movie_vote.vote.server_id)
-            logger.debug(f'Rank: {user_vote.vote_rank}')
-            logger.debug(f'Scores: {scores}')
+            logger.debug(f"Rank: {user_vote.vote_rank}")
+            logger.debug(f"Scores: {scores}")
             movie_vote.score += scores[user_vote.vote_rank]
             movie_vote.save()
             logger.debug(
-                f"added {scores[user_vote.vote_rank]} to {movie_vote.id}, new score {movie_vote.score}"
+                f"added {scores[user_vote.vote_rank]} to MovieVote {movie_vote.id}, new score {movie_vote.score}"
             )
         return user_vote
 
@@ -160,7 +161,7 @@ class UserVoteController(BaseController):
             # remove user score for each movie, then the user vote row
             movie_vote_controller = MovieVoteController()
             for user_vote_row in user_votes:
-                #TODO: Find an elegant way to remove the emoji votes on the message
+                # TODO: Find an elegant way to remove the emoji votes on the message
                 movie_vote = user_vote_row.movie_vote
                 movie_vote.score -= scores[user_vote_row.vote_rank]
                 movie_vote_controller.update(movie_vote)
@@ -176,9 +177,14 @@ class UserVoteController(BaseController):
         ]
 
     def get_next_rank(self, server_id: int, user_id: int) -> int:
-        user_votes = [u.vote_rank for u in self.get_by_server_and_user(server_id, user_id)]
-        logger.debug(f'current ranks: {user_votes}')
-        return max(user_votes) + 1 if user_votes else 1
+        max_rank = (
+            UserVote.select(pw.fn.MAX(UserVote.vote_rank))
+            .join(MovieVote)
+            .join(Vote)
+            .where((Vote.server_id == server_id) & UserVote.user_id == user_id)
+            .scalar()
+        )
+        return max_rank + 1 if max_rank else 1
 
     def register_vote(self, user_id: int, movie_vote: MovieVote) -> UserVote:
         with self.transaction():

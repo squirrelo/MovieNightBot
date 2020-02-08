@@ -69,8 +69,7 @@ def is_vote_message(server_id: int, channel_id: int, message_id: int) -> bool:
     if not vote_row:
         # no vote going on so can never be the vote row
         return False
-    server_channel = _server_controller.get_by_id(server_id).channel
-    return (vote_row.message_id == message_id) and (server_channel == channel_id)
+    return (vote_row.message_id == message_id) and (vote_row.channel_id == channel_id)
 
 
 @client.event
@@ -78,12 +77,14 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
     message = reaction.message
     server_id = message.guild.id
     emoji = emojis_unicode.get(reaction.emoji, None)
-    logger.debug(f'Reaction add emoji {emoji} on {message.guild.name}')
+    logger.debug(f"Reaction add emoji {emoji} on {message.guild.name}")
     if emoji is None:
         return
     # Ignore if emojis coming from this bot or not on the vote message
     not_vote_msg = not is_vote_message(server_id, message.channel.id, message.id)
-    logger.debug(f"checking if this bot or right channel: {user.id == client.user.id} {not_vote_msg}")
+    logger.debug(
+        f"checking if this bot or right channel: {user.id == client.user.id} {not_vote_msg}"
+    )
     if user.id == client.user.id or not_vote_msg:
         return
 
@@ -104,9 +105,8 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
         _user_vote_controller.register_vote(user.id, movie_vote)
 
     # Update the vote message
-    with _movie_vote_controller.transaction():
-        embed = build_vote_embed(server_id)
-        await message.edit(content=None, embed=embed, supress=False)
+    embed = build_vote_embed(server_id)
+    await message.edit(content=None, embed=embed, supress=False)
 
 
 @client.event
@@ -119,13 +119,11 @@ async def on_reaction_remove(reaction: discord.Reaction, user: discord.User):
     # Ignore if emojis coming from this bot or not on the vote message
     if user.id == client.user.id or not is_vote_message(server_id, message.id):
         return
-    logger.info(
-        f"Removing emoji vote {emoji} for {user.id} on {message.guild.name}"
-    )
+    logger.info(f"Removing emoji vote {emoji} for {user.id} on {message.guild.name}")
     with _movie_vote_controller.transaction():
         movie_vote = _movie_vote_controller.convert_emoji(server_id, emoji)
         _user_vote_controller.remove_vote(user.id, movie_vote)
 
-        # Update the vote message
-        embed = build_vote_embed(server_id)
-        await message.edit(content=None, embed=embed, supress=False)
+    # Update the vote message
+    embed = build_vote_embed(server_id)
+    await message.edit(content=None, embed=embed, supress=False)

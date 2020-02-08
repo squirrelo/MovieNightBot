@@ -25,7 +25,7 @@ class StartVoteAction(BaseAction):
             embed = build_vote_embed(server_id)
             vote_msg = await msg.channel.send(content=None, embed=embed)
             vote_row.message_id = vote_msg.id
-            vote_row.channel = msg.channel.id
+            vote_row.channel_id = vote_msg.channel.id
             self.controller.update(vote_row)
             for movie_vote in vote_row.movie_votes:
                 await vote_msg.add_reaction(emojis_text[movie_vote.emoji])
