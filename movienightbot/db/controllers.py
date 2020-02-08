@@ -4,6 +4,7 @@ from collections import defaultdict
 import logging
 
 import peewee as pw
+import discord
 
 from .models import Server, Movie, Vote, MovieVote, UserVote
 from . import BaseController
@@ -78,10 +79,29 @@ class VoteController(BaseController):
                         "emoji": f":regional_indicator_{emoji_letter}:",
                     }
                 )
-            return vote_row
+        return vote_row
 
-    def start_runoff_vote(self, server_id: int, movies: List[Movie]) -> Vote:
-        raise NotImplementedError
+    def start_runoff_vote(
+        self, server_id: int, vote_message: discord.Message, movies: List[Movie]
+    ) -> Vote:
+        with self.transaction():
+            vote_row = self.create(
+                {
+                    "server_id": server_id,
+                    "channel_id": vote_message.channel.id,
+                    "message_id": vote_message.id,
+                }
+            )
+            movie_vote_controller = MovieVoteController()
+            for movie, emoji_letter in zip(movies, ascii_lowercase):
+                movie_vote_controller.create(
+                    {
+                        "vote": vote_row,
+                        "movie": movie,
+                        "emoji": f":regional_indicator_{emoji_letter}:",
+                    }
+                )
+        return vote_row
 
     def set_message_id(self, server_id: int, message_id: int) -> Vote:
         vote_row = self.get_by_id(server_id)
@@ -103,7 +123,7 @@ class VoteController(BaseController):
                 if movie_vote.score == best_score:
                     movies.append(movie_vote.movie)
             self.delete(vote_data, recursive=True)
-            return movies
+        return movies
 
 
 class MovieVoteController(BaseController):
@@ -122,9 +142,10 @@ class MovieVoteController(BaseController):
             vote_row = VoteController().get_by_id(server_id)
             if vote_row:
                 # Lazy eval, so force it to eval into a list
-                return [x for x in vote_row.movie_votes]
+                movies = [x for x in vote_row.movie_votes]
             else:
-                return []
+                movies = []
+        return movies
 
     def get_score_for_movie(self, server_id: int, movie: str) -> float:
         return (
@@ -167,7 +188,7 @@ class UserVoteController(BaseController):
                 movie_vote.score -= scores[user_vote_row.vote_rank]
                 movie_vote_controller.update(movie_vote)
                 self.delete(user_vote_row)
-            return movie_votes
+        return movie_votes
 
     def get_by_server_and_user(self, server_id: int, user_id: int) -> List[UserVote]:
         return [

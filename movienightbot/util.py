@@ -2,7 +2,7 @@ import datetime
 
 import discord
 
-from .db.controllers import ServerController, MovieVoteController
+from .db.controllers import ServerController, MovieVoteController, MovieVote
 
 
 def build_vote_embed(server_id: int):
@@ -69,3 +69,10 @@ emojis_text = {
 
 
 emojis_unicode = {v: k for k, v in emojis_text.items()}
+
+
+async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
+    for movie_vote in movie_votes:
+        await vote_msg.add_reaction(emojis_text[movie_vote.emoji])
+    await vote_msg.add_reaction(emojis_text[":arrows_counterclockwise:"])
+    await vote_msg.add_reaction(emojis_text[":stop_sign:"])

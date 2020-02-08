@@ -4,7 +4,7 @@ import logging
 
 from . import BaseAction
 from ..db.controllers import VoteController
-from ..util import build_vote_embed, emojis_text
+from ..util import build_vote_embed, add_vote_emojis
 
 logger = logging.getLogger("movienightbot")
 
@@ -27,10 +27,7 @@ class StartVoteAction(BaseAction):
             vote_row.message_id = vote_msg.id
             vote_row.channel_id = vote_msg.channel.id
             self.controller.update(vote_row)
-            for movie_vote in vote_row.movie_votes:
-                await vote_msg.add_reaction(emojis_text[movie_vote.emoji])
-            await vote_msg.add_reaction(emojis_text[":arrows_counterclockwise:"])
-            await vote_msg.add_reaction(emojis_text[":stop_sign:"])
+            await add_vote_emojis(vote_msg, vote_row.movie_votes)
 
     @property
     def help_text(self):

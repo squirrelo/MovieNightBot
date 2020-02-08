@@ -8,6 +8,5 @@ Running the bot
 2) Start the server using the command `python -m movienightbot -c /path/to/config.yaml`  You can optionally also pass `-f /path/to/file.log` to set where the log file should be written.
 
 Planned Features
- * have runoff votes actually do something
  * block_suggestions command to stop suggestions if people are getting too rowdy
  * option to use third party API to verify the movies suggested are actually real
