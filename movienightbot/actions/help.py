@@ -1,22 +1,23 @@
 import discord
 
 from . import BaseAction
+from ..db.controllers import ServerController
 
 
 class HelpAction(BaseAction):
     action_name = "help"
     guild_only = False
+    controller = ServerController()
 
-    def _build_help_embed(self) -> discord.Embed:
+    def _build_help_embed(self, server_id: int) -> discord.Embed:
         from . import KNOWN_ACTIONS
         from ..application import client
-
+        server_role = self.controller.get_by_id(server_id).admin_role
         admin_mark = ":no_entry:"
         embed = discord.Embed(
             title="Help Commands",
             description=f"I heard you asked for some help. We all need some from time to time, so here it is."
-            f"Commands marked with {admin_mark} require the user to be a server admin or have the role `Movie Master`, "
-            f"unless the server owner has changed it.",
+            f"Commands marked with {admin_mark} require the user to be a server admin or have the role `{server_role}`",
         )
         for action in sorted(KNOWN_ACTIONS):
             cls = KNOWN_ACTIONS[action]
@@ -29,7 +30,7 @@ class HelpAction(BaseAction):
         return embed
 
     async def action(self, msg):
-        await msg.author.send(content=None, embed=self._build_help_embed())
+        await msg.author.send(content=None, embed=self._build_help_embed(msg.guild.id))
 
     @property
     def help_text(self):
