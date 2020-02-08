@@ -1,3 +1,5 @@
+import datetime
+
 import discord
 
 from .db.controllers import ServerController, MovieVoteController
@@ -19,7 +21,18 @@ def build_vote_embed(server_id: int):
             value=f"Score: {movie_vote.score}",
             inline=False,
         )
-    embed.set_footer(text=f"Movie time is {server_row.movie_time} UTC")
+    embed.set_footer(text=f"Movie time is")
+    today = datetime.datetime.utcnow().date()
+    movie_hour, movie_minute = server_row.movie_time.split(":")
+    movie_time = datetime.datetime(
+        year=today.year,
+        month=today.month,
+        day=today.day,
+        hour=int(movie_hour),
+        minute=int(movie_minute),
+        tzinfo=datetime.timezone.utc,
+    )
+    embed.timestamp = movie_time
     return embed
 
 

@@ -12,6 +12,7 @@ class HelpAction(BaseAction):
     def _build_help_embed(self, server_id: int) -> discord.Embed:
         from . import KNOWN_ACTIONS
         from ..application import client
+
         server_role = self.controller.get_by_id(server_id).admin_role
         admin_mark = ":no_entry:"
         embed = discord.Embed(
