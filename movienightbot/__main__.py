@@ -20,13 +20,13 @@ arguments.add_argument(
 )
 args = arguments.parse_args()
 
-log_level = getattr(logging, args.loglevel)
+log_level = getattr(logging, args.loglevel.upper())
 
-for logger in [logging.getLogger("peewee"), logging.getLogger("movienightbot")]:
-    logger.addHandler(logging.StreamHandler())
-    if args.logfile is not None:
-        logger.addHandler(logging.FileHandler(args.logfile, mode="a"))
-    logger.setLevel(log_level)
+logger = logging.getLogger("movienightbot")
+logger.addHandler(logging.StreamHandler())
+if args.logfile is not None:
+    logger.addHandler(logging.FileHandler(args.logfile, mode="a"))
+logger.setLevel(log_level)
 
 config = Config.from_yaml(Path(args.configfile))
 client.config = config

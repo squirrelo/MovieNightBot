@@ -17,7 +17,7 @@ class SuggestAction(BaseAction):
             "suggested_by": msg.author.name,
         }
         try:
-            self.controller.create(**movie_data)
+            self.controller.create(movie_data)
         except pw.IntegrityError:
             await msg.channel.send(
                 f"{suggestion} has already been suggested in this server."

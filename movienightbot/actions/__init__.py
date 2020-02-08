@@ -28,7 +28,7 @@ class BaseAction(ABC):
 
     async def _check_proceed(self, msg: discord.message) -> bool:
         server_settings = ServerController().get_by_id(msg.guild.id)
-        if msg.channel.name != server_settings.channel:
+        if msg.channel.id != server_settings.channel:
             logging.debug(
                 f"User {msg.author.name} using non-permitted channel {msg.channel.name} "
                 f"instead of {server_settings.channel}"

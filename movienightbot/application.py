@@ -3,7 +3,7 @@ import logging
 import discord
 
 from .actions import KNOWN_ACTIONS, unknown_default_action
-from .util import build_vote_embed
+from .util import build_vote_embed, emojis_unicode
 from .db.controllers import (
     ServerController,
     VoteController,
@@ -32,8 +32,8 @@ async def on_ready():
 
 @client.event
 async def on_guild_join(guild: discord.Guild):
-    guild_data = {"id": guild.id, "channel": guild.text_channels[0]}
-    _server_controller.create(**guild_data)
+    guild_data = {"id": guild.id, "channel": guild.text_channels[0].id}
+    _server_controller.create(guild_data)
     logger.info(f"Registered on new server {guild.name}")
 
 
@@ -64,24 +64,27 @@ async def on_message(message: discord.message):
     await action(message)
 
 
-def is_vote_message(server_id: int, message_id: int) -> bool:
-    vote_row = _vote_controller.get_vote_for_server(server_id)
+def is_vote_message(server_id: int, channel_id: int, message_id: int) -> bool:
+    vote_row = _vote_controller.get_by_id(server_id)
     if not vote_row:
         # no vote going on so can never be the vote row
         return False
-    return vote_row.message_id == message_id
-
-
-async def reset_emoji(emoji: str, message: discord.message, user: discord.User):
-    raise NotImplementedError
+    server_channel = _server_controller.get_by_id(server_id).channel
+    return (vote_row.message_id == message_id) and (server_channel == channel_id)
 
 
 @client.event
 async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
     message = reaction.message
     server_id = message.guild.id
-    emoji = reaction.emoji
-    if not is_vote_message(server_id, message.id):
+    emoji = emojis_unicode.get(reaction.emoji, None)
+    logger.debug(f'Reaction add emoji {emoji} on {message.guild.name}')
+    if emoji is None:
+        return
+    # Ignore if emojis coming from this bot or not on the vote message
+    not_vote_msg = not is_vote_message(server_id, message.channel.id, message.id)
+    logger.debug(f"checking if this bot or right channel: {user.id == client.user.id} {not_vote_msg}")
+    if user.id == client.user.id or not_vote_msg:
         return
 
     # Check if user reset votes, and do that if so
@@ -93,7 +96,11 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
         KNOWN_ACTIONS["end_vote"](message)
         return
     with _movie_vote_controller.transaction():
+        logger.info(
+            f"Registering emoji vote {emoji} for {user.id} on {message.guild.name}"
+        )
         movie_vote = _movie_vote_controller.convert_emoji(server_id, emoji)
+        logger.debug(f"Got movie vote {movie_vote.id}")
         _user_vote_controller.register_vote(user.id, movie_vote)
 
     # Update the vote message
@@ -106,9 +113,15 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
 async def on_reaction_remove(reaction: discord.Reaction, user: discord.User):
     message = reaction.message
     server_id = message.guild.id
-    emoji = reaction.emoji
-    if not is_vote_message(server_id, message.id):
+    emoji = emojis_unicode.get(reaction.emoji, None)
+    if emoji is None:
         return
+    # Ignore if emojis coming from this bot or not on the vote message
+    if user.id == client.user.id or not is_vote_message(server_id, message.id):
+        return
+    logger.info(
+        f"Removing emoji vote {emoji} for {user.id} on {message.guild.name}"
+    )
     with _movie_vote_controller.transaction():
         movie_vote = _movie_vote_controller.convert_emoji(server_id, emoji)
         _user_vote_controller.remove_vote(user.id, movie_vote)

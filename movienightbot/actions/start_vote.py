@@ -1,16 +1,36 @@
-from typing import List
+import discord
+import peewee as pw
+import logging
 
 from . import BaseAction
-from ..db.models import Server, MovieVote
-from ..util import build_vote_embed
+from ..db.controllers import VoteController
+from ..util import build_vote_embed, emojis_text
+
+logger = logging.getLogger("movienightbot")
 
 
 class StartVoteAction(BaseAction):
     action_name = "start_vote"
     admin = True
+    controller = VoteController()
 
     async def action(self, msg):
-        await msg.channel.send(f"`{self.action_name}` command still being implemented!")
+        server_id = msg.guild.id
+        with self.controller.transaction():
+            try:
+                vote_row = self.controller.start_vote(server_id)
+            except pw.IntegrityError:
+                await msg.channel.send("Vote already started!")
+                return
+            embed = build_vote_embed(server_id)
+            vote_msg = await msg.channel.send(content=None, embed=embed)
+            vote_row.message_id = vote_msg.id
+            vote_row.channel = msg.channel.id
+            self.controller.update(vote_row)
+            for movie_vote in vote_row.movie_votes:
+                await vote_msg.add_reaction(emojis_text[movie_vote.emoji])
+            await vote_msg.add_reaction(emojis_text[":arrows_counterclockwise:"])
+            await vote_msg.add_reaction(emojis_text[":stop_sign:"])
 
     @property
     def help_text(self):

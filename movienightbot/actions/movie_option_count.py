@@ -1,5 +1,3 @@
-import peewee as pw
-
 from . import BaseAction
 from ..db.controllers import ServerController
 
@@ -12,9 +10,9 @@ class MovieOptionCountAction(BaseAction):
     async def action(self, msg):
         num_movies = self.get_message_data(msg)
         num_movies = int(num_movies)
-        if num_movies < 1:
+        if not 1 < num_movies < 26:
             await msg.channel.send(
-                f"Failed to update: Number of movies per vote must be > 0"
+                f"Failed to update: Number of movies per vote must be between 2 and 25, inclusive"
             )
             return
 

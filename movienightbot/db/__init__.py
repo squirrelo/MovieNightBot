@@ -1,4 +1,4 @@
-from typing import Union, List, Any
+from typing import Union, List, Any, Dict
 from contextlib import contextmanager
 import inspect
 from abc import ABC
@@ -13,14 +13,6 @@ class BaseModel(pw.Model):
     class Meta:
         database = DATABASE
 
-    def __repr__(self):
-        return "<{}: {}>".format(
-            self.__name__, ", ".join(f"{k}={v}" for k, v in self.__dict.__.items())
-        )
-
-    def __str__(self):
-        return self.__repr__()
-
 
 class BaseController(ABC):
     model = None
@@ -30,8 +22,8 @@ class BaseController(ABC):
     def transaction(self):
         yield self.database.atomic()
 
-    def create(self, **kwargs) -> BaseModel:
-        return self.model.create(**kwargs)
+    def create(self, row_data: Dict[str, Any]) -> BaseModel:
+        return self.model.create(**row_data)
 
     def get_by_id(self, id: Any, primary_key: str = "id") -> BaseModel:
         field = getattr(self.model, primary_key)

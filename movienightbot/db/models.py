@@ -6,12 +6,13 @@ from . import BaseModel
 
 class Server(BaseModel):
     id = pw.IntegerField(primary_key=True)
-    channel = pw.TextField(null=False)
+    channel = pw.IntegerField(null=False)
     movie_time = pw.TimeField(null=False, formats="%H:%M", default="12:00")
     admin_role = pw.TextField(null=False, default="Movie Master")
     tie_option = pw.TextField(null=False, default="breaker")
     num_movies_per_vote = pw.SmallIntegerField(null=False, default=8)
     num_votes_per_user = pw.SmallIntegerField(null=False, default=4)
+    block_suggestions = pw.BooleanField(null=False, default=False)
 
     class Meta:
         table_name = "servers"
@@ -41,7 +42,10 @@ class Vote(BaseModel):
 
     server_id = pw.ForeignKeyField(Server, backref="vote", primary_key=True)
     message_id = pw.IntegerField(
-        null=False, help_text="The message ID holding the vote message on the server"
+        null=True, help_text="The message ID holding the vote message on the server"
+    )
+    channel_id = pw.IntegerField(
+        null=True, help_text="The channel ID holding the vote channel on the server"
     )
 
     class Meta:
