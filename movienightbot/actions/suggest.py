@@ -1,18 +1,26 @@
 import peewee as pw
 
 from . import BaseAction
-from ..db.controllers import MoviesController
+from ..db.controllers import MoviesController, ServerController
 
 
 class SuggestAction(BaseAction):
     action_name = "suggest"
     controller = MoviesController()
+    server_controller = ServerController()
 
     async def action(self, msg):
+        server_id = msg.guild.id
+        server_row = self.server_controller.get_by_id(server_id)
+        if server_row.block_suggestions:
+            await msg.channel.send(
+                "Suggestions are currently disabled on the server"
+            )
+            return
         suggestion = self.get_message_data(msg)
         suggestion = suggestion.title()
         movie_data = {
-            "server": msg.guild.id,
+            "server": server_id,
             "movie_name": suggestion,
             "suggested_by": msg.author.name,
         }

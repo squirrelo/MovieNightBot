@@ -26,7 +26,7 @@ class SetMovieTimeAction(BaseAction):
     @property
     def help_text(self):
         return (
-            "Sets the time when the movie will be watched. Format must be HH:MM<br>"
-            "The time is in UTC time zone, so convert accordingly. Valid range is 0 - 23<br>"
+            "Sets the time when the movie will be watched. Format must be HH:MM\n"
+            "The time is in UTC time zone, so convert accordingly. Valid range is 0 - 23\n"
             "This time shows at the bottom of the vote embed."
         )

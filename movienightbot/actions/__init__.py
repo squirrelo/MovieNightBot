@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Tuple, Union
+from typing import Dict, Tuple, Union, List
 from pathlib import Path
 from importlib import import_module
 import ast
@@ -92,6 +92,10 @@ class BaseAction(ABC):
     @abstractmethod
     def help_text(self) -> str:
         return
+
+    @property
+    def help_options(self) -> List[str]:
+        return []
 
     @abstractmethod
     async def action(self, msg: discord.message) -> None:
