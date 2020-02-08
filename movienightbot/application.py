@@ -1,6 +1,7 @@
 import logging
 
 import discord
+import peewee as pw
 
 from .actions import KNOWN_ACTIONS, unknown_default_action
 from .util import build_vote_embed, emojis_unicode
@@ -65,7 +66,10 @@ async def on_message(message: discord.message):
 
 
 def is_vote_message(server_id: int, channel_id: int, message_id: int) -> bool:
-    vote_row = _vote_controller.get_by_id(server_id)
+    try:
+        vote_row = _vote_controller.get_by_id(server_id)
+    except pw.DoesNotExist:
+        return False
     if not vote_row:
         # no vote going on so can never be the vote row
         return False
@@ -100,7 +104,7 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
         return
     # Check if user requested end of voting, and do that if so
     elif emoji == ":stop_sign:":
-        KNOWN_ACTIONS["end_vote"](message)
+        await KNOWN_ACTIONS["end_vote"](message)
         return
     with _movie_vote_controller.transaction():
         logger.info(

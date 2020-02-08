@@ -27,6 +27,11 @@ class BaseAction(ABC):
     guild_only = True
 
     async def _check_proceed(self, msg: discord.message) -> bool:
+        if self.guild_only and msg.guild is None:
+            logging.debug(f"User {msg.author.name} trying non-DM action in a DM")
+            await msg.author.send("You can't do this command from a DM!")
+            return False
+
         server_settings = ServerController().get_by_id(msg.guild.id)
         if msg.channel.id != server_settings.channel:
             logging.debug(
@@ -39,10 +44,6 @@ class BaseAction(ABC):
         ):
             logging.debug(f"User {msg.author.name} does not have admin")
             await msg.channel.send("Hey now, you're not an admin on this server!")
-            return False
-        if self.guild_only and msg.guild is None:
-            logging.debug(f"User {msg.author.name} trying non-DM action in a DM")
-            await msg.author.send("You can't do this command from a DM!")
             return False
         return True
 
