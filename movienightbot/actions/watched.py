@@ -12,10 +12,10 @@ class WatchedAction(BaseAction):
     action_name = "watched"
     controller = MoviesController()
 
-    def format_embed(self, movies: List[Movie], server_name: str):
+    def format_embed(self, movies: List[Movie], server_name: str, watch_count: int) -> discord.Embed:
         embed = discord.Embed(
             title="Suggested Movies",
-            description=f"{server_name} has watched {len(movies)} movies so far",
+            description=f"{server_name} has watched {watch_count} movies so far",
         )
         for movie in movies:
             embed.add_field(
@@ -25,9 +25,10 @@ class WatchedAction(BaseAction):
 
     async def action(self, msg):
         watched_movies = self.controller.get_watched_for_server(msg.guild.id)
+        watch_count = len(watched_movies)
         for chunk in range(0, len(watched_movies), 25):
             # limit of 25 fields per embed, so send multiple messages if needed
-            embed = self.format_embed(watched_movies[chunk:chunk + 25], msg.guild.name)
+            embed = self.format_embed(watched_movies[chunk:chunk + 25], msg.guild.name, watch_count)
             await msg.author.send(content=None, embed=embed)
             await sleep(0.1)
 
