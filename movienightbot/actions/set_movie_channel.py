@@ -24,3 +24,7 @@ class SetMovieChannelAction(BaseAction):
     @property
     def help_text(self):
         return "Sets the channel the bot wil listen in. Default is top text channel in the server"
+
+    @property
+    def help_options(self):
+        return ["[channel]"]

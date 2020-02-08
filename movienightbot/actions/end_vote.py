@@ -32,7 +32,9 @@ class EndVoteAction(BaseAction):
                 description=f"Use `m!set_watched {winning_movies[0].movie_name}` to set the movie as watched",
             )
         else:
-            await msg.channel.send("There was a tie! Check the vote message for new vote options")
+            await msg.channel.send(
+                "There was a tie! Check the vote message for new vote options"
+            )
             with self.controller.transaction():
                 server_row = ServerController().get_by_id(server_id)
                 if server_row.tie_option == "breaker":

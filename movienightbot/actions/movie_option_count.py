@@ -25,3 +25,7 @@ class MovieOptionCountAction(BaseAction):
     @property
     def help_text(self):
         return "Sets the number of movies that will show up on a vote."
+
+    @property
+    def help_options(self):
+        return ["#"]

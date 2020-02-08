@@ -34,3 +34,7 @@ class SetWatchedAction(BaseAction):
             "Sets the specified movie as having been watched. This movie will not show up on "
             "future votes."
         )
+
+    @property
+    def help_options(self):
+        return ["[movie_name]"]

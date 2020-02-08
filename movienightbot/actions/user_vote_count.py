@@ -34,3 +34,7 @@ class UserVoteCountAction(BaseAction):
             "Selects a number of random movie suggestions to be voted on. "
             "Must be >= number of movies listed"
         )
+
+    @property
+    def help_options(self):
+        return ["#"]

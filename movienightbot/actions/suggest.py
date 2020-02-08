@@ -13,9 +13,7 @@ class SuggestAction(BaseAction):
         server_id = msg.guild.id
         server_row = self.server_controller.get_by_id(server_id)
         if server_row.block_suggestions:
-            await msg.channel.send(
-                "Suggestions are currently disabled on the server"
-            )
+            await msg.channel.send("Suggestions are currently disabled on the server")
             return
         suggestion = self.get_message_data(msg)
         suggestion = suggestion.title()
@@ -41,3 +39,7 @@ class SuggestAction(BaseAction):
             "Adds the supplied movie to the suggestions list. There is a chance this movie will now "
             "show up on future votes"
         )
+
+    @property
+    def help_options(self):
+        return ["[movie name]"]

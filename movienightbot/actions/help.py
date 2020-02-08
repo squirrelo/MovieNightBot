@@ -24,7 +24,7 @@ class HelpAction(BaseAction):
             cls = KNOWN_ACTIONS[action]
             admin_cls = admin_mark if cls.admin else ""
             embed.add_field(
-                name=f"{client.config.message_identifier}{action}",
+                name=f"{client.config.message_identifier}{action} {' '.join(cls.help_options)}",
                 value=admin_cls + cls.help_text,
                 inline=False,
             )

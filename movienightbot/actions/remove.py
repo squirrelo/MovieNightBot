@@ -27,3 +27,7 @@ class RemoveAction(BaseAction):
     @property
     def help_text(self):
         return "Removes the specified movie from the suggestions list."
+
+    @property
+    def help_options(self):
+        return ["[movie name]"]

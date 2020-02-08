@@ -23,5 +23,9 @@ class TieAction(BaseAction):
     @property
     def help_text(self):
         return """Sets how the bot handles tied votes.
-Option <b>breaker</b> will make a new vote using only the tied movies (this is the default).
-Option <b>random</b> will make a new vote with a random selection of movies."""
+Option `breaker` will make a new vote using only the tied movies (this is the default).
+Option `random` will make a new vote with a random selection of movies."""
+
+    @property
+    def help_options(self):
+        return ["({})".format("|".join(self.tie_options))]

@@ -30,3 +30,7 @@ class SetMovieTimeAction(BaseAction):
             "The time is in UTC time zone, so convert accordingly. Valid range is 0 - 23\n"
             "This time shows at the bottom of the vote embed."
         )
+
+    @property
+    def help_options(self):
+        return ["HH:MM"]

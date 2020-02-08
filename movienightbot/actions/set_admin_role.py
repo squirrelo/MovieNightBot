@@ -21,3 +21,7 @@ class SetAdminRoleAction(BaseAction):
             "Sets the name of the role that is allowed to run admin only commands in movie night bot. "
             "Server administrators have full privileges by default"
         )
+
+    @property
+    def help_options(self):
+        return ["[role]"]
