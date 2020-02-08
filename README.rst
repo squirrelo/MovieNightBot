@@ -1,6 +1,7 @@
 Movie Night Bot
 ---------------
 A simple discord bot that tracks movie suggestions, watched movies, and runs votes on what movie to watch form the suggestions list.
+Includes tie runoff logic, and the ablity to turn off suggestion capability if users are getting too rowdy.
 
 Running the bot
 ---------------
@@ -8,5 +9,4 @@ Running the bot
 2) Start the server using the command `python -m movienightbot -c /path/to/config.yaml`  You can optionally also pass `-f /path/to/file.log` to set where the log file should be written.
 
 Planned Features
- * block_suggestions command to stop suggestions if people are getting too rowdy
  * option to use third party API to verify the movies suggested are actually real
