@@ -32,9 +32,10 @@ class EndVoteAction(BaseAction):
         else:
             embed = discord.Embed(
                 title=f"Wining movies: {', '.join(w.movie_name for w in winning_movies)}",
-                description=f"Use `m!set_watched {winning_movies[0].movie_name}` to set a movie as watched",
+                description=f"Use `m!set_watched [movie name]` to set a movie as watched",
             )
         await vote_msg.edit(content=None, embed=embed)
+        await vote_msg.clear_reactions()
 
     @property
     def help_text(self):

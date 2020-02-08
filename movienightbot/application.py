@@ -4,7 +4,7 @@ import discord
 import peewee as pw
 
 from .actions import KNOWN_ACTIONS, unknown_default_action
-from .util import build_vote_embed, emojis_unicode
+from .util import build_vote_embed, emojis_unicode, emojis_text
 from .db.controllers import (
     ServerController,
     VoteController,
@@ -100,7 +100,11 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
         return
     # Check if user reset votes, and do that if so
     if emoji == ":arrows_counterclockwise:":
-        _user_vote_controller.reset_user_votes(server_id, user.id)
+        movie_votes = _user_vote_controller.reset_user_votes(server_id, user.id)
+        # Reset the user's emojis for the movies they voted for
+        for movie in movie_votes:
+            await message.remove_reaction(emojis_text[movie.emoji], user)
+        await message.remove_reaction(emojis_text[":arrows_counterclockwise:"], user)
         return
     # Check if user requested end of voting, and do that if so
     elif emoji == ":stop_sign:":

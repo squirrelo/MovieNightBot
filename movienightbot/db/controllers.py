@@ -154,10 +154,11 @@ class UserVoteController(BaseController):
             )
         return user_vote
 
-    def reset_user_votes(self, server_id: int, user_id: int) -> None:
+    def reset_user_votes(self, server_id: int, user_id: int) -> List[MovieVote]:
         with self.transaction():
             scores = movie_score_weightings(server_id=server_id)
             user_votes = self.get_by_server_and_user(server_id, user_id)
+            movie_votes = [u.movie_vote for u in user_votes]
             # remove user score for each movie, then the user vote row
             movie_vote_controller = MovieVoteController()
             for user_vote_row in user_votes:
@@ -166,6 +167,7 @@ class UserVoteController(BaseController):
                 movie_vote.score -= scores[user_vote_row.vote_rank]
                 movie_vote_controller.update(movie_vote)
                 self.delete(user_vote_row)
+            return movie_votes
 
     def get_by_server_and_user(self, server_id: int, user_id: int) -> List[UserVote]:
         return [
