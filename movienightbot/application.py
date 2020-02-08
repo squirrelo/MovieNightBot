@@ -72,22 +72,28 @@ def is_vote_message(server_id: int, channel_id: int, message_id: int) -> bool:
     return (vote_row.message_id == message_id) and (vote_row.channel_id == channel_id)
 
 
-@client.event
-async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
+def parse_reaction(reaction: discord.Reaction, user: discord.User):
     message = reaction.message
     server_id = message.guild.id
     emoji = emojis_unicode.get(reaction.emoji, None)
     logger.debug(f"Reaction add emoji {emoji} on {message.guild.name}")
     if emoji is None:
-        return
+        return None, None, None
     # Ignore if emojis coming from this bot or not on the vote message
     not_vote_msg = not is_vote_message(server_id, message.channel.id, message.id)
     logger.debug(
         f"checking if this bot or right channel: {user.id == client.user.id} {not_vote_msg}"
     )
     if user.id == client.user.id or not_vote_msg:
-        return
+        return None, None, None
+    return message, server_id, emoji
 
+
+@client.event
+async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
+    message, server_id, emoji = parse_reaction(reaction, user)
+    if emoji is None:
+        return
     # Check if user reset votes, and do that if so
     if emoji == ":arrows_counterclockwise:":
         _user_vote_controller.reset_user_votes(server_id, user.id)
@@ -111,13 +117,8 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
 
 @client.event
 async def on_reaction_remove(reaction: discord.Reaction, user: discord.User):
-    message = reaction.message
-    server_id = message.guild.id
-    emoji = emojis_unicode.get(reaction.emoji, None)
+    message, server_id, emoji = parse_reaction(reaction, user)
     if emoji is None:
-        return
-    # Ignore if emojis coming from this bot or not on the vote message
-    if user.id == client.user.id or not is_vote_message(server_id, message.id):
         return
     logger.info(f"Removing emoji vote {emoji} for {user.id} on {message.guild.name}")
     with _movie_vote_controller.transaction():

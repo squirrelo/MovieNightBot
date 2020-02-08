@@ -11,7 +11,7 @@ def build_vote_embed(server_id: int):
         description="Use the emojis to vote on your preferred movies, in the order you would prefer them. "
         f"You may vote for up to {server_row.num_votes_per_user} movies. "
         "If you need to reset your votes, use the :arrows_counterclockwise: emoji. "
-        "To stop the vote, use the :stop sign: emoji.",
+        "To stop the vote, use the :stop_sign: emoji.",
     )
     for movie_vote in movie_rows:
         embed.add_field(

@@ -173,7 +173,7 @@ class UserVoteController(BaseController):
             for x in UserVote.select()
             .join(MovieVote)
             .join(Vote)
-            .where((Vote.server_id == server_id) & UserVote.user_id == user_id)
+            .where((Vote.server_id == server_id) & (UserVote.user_id == user_id))
         ]
 
     def get_next_rank(self, server_id: int, user_id: int) -> int:
@@ -181,7 +181,7 @@ class UserVoteController(BaseController):
             UserVote.select(pw.fn.MAX(UserVote.vote_rank))
             .join(MovieVote)
             .join(Vote)
-            .where((Vote.server_id == server_id) & UserVote.user_id == user_id)
+            .where((Vote.server_id == server_id) & (UserVote.user_id == user_id))
             .scalar()
         )
         return max_rank + 1 if max_rank else 1

@@ -58,7 +58,7 @@ class MovieVote(BaseModel):
     id = pw.AutoField(primary_key=True)
     vote = pw.ForeignKeyField(Vote, backref="movie_votes")
     movie = pw.ForeignKeyField(Movie, backref="+")
-    score = pw.SmallIntegerField(null=False, default=0)
+    score = pw.FloatField(null=False, default=0)
     emoji = pw.TextField(null=False)
 
     class Meta:
