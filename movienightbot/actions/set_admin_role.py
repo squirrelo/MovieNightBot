@@ -9,6 +9,10 @@ class SetAdminRoleAction(BaseAction):
 
     async def action(self, msg):
         admin_role = self.get_message_data(msg)
+        server_roles = [r.name for r in msg.guild.roles]
+        if admin_role not in server_roles:
+            await msg.channel.send(f"Role not found: {admin_role}.")
+            return
         with self.controller.transaction():
             server_row = self.controller.get_by_id(msg.guild.id)
             server_row.admin_role = admin_role
