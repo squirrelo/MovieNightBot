@@ -10,10 +10,9 @@ def build_vote_embed(server_id: int):
     movie_rows = MovieVoteController().get_movies_for_server_vote(server_id)
     embed = discord.Embed(
         title="Movie Vote!",
-        description="Use the emojis to vote on your preferred movies, in the order you would prefer them. "
-        f"You may vote for up to {server_row.num_votes_per_user} movies. "
-        "If you need to reset your votes, use the :arrows_counterclockwise: emoji. "
-        "To stop the vote, use the :stop_sign: emoji.",
+        description=f"""Use the emojis to vote on your preferred movies, in the order you would prefer them. You may vote for up to {server_row.num_votes_per_user} movies.
+Reset your votes with the :arrows_counterclockwise: emoji.
+End the vote with the :stop_sign: emoji.""",
     )
     for movie_vote in movie_rows:
         embed.add_field(
