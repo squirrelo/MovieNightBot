@@ -1,7 +1,7 @@
 Movie Night Bot
 ---------------
 A simple discord bot that tracks movie suggestions, watched movies, and runs votes on what movie to watch form the suggestions list.
-Includes tie runoff logic, and the ablity to turn off suggestion capability if users are getting too rowdy.
+Includes weighted-choice voting, tie runoff logic, and the ablity to turn off suggestion capability if users are getting too rowdy.
 
 Running the bot
 ---------------
