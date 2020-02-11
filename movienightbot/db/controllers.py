@@ -118,6 +118,7 @@ class VoteController(BaseController):
             for movie_vote in movie_votes:
                 # set the last score for all movies
                 movie_vote.movie.last_score = movie_vote.score
+                movie_vote.movie.num_votes_entered += 1
                 movie_vote.movie.save()
                 # create the list of best scored movies in case of tie
                 if movie_vote.score == best_score:
