@@ -1,8 +1,8 @@
 import datetime
-
 import discord
 
 from .db.controllers import ServerController, MovieVoteController, MovieVote
+from imdb import IMDb
 
 
 def build_vote_embed(server_id: int):
@@ -75,3 +75,15 @@ async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
         await vote_msg.add_reaction(emojis_text[movie_vote.emoji])
     await vote_msg.add_reaction(emojis_text[":arrows_counterclockwise:"])
     await vote_msg.add_reaction(emojis_text[":stop_sign:"])
+
+def check_imdb(movie_name:str):
+    if not movie_name:
+        return False
+    
+    im_db = IMDb()
+    results = im_db.search_movie(movie_name)
+    for r in results:
+        if r['title'].lower() == movie_name.lower():
+            return True
+    return False
+
