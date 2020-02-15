@@ -63,6 +63,13 @@ class BaseAction(ABC):
         logger.info(f"Running action {self.action_name} on server {guild}")
         try:
             await self.action(msg)
+        except discord.Forbidden as e:
+            if e.code == 50007:
+                await msg.channel.send(f"I can't DM you {msg.author.name}!")
+                return
+            else:
+                logger.error(e, exc_info=e)
+                await msg.channel.send(error_message)
         except Exception as e:
             logger.error(e, exc_info=e)
             await msg.channel.send(error_message)
