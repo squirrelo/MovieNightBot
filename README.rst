@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/squirrelo/MovieNightBot.svg?branch=develop
+    :target: https://travis-ci.org/squirrelo/MovieNightBot
+
 Movie Night Bot
 ---------------
 A simple discord bot that tracks movie suggestions, watched movies, and runs votes on what movie to watch form the suggestions list.
@@ -11,4 +14,3 @@ Running the bot
 Planned Features
  * Block specific people from suggesting on a server
  * Paginate the watched and suggested so you can scroll through with reactions
- * option to use third party API to verify the movies suggested are actually real

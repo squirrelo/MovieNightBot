@@ -8,7 +8,7 @@ class SetMovieTimeAction(BaseAction):
     action_name = "set_movie_time"
     admin = True
     controller = ServerController()
-    time_regex = re.compile("^\d{1,2}:\d{2}$")
+    time_regex = re.compile("^\d{1,2}:\d{2}$")  # noqa: W605
 
     async def action(self, msg):
         movie_time = self.get_message_data(msg)

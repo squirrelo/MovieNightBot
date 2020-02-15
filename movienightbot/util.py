@@ -10,7 +10,8 @@ def build_vote_embed(server_id: int):
     movie_rows = MovieVoteController().get_movies_for_server_vote(server_id)
     embed = discord.Embed(
         title="Movie Vote!",
-        description=f"""Use the emojis to vote on your preferred movies, in the order you would prefer them. You may vote for up to {server_row.num_votes_per_user} movies.
+        description=f"""Use the emojis to vote on your preferred movies, in the order you would prefer them.
+You may vote for up to {server_row.num_votes_per_user} movies.
 Reset your votes with the :arrows_counterclockwise: emoji.
 End the vote with the :stop_sign: emoji.""",
     )
@@ -76,14 +77,14 @@ async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
     await vote_msg.add_reaction(emojis_text[":arrows_counterclockwise:"])
     await vote_msg.add_reaction(emojis_text[":stop_sign:"])
 
-def check_imdb(movie_name:str):
+
+def check_imdb(movie_name: str):
     if not movie_name:
         return False
-    
+
     im_db = IMDb()
     results = im_db.search_movie(movie_name)
     for r in results:
-        if r['title'].lower() == movie_name.lower():
+        if r["title"].lower() == movie_name.lower():
             return True
     return False
-

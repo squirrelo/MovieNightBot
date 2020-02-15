@@ -4,6 +4,7 @@ from . import BaseAction
 from ..db.controllers import MoviesController, ServerController
 from ..util import check_imdb
 
+
 class SuggestAction(BaseAction):
     action_name = "suggest"
     controller = MoviesController()
@@ -17,11 +18,11 @@ class SuggestAction(BaseAction):
             return
         suggestion = self.get_message_data(msg)
         suggestion = suggestion.title()
-        
+
         if server_row.check_movie_names and not check_imdb(suggestion):
             await msg.channel.send("Could not find the title you suggested in IMDb.")
             return
-        
+
         movie_data = {
             "server": server_id,
             "movie_name": suggestion,

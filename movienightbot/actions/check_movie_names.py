@@ -1,5 +1,3 @@
-import re
-
 from . import BaseAction
 from ..db.controllers import ServerController
 

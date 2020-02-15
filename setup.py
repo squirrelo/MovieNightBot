@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-from movienightbot import __version__ as botveresion
+from movienightbot import __version__ as bot_version
 
 requirements = ["discord", "peewee", "marshmallow", "pyyaml", "imdbpy"]
 
@@ -11,7 +11,7 @@ with open("README.rst") as f:
 
 setup(
     name="movienight-bot",
-    version=botveresion,
+    version=bot_version,
     license="BSD",
     description="Movie night suggestion and voting bot for Discord",
     long_description=long_description,

@@ -1,4 +1,3 @@
-import discord
 import peewee as pw
 import logging
 
