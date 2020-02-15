@@ -1,8 +1,26 @@
 import datetime
+from typing import List
+import asyncio
+
 import discord
 
 from .db.controllers import ServerController, MovieVoteController, MovieVote
 from imdb import IMDb
+
+
+def cleanup_messages(messages: List[discord.Message], sec_delay: int = 10) -> None:
+    """Deletes a list of messages off a server
+
+    Parameters
+    ----------
+    messages : List of discord.Message objects
+        The messages to delete
+    sec_delay : int
+        The number of seconds to wait before deleting the message. Default 10
+    """
+    loop = asyncio.get_event_loop()
+    for message in messages:
+        loop.create_task(message.delete(delay=sec_delay))
 
 
 def build_vote_embed(server_id: int):
