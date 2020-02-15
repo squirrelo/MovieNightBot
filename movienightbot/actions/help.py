@@ -31,7 +31,14 @@ class HelpAction(BaseAction):
         return embed
 
     async def action(self, msg):
-        await msg.author.send(content=None, embed=self._build_help_embed(msg.guild.id))
+        embed_data = self._build_help_embed(msg.guild.id)
+        try:
+            await msg.author.send(content=None, embed=embed_data)
+        except discord.Forbidden as ex:
+            if ex.code == 50007:
+                await msg.channel.send(content=None, embed=embed_data)
+            else:
+                raise
 
     @property
     def help_text(self):
