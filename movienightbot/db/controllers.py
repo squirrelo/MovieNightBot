@@ -184,7 +184,6 @@ class UserVoteController(BaseController):
             # remove user score for each movie, then the user vote row
             movie_vote_controller = MovieVoteController()
             for user_vote_row in user_votes:
-                # TODO: Find an elegant way to remove the emoji votes on the message
                 movie_vote = user_vote_row.movie_vote
                 movie_vote.score -= scores[user_vote_row.vote_rank]
                 movie_vote_controller.update(movie_vote)
