@@ -40,7 +40,8 @@ class BaseAction(ABC):
             )
             return False
         if not msg.author.guild_permissions.administrator and (
-            self.admin and not server_settings.admin_role in {r.name for r in msg.author.roles}
+            self.admin
+            and not server_settings.admin_role in {r.name for r in msg.author.roles}
         ):
             logging.debug(f"User {msg.author.name} does not have admin")
             await msg.channel.send("Hey now, you're not an admin on this server!")
