@@ -18,7 +18,7 @@ class SuggestAction(BaseAction):
         suggestion = self.get_message_data(msg)
         suggestion = suggestion.title()
         
-        if not check_imdb(suggestion):
+        if server_row.check_movie_names and not check_imdb(suggestion):
             await msg.channel.send("Could not find the title you suggested in IMDb.")
             return
         
