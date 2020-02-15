@@ -81,12 +81,17 @@ class BaseAction(ABC):
             The number of pieces of information expected, space separated. Default 1.
             For example, if the message text is "m!suggest Some Movie Name" and we set to 1,
             this will return "Some Movie Name". Set to 2, it will return ("Some", "Movie Name")
+
+        Notes
+        -----
+        Will return an empty string if the data_parts is set to 1 but no data is given. Will return an empty tuple
+        if data_parts is > 1 and no data given.
         """
         data = msg.content.strip().split(" ", data_parts)[1:]
         # sanitize the input to only have one space in case multiple put in
         data = tuple(" ".join(s.split()) for s in data)
         if data_parts == 1:
-            return data[0]
+            return '' if not data else data[0]
         return data
 
     @property

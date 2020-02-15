@@ -4,7 +4,7 @@ from . import BaseAction
 from ..db.controllers import ServerController
 
 
-class SetMovieTimeAction(BaseAction):
+class CheckMovieNamesAction(BaseAction):
     action_name = "check_movie_names"
     admin = True
     controller = ServerController()
