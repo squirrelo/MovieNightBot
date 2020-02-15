@@ -18,7 +18,9 @@ class SuggestAction(BaseAction):
             server_msg = await msg.channel.send(
                 "Suggestions are currently disabled on the server"
             )
-            cleanup_messages([msg, server_msg], sec_delay=self.message_delete_sec_delay)
+            await cleanup_messages(
+                [msg, server_msg], sec_delay=self.message_delete_sec_delay
+            )
             return
         suggestion = self.get_message_data(msg)
         suggestion = suggestion.title()
@@ -27,7 +29,9 @@ class SuggestAction(BaseAction):
             server_msg = await msg.channel.send(
                 "Could not find the title you suggested in IMDb."
             )
-            cleanup_messages([msg, server_msg], sec_delay=self.message_delete_sec_delay)
+            await cleanup_messages(
+                [msg, server_msg], sec_delay=self.message_delete_sec_delay
+            )
             return
 
         movie_data = {
@@ -41,12 +45,16 @@ class SuggestAction(BaseAction):
             server_msg = await msg.channel.send(
                 f"{suggestion} has already been suggested in this server."
             )
-            cleanup_messages([msg, server_msg], sec_delay=self.message_delete_sec_delay)
+            await cleanup_messages(
+                [msg, server_msg], sec_delay=self.message_delete_sec_delay
+            )
             return
         server_msg = await msg.channel.send(
             f"Your suggestion of {suggestion} has been added to the list."
         )
-        cleanup_messages([msg, server_msg], sec_delay=self.message_delete_sec_delay)
+        await cleanup_messages(
+            [msg, server_msg], sec_delay=self.message_delete_sec_delay
+        )
 
     @property
     def help_text(self):
