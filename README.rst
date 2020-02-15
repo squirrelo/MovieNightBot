@@ -14,3 +14,9 @@ Running the bot
 Planned Features
  * Block specific people from suggesting on a server
  * Paginate the watched and suggested so you can scroll through with reactions
+
+Contributing
+------------
+`flake8
+<https://flake8.pycqa.org/en/latest/>`_ and `black
+<https://black.readthedocs.io/en/stable/>`_  standards are enforced for all pull requests.
