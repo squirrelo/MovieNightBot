@@ -19,6 +19,7 @@ class BlockSuggestionsAction(BaseAction):
             suggestions_text = "allowed"
         else:
             await msg.channel.send(f"Unknown option for block_suggestions: `{option}`")
+            return
         server_row = self.controller.get_by_id(msg.guild.id)
         server_row.block_suggestions = block
         self.controller.update(server_row)

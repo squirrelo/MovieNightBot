@@ -17,6 +17,7 @@ class CheckMovieNamesAction(BaseAction):
             check_names = False
         else:
             await msg.channel.send(f"Unknown option for check_movie_names: `{option}`")
+            return
         server_row = self.controller.get_by_id(msg.guild.id)
         server_row.check_movie_names = check_names
         self.controller.update(server_row)
