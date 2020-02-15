@@ -4,7 +4,7 @@ from . import BaseAction
 from ..db.controllers import ServerController
 
 
-class SetMovieTimeAction(BaseAction):
+class BlockSuggestionsAction(BaseAction):
     action_name = "block_suggestions"
     admin = True
     controller = ServerController()
