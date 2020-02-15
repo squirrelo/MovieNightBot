@@ -20,4 +20,5 @@ setup(
     packages=find_packages(),
     install_requires=requirements,
     tests_require=test_requirements,
+    extras_require={"test": test_requirements},
 )
