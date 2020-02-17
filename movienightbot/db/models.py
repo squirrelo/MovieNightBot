@@ -14,6 +14,7 @@ class Server(BaseModel):
     num_votes_per_user = pw.SmallIntegerField(null=False, default=4)
     block_suggestions = pw.BooleanField(null=False, default=False)
     check_movie_names = pw.BooleanField(null=False, default=False)
+    message_timeout = pw.SmallIntegerField(null=False, default=10)
 
     class Meta:
         table_name = "servers"
