@@ -35,7 +35,7 @@ def build_vote_embed(server_id: int):
         description=f"""Use the emojis to vote on your preferred movies, in the order you would prefer them.
 You may vote for up to {server_row.num_votes_per_user} movies.
 Reset your votes with the :arrows_counterclockwise: emoji.
-End the vote with the :stop_sign: emoji.""",
+End the vote with the :octagonal_sign: emoji.""",
     )
     for movie_vote in movie_rows:
         embed.add_field(
@@ -85,7 +85,7 @@ emojis_text = {
     ":regional_indicator_x:": "🇽",
     ":regional_indicator_y:": "🇾",
     ":regional_indicator_z:": "🇿",
-    ":stop_sign:": "🛑",
+    ":octagonal_sign:": "🛑",
     ":arrows_counterclockwise:": "🔄",
 }
 

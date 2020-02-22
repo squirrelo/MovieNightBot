@@ -107,7 +107,7 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
         await message.remove_reaction(emojis_text[":arrows_counterclockwise:"], user)
         return
     # Check if user requested end of voting, and do that if so
-    elif emoji == ":stop_sign:":
+    elif emoji == ":octagonal_sign:":
         await KNOWN_ACTIONS["end_vote"](message)
         return
     with _movie_vote_controller.transaction():
