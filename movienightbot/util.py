@@ -97,7 +97,6 @@ async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
     for movie_vote in movie_votes:
         await vote_msg.add_reaction(emojis_text[movie_vote.emoji])
     await vote_msg.add_reaction(emojis_text[":arrows_counterclockwise:"])
-    await vote_msg.add_reaction(emojis_text[":stop_sign:"])
 
 
 def check_imdb(movie_name: str):
