@@ -21,11 +21,16 @@ arguments.add_argument(
 args = arguments.parse_args()
 
 log_level = getattr(logging, args.loglevel.upper())
-
+formatter = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+)
 for logger in (logging.getLogger("movienightbot"), logging.getLogger("peewee")):
     logger.addHandler(logging.StreamHandler())
     if args.logfile is not None:
-        logger.addHandler(logging.FileHandler(args.logfile, mode="a"))
+        fh = logging.FileHandler(args.logfile, mode="a")
+        fh.setLevel(log_level)
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)-8s %(message)s",
