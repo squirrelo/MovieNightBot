@@ -68,35 +68,48 @@ async def on_message(message: discord.message):
 def is_vote_message(server_id: int, channel_id: int, message_id: int) -> bool:
     try:
         vote_row = _vote_controller.get_by_id(server_id)
+        logger.debug("vote_row: {}".format(vote_row))
     except pw.DoesNotExist:
+        logger.debug("No vote found for server {}".format(server_id))
         return False
     if not vote_row:
         # no vote going on so can never be the vote row
+        logger.debug("Empty vote found for server {}".format(server_id))
         return False
-    return (vote_row.message_id == message_id) and (vote_row.channel_id == channel_id)
-
-
-def parse_reaction(reaction: discord.Reaction, user: discord.User):
-    message = reaction.message
-    server_id = message.guild.id
-    emoji = emojis_unicode.get(reaction.emoji, None)
-    logger.debug(f"Reaction add emoji {emoji} on {message.guild.name}")
-    if emoji is None:
-        return None, None, None
-    # Ignore if emojis coming from this bot or not on the vote message
-    not_vote_msg = not is_vote_message(server_id, message.channel.id, message.id)
-    logger.debug(
-        f"checking if this bot or right channel: {user.id == client.user.id} {not_vote_msg}"
+    is_message = (vote_row.message_id == message_id) and (
+        vote_row.channel_id == channel_id
     )
-    if user.id == client.user.id or not_vote_msg:
-        return None, None, None
-    return message, server_id, emoji
+    logger.debug(
+        "Vote DB channel and message: {} {} >> Sent channel and message: {} {} >> {}".format(
+            vote_row.channel_id, vote_row.message_id, channel_id, message_id, is_message
+        )
+    )
+    return is_message
+
+
+async def parse_reaction(payload):
+    channel = await client.fetch_channel(payload.channel_id)
+    message = await channel.fetch_message(payload.message_id)
+    user = await client.fetch_user(payload.user_id)
+    emoji = emojis_unicode.get(payload.emoji.name, None)
+    logger.debug(
+        "raw emoji sent: {} {}  >> {}".format(
+            type(payload.emoji.name), type(payload.emoji), emoji
+        )
+    )
+    # Ignore if emojis coming from this bot
+    if user.id == client.user.id:
+        logger.debug("emoji coming from self")
+        emoji = None
+    return message, user, channel.guild.id, emoji
 
 
 @client.event
-async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
-    message, server_id, emoji = parse_reaction(reaction, user)
-    if emoji is None:
+async def on_raw_reaction_add(payload):
+    message, user, server_id, emoji = await parse_reaction(payload)
+    logger.debug("Reaction {} added to server {}".format(emoji, server_id))
+    if emoji is None or not is_vote_message(server_id, message.channel.id, message.id):
+        logger.debug("emoji from self or not vote message")
         return
     # Check if user reset votes, and do that if so
     if emoji == ":arrows_counterclockwise:":
@@ -124,9 +137,10 @@ async def on_reaction_add(reaction: discord.Reaction, user: discord.User):
 
 
 @client.event
-async def on_reaction_remove(reaction: discord.Reaction, user: discord.User):
-    message, server_id, emoji = parse_reaction(reaction, user)
-    if emoji is None:
+async def on_raw_reaction_remove(payload):
+    message, user, server_id, emoji = await parse_reaction(payload)
+    if emoji is None or not is_vote_message(server_id, message.channel.id, message.id):
+        logger.debug("emoji not vote message")
         return
     logger.info(f"Removing emoji vote {emoji} for {user.id} on {message.guild.name}")
     with _movie_vote_controller.transaction():
