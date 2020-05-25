@@ -99,13 +99,13 @@ async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
     await vote_msg.add_reaction(emojis_text[":arrows_counterclockwise:"])
 
 
-def check_imdb(movie_name: str):
+def get_imdb_info(movie_name: str):
     if not movie_name:
-        return False
+        return None
 
     im_db = IMDb()
     results = im_db.search_movie(movie_name)
     for r in results:
         if r["title"].lower() == movie_name.lower():
-            return True
-    return False
+            return r
+    return None

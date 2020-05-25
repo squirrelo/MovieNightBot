@@ -1,14 +1,15 @@
 import peewee as pw
 
 from . import BaseAction
-from ..db.controllers import MoviesController, ServerController
-from ..util import check_imdb, cleanup_messages
+from ..db.controllers import MoviesController, ServerController, IMDBInfoController
+from ..util import get_imdb_info, cleanup_messages
 
 
 class SuggestAction(BaseAction):
     action_name = "suggest"
     controller = MoviesController()
     server_controller = ServerController()
+    imdb_controller = IMDBInfoController()
 
     async def action(self, msg):
         server_id = msg.guild.id
@@ -24,18 +25,36 @@ class SuggestAction(BaseAction):
         suggestion = self.get_message_data(msg)
         suggestion = suggestion.title()
 
-        if server_row.check_movie_names and not check_imdb(suggestion):
-            server_msg = await msg.channel.send(
-                "Could not find the title you suggested in IMDb."
-            )
-            if message_timeout > 0:
-                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
-            return
+        imdb_row = None
+        if server_row.check_movie_names:
+            imdb_info = get_imdb_info(suggestion)
+            if not imdb_info:
+                server_msg = await msg.channel.send(
+                    "Could not find the title you suggested in IMDb."
+                )
+                if message_timeout > 0:
+                    await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+                return
+
+            imdb_data = {
+                "imdb_id": imdb_info.movieID,
+                "title": imdb_info["title"],
+                "canonical_title": imdb_info["canonical title"],
+                "year": imdb_info["year"],
+                "thumbnail_poster_url": imdb_info["cover url"],
+                "full_size_poster_url": imdb_info["full-size cover url"],
+            }
+            try:
+                imdb_row = self.imdb_controller.create(imdb_data)
+            except pw.IntegrityError:
+                # IMDB entry already added, so ignore error
+                pass
 
         movie_data = {
             "server": server_id,
             "movie_name": suggestion,
             "suggested_by": msg.author.name,
+            "imdb_id": imdb_row,
         }
         try:
             self.controller.create(movie_data)

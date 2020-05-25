@@ -6,7 +6,7 @@ import logging
 import peewee as pw
 import discord
 
-from .models import Server, Movie, Vote, MovieVote, UserVote
+from .models import Server, Movie, Vote, MovieVote, UserVote, IMDBInfo
 from . import BaseController
 
 logger = logging.getLogger("movienightbot")
@@ -14,6 +14,10 @@ logger = logging.getLogger("movienightbot")
 
 class ServerController(BaseController):
     model = Server
+
+
+class IMDBInfoController(BaseController):
+    model = IMDBInfo
 
 
 class MoviesController(BaseController):
