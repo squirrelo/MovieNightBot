@@ -45,7 +45,7 @@ class Movie(BaseModel):
         utc=True, null=False, default=datetime.datetime.utcnow
     )
     watched_on = pw.TimestampField(utc=True, null=True, default=None)
-    imdb_id = pw.ForeignKeyField(IMDBInfo, backref="movie_suggestions")
+    imdb_id = pw.ForeignKeyField(IMDBInfo, backref="movie_suggestions", null=True)
 
     class Meta:
         table_name = "movies"

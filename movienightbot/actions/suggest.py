@@ -3,6 +3,7 @@ import peewee as pw
 from . import BaseAction
 from ..db.controllers import MoviesController, ServerController, IMDBInfoController
 from ..util import get_imdb_info, cleanup_messages
+from . import logger
 
 
 class SuggestAction(BaseAction):
@@ -46,8 +47,11 @@ class SuggestAction(BaseAction):
             }
             try:
                 imdb_row = self.imdb_controller.create(imdb_data)
-            except pw.IntegrityError:
+            except pw.IntegrityError as e:
                 # IMDB entry already added, so ignore error
+                logger.debug(
+                    "IMDB entry insert error: {}\n{}".format(imdb_data, str(e))
+                )
                 pass
 
         movie_data = {
@@ -58,7 +62,8 @@ class SuggestAction(BaseAction):
         }
         try:
             self.controller.create(movie_data)
-        except pw.IntegrityError:
+        except pw.IntegrityError as e:
+            logger.debug("Movie insert error: {}\n{}".format(movie_data, str(e)))
             server_msg = await msg.channel.send(
                 f"{suggestion} has already been suggested in this server."
             )
