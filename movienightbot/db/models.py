@@ -27,6 +27,8 @@ class Movie(BaseModel):
     suggested_by = pw.TextField(null=False)
     last_score = pw.FloatField(null=True)
     num_votes_entered = pw.IntegerField(null=False, default=0)
+    total_score = pw.FloatField(null=False, default=0.0)
+    total_votes = pw.IntegerField(null=False, default=0)
     suggested_on = pw.TimestampField(
         utc=True, null=False, default=datetime.datetime.utcnow
     )
