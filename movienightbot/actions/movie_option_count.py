@@ -12,7 +12,7 @@ class MovieOptionCountAction(BaseAction):
         num_movies = int(num_movies)
         if not 1 < num_movies < 26:
             await msg.channel.send(
-                f"Failed to update: Number of movies per vote must be between 2 and 25, inclusive"
+                "Failed to update: Number of movies per vote must be between 2 and 25, inclusive"
             )
             return
 

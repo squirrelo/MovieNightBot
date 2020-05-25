@@ -43,7 +43,7 @@ End the vote with the :octagonal_sign: emoji.""",
             value=f"Score: {movie_vote.score}",
             inline=False,
         )
-    embed.set_footer(text=f"Movie time is")
+    embed.set_footer(text="Movie time is")
     today = datetime.datetime.utcnow().date()
     movie_hour, movie_minute = server_row.movie_time.split(":")
     movie_time = datetime.datetime(

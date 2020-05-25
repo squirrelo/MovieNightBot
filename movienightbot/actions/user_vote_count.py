@@ -12,7 +12,7 @@ class UserVoteCountAction(BaseAction):
         num_votes_per_user = int(num_votes_per_user)
         if num_votes_per_user < 1:
             await msg.channel.send(
-                f"Failed to update: Number of votes per user must be > 0"
+                "Failed to update: Number of votes per user must be > 0"
             )
             return
         with self.controller.transaction():

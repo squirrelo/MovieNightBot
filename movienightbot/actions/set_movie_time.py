@@ -14,7 +14,7 @@ class SetMovieTimeAction(BaseAction):
         movie_time = self.get_message_data(msg)
         if not self.time_regex.search(movie_time):
             await msg.channel.send(
-                f"Movie time given in invalid format. Must be `HH:MM`"
+                "Movie time given in invalid format. Must be `HH:MM`"
             )
             return
         with self.controller.transaction():
