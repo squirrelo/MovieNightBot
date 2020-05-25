@@ -20,6 +20,18 @@ class Server(BaseModel):
         table_name = "servers"
 
 
+class IMDBInfo(BaseModel):
+    imdb_id = pw.TextField(primary_key=True)
+    title = pw.TextField(null=False)
+    canonical_title = pw.TextField()
+    year = pw.IntegerField()
+    thumbnail_poster_url = pw.TextField()
+    full_size_poster_url = pw.TextField()
+
+    class Meta:
+        table_name = "imdb_info"
+
+
 class Movie(BaseModel):
     id = pw.AutoField(primary_key=True)
     server = pw.ForeignKeyField(Server, backref="movies")
@@ -33,6 +45,7 @@ class Movie(BaseModel):
         utc=True, null=False, default=datetime.datetime.utcnow
     )
     watched_on = pw.TimestampField(utc=True, null=True, default=None)
+    imdb_id = pw.ForeignKeyField(IMDBInfo, backref="movie_suggestions")
 
     class Meta:
         table_name = "movies"
