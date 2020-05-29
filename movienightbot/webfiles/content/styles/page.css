@@ -1,0 +1,154 @@
+
+body {
+	background-color: #2F3136;
+}
+
+div {
+	margin: 0px;
+	padding: 0px;
+	border: 0px;
+}
+
+#FlexBox {
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+}
+
+#Page {
+	width: 1344px;
+	min-height: 700px;
+	background-color: #36393F;
+	border-radius: 10px;
+	padding-bottom: 50px;
+}
+
+#Page > h1 {
+	font-family: Tahoma, Geneva, sans-serif;
+	color: white;
+	padding-left: 80px;
+	padding-bottom: 15px;
+	border-bottom: black 3px solid;
+}
+
+#PageControls {
+	margin-left: auto;
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-end;
+	margin-right: 40px;
+	margin-bottom: 15px;
+	width: 1254px;
+}
+
+#PageControls > div {
+	width: 50px;
+	height: 50px;
+	margin: 5px;
+	background-color: #4A4E56;
+	text-align: center;
+	color: white;
+	font-family: Tahoma, Geneva, sans-serif;
+	font-weight: bold;
+	border-radius: 5px;
+	user-select: none;
+}
+
+#PageControls > #Position {
+	padding-left: 8px;
+	padding-right: 8px;
+	width: auto;
+}
+
+#PageControls > #BtnSetting {
+	margin-right: auto;
+	width:auto;
+	padding-left: 8px;
+	padding-right: 8px;
+}
+
+#Items {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.item {
+	height: 154px;
+	width: 1254px;
+	background-color: #4A4E56;
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	font-family: Tahoma, Geneva, sans-serif;
+	color: white;
+	border-bottom: 2px black solid;
+}
+
+.item #image {
+	margin-left: 10px;
+	width: 135px;
+	height: 135px;
+	align-self: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	overflow: hidden;
+}
+
+.item #image > img {
+	height: inherit;
+	border-radius: 7px;
+}
+
+.item #imdbData {
+	height: inherit;
+	margin-left: 10px;
+	width: 300px;
+}
+
+.item #imdbData a {
+	color: white;
+	text-decoration: none;
+}
+
+.item #imdbData a:hover {
+	color: gray;
+}
+
+.item #imdbData > img {
+	height: 145px;
+}
+
+.item #data1 {
+	margin-left: 10px;
+	width: 250px;
+}
+
+.item #data2 {
+	margin-left: 10px;
+	width: 200px;
+}
+
+.item #health {
+	width: 200px;
+	height: 100%;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	
+}
+
+.item #health #background {
+	height: 40%;
+	width: 100%;
+	background-color: gray;
+}
+
+.item #health #background > #bar {
+	height: 100%;
+	width: 50%;
+	background-color: green;
+	font-weight: bold;
+}
