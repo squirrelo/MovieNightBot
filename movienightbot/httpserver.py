@@ -23,6 +23,7 @@ class BotRequestHandler(BaseHTTPRequestHandler):
     def set_json_headers(self, response_code: int = 200):
         self.send_response(response_code)
         self.send_header("Content-type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
     def build_movie_base_info(self, movie: Movie) -> Dict[str, Any]:
