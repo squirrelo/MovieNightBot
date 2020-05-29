@@ -2,3 +2,4 @@ token:
 db_url: ":memory:"
 message_identifier: "m!"
 port: 8000
+base_url: http://example.com
