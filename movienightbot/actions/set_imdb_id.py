@@ -14,6 +14,7 @@ class SetIMDBId(BaseAction):
         server_row = self.server_controller.get_by_id(server_id)
         message_timeout = server_row.message_timeout
         imdb_id, movie_name = self.get_message_data(msg, data_parts=2)
+        movie_name = movie_name.title()
         updated_rows = self.controller.update_imdb_id(server_id, movie_name, imdb_id)
 
         if updated_rows == 1:
