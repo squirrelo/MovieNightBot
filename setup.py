@@ -18,6 +18,15 @@ setup(
     author="Joshua Shorenstein",
     author_email="squirrelo@gmail.com",
     packages=find_packages(),
+    package_data={
+        "": [
+            "webfiles/*.html",
+            "webfiles/*.ico",
+            "webfiles/**/*.png",
+            "webfiles/**/*.css",
+            "webfiles/**/*.js",
+        ]
+    },
     install_requires=requirements,
     tests_require=test_requirements,
     extras_require={"test": test_requirements},
