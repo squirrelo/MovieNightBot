@@ -29,8 +29,8 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         movie_info = {
             "title": movie.movie_name,
             "suggestor": movie.suggested_by,
-            "date_suggested": str(movie.suggested_on),
-            "date_watched": str(movie.watched_on),
+            "date_suggested": str(movie.suggested_on.date()),
+            "date_watched": str(movie.watched_on.date()) if movie.watched_on else None,
             "total_score": movie.total_score,
             "total_votes": movie.total_votes,
             "num_votes_entered": movie.num_votes_entered,
