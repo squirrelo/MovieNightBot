@@ -1,6 +1,7 @@
 from pathlib import Path
 from argparse import ArgumentParser
 import logging
+from threading import Thread
 
 from .application import client
 from .config import Config
@@ -42,5 +43,6 @@ logging.basicConfig(
 config = Config.from_yaml(Path(args.configfile))
 client.config = config
 initialize_db(config.db_url)
-run_webserver(port=config.port)
+thread = Thread(target=run_webserver, args=(config.port,), daemon=True)
+thread.start()
 client.run(config.token)

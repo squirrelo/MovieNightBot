@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
 import logging
 import json
@@ -88,11 +88,9 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         self.set_headers()
 
 
-def run_webserver(
-    *, server_class=ThreadingHTTPServer, handler_class=BotRequestHandler, port=8000
-):
+def run_webserver(port: int = 8000):
     server_address = ("", port)
-    httpd = server_class(server_address, handler_class)
+    httpd = HTTPServer(server_address, BotRequestHandler)
     logger.info("Starting webserver on port {}".format(port))
     httpd.serve_forever()
 
