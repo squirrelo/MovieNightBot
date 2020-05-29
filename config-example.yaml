@@ -1,3 +1,4 @@
 token:
 db_url: ":memory:"
 message_identifier: "m!"
+port: 8000

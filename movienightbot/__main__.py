@@ -5,6 +5,7 @@ import logging
 from .application import client
 from .config import Config
 from .db import initialize_db
+from .httpserver import run_webserver
 
 arguments = ArgumentParser()
 arguments.add_argument("-c", "--configfile", type=str, help="Path to the config file")
@@ -41,4 +42,5 @@ logging.basicConfig(
 config = Config.from_yaml(Path(args.configfile))
 client.config = config
 initialize_db(config.db_url)
+run_webserver(port=config.port)
 client.run(config.token)
