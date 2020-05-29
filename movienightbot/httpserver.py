@@ -72,6 +72,14 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         suggested = {"watched": watched_list, "server_id": server_id}
         self.wfile.write(json.dumps(suggested).encode())
 
+    def serve_html_template(self):
+        static_path = Path(Path(__file__).parent, "webfiles", "template.html")
+        with static_path.open("rb") as f:
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(f.read())
+
     def serve_static(self, path: str):
         static_parts = path.split("/")[2:]
         static_path = Path(Path(__file__).parent, "webfiles", *static_parts)
@@ -103,11 +111,9 @@ class BotRequestHandler(BaseHTTPRequestHandler):
             server_id = self.get_server_id(path)
             self.get_watched_json(server_id)
         elif self.suggested_regex.match(path):
-            server_id = self.get_server_id(path)
-            self.get_suggested(server_id)
+            self.serve_html_template()
         elif self.watched_regex.match(path):
-            server_id = self.get_server_id(path)
-            self.get_watched(server_id)
+            self.serve_html_template()
         else:
             self.set_json_headers(404)
             self.wfile.write(b"")
