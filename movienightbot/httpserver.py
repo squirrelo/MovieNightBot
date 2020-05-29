@@ -18,6 +18,7 @@ class BotRequestHandler(BaseHTTPRequestHandler):
     suggested_regex = re.compile(r"^/suggested/[0-9]+$")
     watched_regex = re.compile(r"^/watched/[0-9]+$")
     static_regex = re.compile(r"^/static/.+$")
+    favicon_url = "/favicon.ico"
     movies_controller = MoviesController()
 
     def set_json_headers(self, response_code: int = 200):
@@ -115,6 +116,8 @@ class BotRequestHandler(BaseHTTPRequestHandler):
             self.serve_html_template()
         elif self.watched_regex.match(path):
             self.serve_html_template()
+        elif path == self.favicon_url:
+            self.serve_static("/static/favicon.ico")
         else:
             self.set_json_headers(404)
             self.wfile.write(b"")
