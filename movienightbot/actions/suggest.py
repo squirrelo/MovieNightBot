@@ -31,7 +31,7 @@ class SuggestAction(BaseAction):
             imdb_info = get_imdb_info(suggestion)
             if not imdb_info:
                 server_msg = await msg.channel.send(
-                    "Could not find the title you suggested in IMDb."
+                    "Could not find the movie title you suggested in IMDb."
                 )
                 if message_timeout > 0:
                     await cleanup_messages([msg, server_msg], sec_delay=message_timeout)

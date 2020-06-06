@@ -1,11 +1,15 @@
 import datetime
 from typing import List
 import asyncio
+import logging
 
 import discord
 
 from .db.controllers import ServerController, MovieVoteController, MovieVote
 from imdb import IMDb
+
+
+logger = logging.getLogger("movienightbot")
 
 
 async def cleanup_messages(
@@ -99,13 +103,19 @@ async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
     await vote_msg.add_reaction(emojis_text[":arrows_counterclockwise:"])
 
 
-def get_imdb_info(movie_name: str):
+def get_imdb_info(movie_name: str, kind: str = "movie"):
     if not movie_name:
         return None
 
     im_db = IMDb()
     results = im_db.search_movie(movie_name)
+    logger.debug("IMDB RESULTS: " + str(results))
     for r in results:
+        if "movie" not in r.get("kind", ""):
+            logger.debug(str(r) + " is not movie, skipping")
+            continue
         if r["title"].lower() == movie_name.lower():
+            logger.debug(movie_name + "  Matched  " + str(r))
             return r
+    logger.debug(movie_name + "  Unmatched")
     return None
