@@ -32,7 +32,30 @@ div {
 	border-bottom: black 3px solid;
 }
 
-#PageControls {
+#LetterNav {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-end;
+	width: 1254px;
+	margin-bottom: 15px;
+	user-select: none;
+	font-family: Tahoma, Geneva, sans-serif;
+	font-weight: bold;
+}
+
+#LetterNav .Active {
+	color: white;
+}
+
+#LetterNav .Active:hover {
+	color: gray;
+}
+
+#LetterNav .Inactive {
+	color: gray;
+}
+
+.PageControl {
 	margin-left: auto;
 	display: flex;
 	flex-direction: row;
@@ -42,7 +65,7 @@ div {
 	width: 1254px;
 }
 
-#PageControls > div {
+.PageControl > div {
 	width: 50px;
 	height: 50px;
 	margin: 5px;
@@ -55,13 +78,13 @@ div {
 	user-select: none;
 }
 
-#PageControls > #Position {
+.PageControl > #Position {
 	padding-left: 8px;
 	padding-right: 8px;
 	width: auto;
 }
 
-#PageControls > #BtnSetting {
+.PageControl > #BtnSetting {
 	margin-right: auto;
 	width:auto;
 	padding-left: 8px;
@@ -106,6 +129,11 @@ div {
 	height: inherit;
 	margin-left: 10px;
 	width: 300px;
+}
+
+.item #imdbData #txtTitle {
+	max-height: 58px;
+	overflow: hidden;
 }
 
 .item #imdbData a {

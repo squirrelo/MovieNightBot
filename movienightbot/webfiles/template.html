@@ -5,16 +5,22 @@
 		<title>Movie Night Bot Suggestions</title>
 		<meta charset="UTF-8">
 		<link rel="stylesheet" href="../static/content/styles/page.css">
+		<!-- <link rel="stylesheet" href="content/styles/page.css"> -->
+
 		<link rel="shortcut icon" href="../static/content/images/favicon.png" />
 
 		<script src="../static/scripts/chop.js" type="application/javascript"></script>
 		<script src="../static/scripts/app.js" type="application/javascript"></script>
+
+		<!--<script src="scripts/chop.js" type="application/javascript"></script> -->
+		<!-- <script src="scripts/app.js" type="application/javascript"></script> -->
 	</head>
 	<body>
 		<div id="FlexBox">
 			<div id="Page">
 				<h1 id="TxtPageTitle">Movie Night Bot Suggestions</h1>
-				<div id="PageControls">
+				<div id="LetterNav"></div>
+				<div id="PageControls" class="PageControl">
 					<div id="BtnSetting"><p>Show Watched</p></div>
 					<div id="BtnFirst"><p>&lt;&lt;</p></div>
 					<div id="BtnPrevious"><p>&lt;</p></div>
@@ -23,6 +29,13 @@
 					<div id="BtnLast"><p>&gt;&gt;</p></div>
 				</div>
 				<div id="Items"></div>
+				<div id="PageControls2" class="PageControl">
+					<div id="BtnFirst"><p>&lt;&lt;</p></div>
+					<div id="BtnPrevious"><p>&lt;</p></div>
+					<div id="Position"><p>xxx/xxx</p></div>
+					<div id="BtnNext"><p>&gt;</p></div>
+					<div id="BtnLast"><p>&gt;&gt;</p></div>
+				</div>
 			</div>
 		</div>
 		<script>
