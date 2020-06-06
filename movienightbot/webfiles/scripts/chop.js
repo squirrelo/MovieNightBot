@@ -1,6 +1,7 @@
 
 var Math2 = new math2();
 var sVector3 = new Vector3();
+var Utility = new _Utility();
 
 function math2() {
 	this.Lerp = function(value1, value2, a) {
@@ -47,5 +48,16 @@ function Vector3() {
 
 	this.RGB = function() {
 		return "rgb(" + this.x + "," + this.y + "," + this.z + ")";
+	}
+
+	this.ToString = function() {
+		return "(" + this.x + "," + this.y + "," + this.z + ")";
+	}
+}
+
+function _Utility() {
+
+	this.CharIsNumber = function(char) {
+		return char == '0' || char == '1' || char == '2' || char == '3' || char == '4' || char == '5' || char == '6' || char == '7' || char == '8' || char == '9';
 	}
 }
