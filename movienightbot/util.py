@@ -111,7 +111,7 @@ def get_imdb_info(movie_name: str, kind: str = "movie"):
     results = im_db.search_movie(movie_name)
     logger.debug("IMDB RESULTS: " + str(results))
     for r in results:
-        if "movie" not in r.get("kind", ""):
+        if kind not in r.get("kind", ""):
             logger.debug(str(r) + " is not movie, skipping")
             continue
         if r["title"].lower() == movie_name.lower():
