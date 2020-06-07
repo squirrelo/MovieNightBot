@@ -42,10 +42,18 @@ Reset your votes with the :arrows_counterclockwise: emoji.
 End the vote with the :octagonal_sign: emoji.""",
     )
     for movie_vote in movie_rows:
+        movie = movie_vote.movie
+        imdb_info = movie.imdb_id
+        movie_info = f"{movie_vote.emoji} {movie.movie_name}"
+        score = f"Score: {movie_vote.score:.2f}"
+        if imdb_info:
+            movie_info += f" ({imdb_info.year})"
+            score += (
+                f" - [IMDb Page](https://www.imdb.com/title/tt{imdb_info.imdb_id}/)"
+            )
+
         embed.add_field(
-            name=f"{movie_vote.emoji} {movie_vote.movie.movie_name}",
-            value=f"Score: {movie_vote.score}",
-            inline=False,
+            name=movie_info, value=score, inline=False,
         )
     embed.set_footer(text="Movie time is")
     today = datetime.datetime.utcnow().date()
