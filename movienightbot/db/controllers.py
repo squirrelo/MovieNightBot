@@ -265,13 +265,16 @@ class UserVoteController(BaseController):
         )
         return max_rank + 1 if max_rank else 1
 
-    def register_vote(self, user_id: int, movie_vote: MovieVote) -> UserVote:
+    def register_vote(
+        self, user_id: int, user_name: str, movie_vote: MovieVote
+    ) -> UserVote:
         with self.transaction():
             server_id = movie_vote.vote.server_id
             next_rank = self.get_next_rank(server_id, user_id)
             vote_data = {
                 "movie_vote": movie_vote,
                 "user_id": user_id,
+                "user_name": user_name,
                 "vote_rank": next_rank,
             }
             logger.debug(f"Registering new vote: {vote_data}")

@@ -129,7 +129,7 @@ async def on_raw_reaction_add(payload):
         )
         movie_vote = _movie_vote_controller.convert_emoji(server_id, emoji)
         logger.debug(f"Got movie vote {movie_vote.id}")
-        _user_vote_controller.register_vote(user.id, movie_vote)
+        _user_vote_controller.register_vote(user.id, user.display_name, movie_vote)
 
     # Update the vote message
     embed = build_vote_embed(server_id)

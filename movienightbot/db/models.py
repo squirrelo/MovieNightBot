@@ -93,6 +93,7 @@ class UserVote(BaseModel):
     id = pw.AutoField(primary_key=True)
     movie_vote = pw.ForeignKeyField(MovieVote, backref="user_votes")
     user_id = pw.IntegerField(null=False)
+    user_name = pw.TextField(null=False)
     vote_rank = pw.SmallIntegerField(
         null=False,
         help_text="The numbered vote for the user, 1 is highest rank. Useful for ranked-choice voting",
