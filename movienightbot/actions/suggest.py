@@ -47,11 +47,16 @@ class SuggestAction(BaseAction):
             try:
                 imdb_row = self.imdb_controller.create(imdb_data)
             except pw.IntegrityError as e:
-                # IMDB entry already added, so ignore error
-                logger.debug(
-                    "IMDB entry insert error: {}\n{}".format(imdb_data, str(e))
-                )
-                pass
+                logger.debug("IMDB insert error, checking if because already exists")
+                imdb_row = self.imdb_controller.get_by_name(suggestion)
+                logger.debug("IMDB row found: {}".format(imdb_row))
+                if imdb_row is None:
+                    logger.error(
+                        "IMDB entry insert error: {}\n{}".format(imdb_data, str(e))
+                    )
+                else:
+                    # IMDB entry already added, so ignore error
+                    pass
 
         movie_data = {
             "server": server_id,

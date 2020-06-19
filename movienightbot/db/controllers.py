@@ -24,6 +24,13 @@ class IMDBInfoController(BaseController):
     def get_by_id(self, imdb_id: int) -> Union[Vote, None]:
         return super().get_by_id(id=imdb_id, primary_key="imdb_id")
 
+    def get_by_name(self, movie_name: str) -> Union[IMDBInfo, None]:
+        return (
+            IMDBInfo.select()
+            .where(movie_name.lower() == pw.fn.LOWER(IMDBInfo.title))
+            .get()
+        )
+
 
 class MoviesController(BaseController):
     model = Movie
