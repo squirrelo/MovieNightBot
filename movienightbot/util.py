@@ -132,5 +132,7 @@ def get_imdb_info(movie_name: str, kind: str = "movie"):
 def capitalize_movie_name(movie_name: str) -> str:
     clean_name = []
     for word in movie_name.strip().split(" "):
+        if not word:
+            continue
         clean_name.append(word.capitalize())
     return " ".join(clean_name)
