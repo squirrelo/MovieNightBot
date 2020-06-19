@@ -2,6 +2,7 @@ import peewee as pw
 
 from . import BaseAction
 from ..db.controllers import MoviesController
+from ..util import capitalize_movie_name
 
 
 class UnwatchAction(BaseAction):
@@ -10,8 +11,7 @@ class UnwatchAction(BaseAction):
     controller = MoviesController()
 
     async def action(self, msg):
-        unwatch = self.get_message_data(msg)
-        unwatch = unwatch.title()
+        unwatch = capitalize_movie_name(self.get_message_data(msg))
         with self.controller.transaction():
             try:
                 movie = self.controller.get_by_server_and_id(

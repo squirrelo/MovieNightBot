@@ -2,7 +2,7 @@ import peewee as pw
 
 from . import BaseAction
 from ..db.controllers import MoviesController, ServerController, IMDBInfoController
-from ..util import get_imdb_info, cleanup_messages
+from ..util import get_imdb_info, cleanup_messages, capitalize_movie_name
 from . import logger
 
 
@@ -23,8 +23,7 @@ class SuggestAction(BaseAction):
             if message_timeout > 0:
                 await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
             return
-        suggestion = self.get_message_data(msg)
-        suggestion = suggestion.title()
+        suggestion = capitalize_movie_name(self.get_message_data(msg))
 
         imdb_row = None
         if server_row.check_movie_names:

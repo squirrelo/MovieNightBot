@@ -4,6 +4,7 @@ import peewee as pw
 
 from . import BaseAction
 from ..db.controllers import MoviesController
+from ..util import capitalize_movie_name
 
 
 class SetWatchedAction(BaseAction):
@@ -12,8 +13,7 @@ class SetWatchedAction(BaseAction):
     controller = MoviesController()
 
     async def action(self, msg):
-        watched = self.get_message_data(msg)
-        watched = watched.title()
+        watched = capitalize_movie_name(self.get_message_data(msg))
         with self.controller.transaction():
             try:
                 movie = self.controller.get_by_server_and_id(
