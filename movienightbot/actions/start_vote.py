@@ -27,6 +27,7 @@ class StartVoteAction(BaseAction):
             vote_row.channel_id = vote_msg.channel.id
             self.controller.update(vote_row)
             await add_vote_emojis(vote_msg, vote_row.movie_votes)
+            await vote_msg.pin()
 
     @property
     def help_text(self):
