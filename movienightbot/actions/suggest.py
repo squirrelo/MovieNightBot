@@ -1,7 +1,8 @@
+from typing import Union
 import peewee as pw
 
 from . import BaseAction
-from ..db.controllers import MoviesController, ServerController, IMDBInfoController
+from ..db.controllers import MoviesController, ServerController, IMDBInfoController, IMDBInfo
 from ..util import get_imdb_info, cleanup_messages, capitalize_movie_name
 from . import logger
 
@@ -12,17 +13,19 @@ class SuggestAction(BaseAction):
     server_controller = ServerController()
     imdb_controller = IMDBInfoController()
 
-    def check_imdb_data(self, msg, message_timeout):
+    def imdb_data(self, msg) -> Union[None, IMDBInfo]:
         suggestion = capitalize_movie_name(self.get_message_data(msg))
         imdb_info = get_imdb_info(suggestion)
         if not imdb_info:
-            server_msg = await msg.channel.send(
-                "Could not find the movie title you suggested in IMDb."
-            )
-            if message_timeout > 0:
-                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
-            return
-
+            return None
+        # see if the row already exists
+        try:
+            imdb_row = self.imdb_controller.get_by_id(imdb_info.movieID)
+        except pw.DoesNotExist:
+            pass
+        else:
+            return imdb_row
+        # row doesnt exist, so add it
         imdb_data = {
             "imdb_id": imdb_info.movieID,
             "title": imdb_info["title"],
@@ -34,17 +37,11 @@ class SuggestAction(BaseAction):
         try:
             imdb_row = self.imdb_controller.create(imdb_data)
         except pw.IntegrityError as e:
-            logger.debug("IMDB insert error, checking if because already exists")
-            imdb_row = self.imdb_controller.get_by_name(suggestion)
-            logger.debug("IMDB row found: {}".format(imdb_row))
-            if imdb_row is None:
-                logger.error(
-                    "IMDB entry insert error: {}\n{}".format(imdb_data, str(e))
-                )
-            else:
-                # IMDB entry already added, so ignore error
-                pass
-        return suggestion, imdb_row
+            logger.error(
+                "IMDB entry insert error: {}\n{}".format(imdb_data, str(e))
+            )
+            return None
+        return imdb_row
 
     async def action(self, msg):
         server_id = msg.guild.id
@@ -59,7 +56,15 @@ class SuggestAction(BaseAction):
             return
 
         if server_row.check_movie_names:
-            suggestion, imdb_row = self.check_imdb_data(msg, message_timeout)
+            imdb_row = self.imdb_data(msg)
+            suggestion = capitalize_movie_name(imdb_row.title) if imdb_row else capitalize_movie_name(self.get_message_data(msg))
+            if imdb_row is None:
+                server_msg = await msg.channel.send(
+                    "Could not find the movie title you suggested in IMDb."
+                )
+                if message_timeout > 0:
+                    await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+                return
         else:
             imdb_row = None
             suggestion = capitalize_movie_name(self.get_message_data(msg))
@@ -82,7 +87,7 @@ class SuggestAction(BaseAction):
                 await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
             return
         server_msg = await msg.channel.send(
-            f"Your suggestion of {suggestion} has been added to the list."
+            f"Your suggestion of {suggestion} ({imdb_row.year if imdb_row else ''}) has been added to the list."
         )
         if message_timeout > 0:
             await cleanup_messages([msg, server_msg], sec_delay=message_timeout)

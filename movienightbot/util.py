@@ -1,4 +1,5 @@
 import datetime
+import re
 from typing import List
 import asyncio
 import logging
@@ -105,6 +106,9 @@ emojis_text = {
 emojis_unicode = {v: k for k, v in emojis_text.items()}
 
 
+imdb_url_regex = re.compile("title\/tt([0-9]*)\/")
+
+
 async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
     for movie_vote in movie_votes:
         await vote_msg.add_reaction(emojis_text[movie_vote.emoji])
@@ -116,7 +120,18 @@ def get_imdb_info(movie_name: str, kind: str = "movie"):
         return None
 
     im_db = IMDb()
-    results = im_db.search_movie(movie_name)
+    if movie_name.lower().startswith("http"):
+        movie_id = imdb_url_regex.findall(movie_name)
+        logger.debug(f"movie regex: `{movie_name}` >> {movie_id}")
+        if len(movie_id) == 1:
+            results = im_db.get_movie(movie_id[0])
+            movie_name = capitalize_movie_name(results["title"])
+            results = [results]
+        else:
+            results = []
+    else:
+        logger.debug(f"searching for `{movie_name}`")
+        results = im_db.search_movie(movie_name)
     logger.debug("IMDB RESULTS: " + str(results))
     for r in results:
         if kind not in r.get("kind", ""):
