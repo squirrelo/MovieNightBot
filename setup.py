@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 from movienightbot import __version__ as bot_version
 
-requirements = ["discord-py>=1.3", "peewee", "marshmallow", "pyyaml", "imdbpy"]
+requirements = ["discord-py>=1.3.4", "peewee", "marshmallow", "pyyaml", "imdbpy"]
 
 test_requirements = ["pytest", "pytest-black", "pytest-flake8"]
 

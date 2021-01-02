@@ -12,6 +12,40 @@ class SuggestAction(BaseAction):
     server_controller = ServerController()
     imdb_controller = IMDBInfoController()
 
+    def check_imdb_data(self, msg, message_timeout):
+        suggestion = capitalize_movie_name(self.get_message_data(msg))
+        imdb_info = get_imdb_info(suggestion)
+        if not imdb_info:
+            server_msg = await msg.channel.send(
+                "Could not find the movie title you suggested in IMDb."
+            )
+            if message_timeout > 0:
+                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+            return
+
+        imdb_data = {
+            "imdb_id": imdb_info.movieID,
+            "title": imdb_info["title"],
+            "canonical_title": imdb_info["canonical title"],
+            "year": imdb_info["year"],
+            "thumbnail_poster_url": imdb_info["cover url"],
+            "full_size_poster_url": imdb_info["full-size cover url"],
+        }
+        try:
+            imdb_row = self.imdb_controller.create(imdb_data)
+        except pw.IntegrityError as e:
+            logger.debug("IMDB insert error, checking if because already exists")
+            imdb_row = self.imdb_controller.get_by_name(suggestion)
+            logger.debug("IMDB row found: {}".format(imdb_row))
+            if imdb_row is None:
+                logger.error(
+                    "IMDB entry insert error: {}\n{}".format(imdb_data, str(e))
+                )
+            else:
+                # IMDB entry already added, so ignore error
+                pass
+        return suggestion, imdb_row
+
     async def action(self, msg):
         server_id = msg.guild.id
         server_row = self.server_controller.get_by_id(server_id)
@@ -23,40 +57,13 @@ class SuggestAction(BaseAction):
             if message_timeout > 0:
                 await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
             return
-        suggestion = capitalize_movie_name(self.get_message_data(msg))
 
-        imdb_row = None
         if server_row.check_movie_names:
-            imdb_info = get_imdb_info(suggestion)
-            if not imdb_info:
-                server_msg = await msg.channel.send(
-                    "Could not find the movie title you suggested in IMDb."
-                )
-                if message_timeout > 0:
-                    await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
-                return
+            suggestion, imdb_row = self.check_imdb_data(msg, message_timeout)
+        else:
+            imdb_row = None
+            suggestion = capitalize_movie_name(self.get_message_data(msg))
 
-            imdb_data = {
-                "imdb_id": imdb_info.movieID,
-                "title": imdb_info["title"],
-                "canonical_title": imdb_info["canonical title"],
-                "year": imdb_info["year"],
-                "thumbnail_poster_url": imdb_info["cover url"],
-                "full_size_poster_url": imdb_info["full-size cover url"],
-            }
-            try:
-                imdb_row = self.imdb_controller.create(imdb_data)
-            except pw.IntegrityError as e:
-                logger.debug("IMDB insert error, checking if because already exists")
-                imdb_row = self.imdb_controller.get_by_name(suggestion)
-                logger.debug("IMDB row found: {}".format(imdb_row))
-                if imdb_row is None:
-                    logger.error(
-                        "IMDB entry insert error: {}\n{}".format(imdb_data, str(e))
-                    )
-                else:
-                    # IMDB entry already added, so ignore error
-                    pass
 
         movie_data = {
             "server": server_id,
