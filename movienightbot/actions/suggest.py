@@ -2,7 +2,12 @@ from typing import Union
 import peewee as pw
 
 from . import BaseAction
-from ..db.controllers import MoviesController, ServerController, IMDBInfoController, IMDBInfo
+from ..db.controllers import (
+    MoviesController,
+    ServerController,
+    IMDBInfoController,
+    IMDBInfo,
+)
 from ..util import get_imdb_info, cleanup_messages, capitalize_movie_name
 from . import logger
 
@@ -37,9 +42,7 @@ class SuggestAction(BaseAction):
         try:
             imdb_row = self.imdb_controller.create(imdb_data)
         except pw.IntegrityError as e:
-            logger.error(
-                "IMDB entry insert error: {}\n{}".format(imdb_data, str(e))
-            )
+            logger.error("IMDB entry insert error: {}\n{}".format(imdb_data, str(e)))
             return None
         return imdb_row
 
@@ -57,7 +60,11 @@ class SuggestAction(BaseAction):
 
         if server_row.check_movie_names:
             imdb_row = self.imdb_data(msg)
-            suggestion = capitalize_movie_name(imdb_row.title) if imdb_row else capitalize_movie_name(self.get_message_data(msg))
+            suggestion = (
+                capitalize_movie_name(imdb_row.title)
+                if imdb_row
+                else capitalize_movie_name(self.get_message_data(msg))
+            )
             if imdb_row is None:
                 server_msg = await msg.channel.send(
                     "Could not find the movie title you suggested in IMDb."
@@ -68,7 +75,6 @@ class SuggestAction(BaseAction):
         else:
             imdb_row = None
             suggestion = capitalize_movie_name(self.get_message_data(msg))
-
 
         movie_data = {
             "server": server_id,
