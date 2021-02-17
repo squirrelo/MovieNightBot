@@ -106,7 +106,7 @@ emojis_text = {
 emojis_unicode = {v: k for k, v in emojis_text.items()}
 
 
-imdb_url_regex = re.compile("title\/tt([0-9]*)\/")  # noqa
+imdb_url_regex = re.compile(r"title/tt([0-9]+)/?")  # noqa
 
 
 async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
