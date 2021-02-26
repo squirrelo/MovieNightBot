@@ -27,7 +27,9 @@ async def generate_invite_link(permissions=discord.Permissions(388160), guild=No
     if client._cached_app_info is None:
         logger.info("Caching App Info...")
         client._cached_app_info = await client.application_info()
-    return discord.utils.oauth_url(client._cached_app_info.id, permissions=permissions, guild=guild)
+    return discord.utils.oauth_url(
+        client._cached_app_info.id, permissions=permissions, guild=guild
+    )
 
 
 @client.event
