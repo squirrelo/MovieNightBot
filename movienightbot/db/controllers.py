@@ -45,7 +45,11 @@ class MoviesController(BaseController):
     def get_watched_for_server(self, server_id: int) -> List[Movie]:
         return (
             Movie.select()
-            .order_by(Movie.movie_name)
+            .order_by(pw.Case(None, (
+                (pw.fn.Lower(Movie.movie_name).startswith('a '), pw.fn.Substr(Movie.movie_name, 3)),
+                (pw.fn.Lower(Movie.movie_name).startswith('an '), pw.fn.Substr(Movie.movie_name, 4)),
+                (pw.fn.Lower(Movie.movie_name).startswith('the '), pw.fn.Substr(Movie.movie_name, 5))
+            ), Movie.movie_name))
             .where((Movie.server == server_id) & Movie.watched_on.is_null(False))
             .execute()
         )
@@ -53,7 +57,11 @@ class MoviesController(BaseController):
     def get_suggested_for_server(self, server_id: int) -> List[Movie]:
         return (
             Movie.select()
-            .order_by(Movie.movie_name)
+            .order_by(pw.Case(None, (
+                (pw.fn.Lower(Movie.movie_name).startswith('a '), pw.fn.Substr(Movie.movie_name, 3)),
+                (pw.fn.Lower(Movie.movie_name).startswith('an '), pw.fn.Substr(Movie.movie_name, 4)),
+                (pw.fn.Lower(Movie.movie_name).startswith('the '), pw.fn.Substr(Movie.movie_name, 5))
+            ), Movie.movie_name))
             .where((Movie.server == server_id) & Movie.watched_on.is_null())
             .execute()
         )
