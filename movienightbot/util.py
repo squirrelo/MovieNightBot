@@ -54,8 +54,8 @@ End the vote with the :octagonal_sign: emoji.""",
             )
 
         embed.add_field(
-            name=movie_info, 
-            value=score, 
+            name=movie_info,
+            value=score,
             inline=False,
         )
     embed.set_footer(text="Movie time is")
