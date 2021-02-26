@@ -21,20 +21,23 @@ _user_vote_controller = UserVoteController()
 logger = logging.getLogger("movienightbot")
 
 client._cached_app_info = None
+
+
 async def generate_invite_link(permissions=discord.Permissions(388160), guild=None):
-    if client._cached_app_info == None:
-        logger.info("Caching App Info...");
+    if client._cached_app_info is None:
+        logger.info("Caching App Info...")
         client._cached_app_info = await client.application_info()
     return discord.utils.oauth_url(client._cached_app_info.id, permissions=permissions, guild=guild)
+
 
 @client.event
 async def on_ready():
     print(f"Logged in as user {client.user}")
     logger.info(f"Logged in as user {client.user}")
-    
+
     auth_url = await generate_invite_link()
-    logger.info(f"Bot Invite URL:  {auth_url}")    
-    
+    logger.info(f"Bot Invite URL:  {auth_url}")
+
     await client.change_presence(
         status=discord.Status.idle,
         activity=discord.Game(name="Tracking your shitty movie taste"),
