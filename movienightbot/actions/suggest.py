@@ -8,7 +8,7 @@ from ..db.controllers import (
     IMDBInfoController,
     IMDBInfo,
 )
-from ..util import get_imdb_info, cleanup_messages, capitalize_movie_name
+from ..util import get_imdb_info, capitalize_movie_name
 from . import logger
 
 
@@ -51,12 +51,14 @@ class SuggestAction(BaseAction):
         server_row = self.server_controller.get_by_id(server_id)
         message_timeout = server_row.message_timeout
         if server_row.block_suggestions:
-            server_msg = await msg.channel.send(
-                "Suggestions are currently disabled on the server"
-            )
+            msg_data = {
+                "content": "Suggestions are currently disabled on the server",
+            }
             if message_timeout > 0:
-                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
-            return
+                msg_data["delete_after"] = message_timeout
+                msg_data["also_delete"] = [msg]
+
+            return (msg.channel, msg_data)
 
         if server_row.check_movie_names:
             imdb_row = self.imdb_data(msg)
@@ -66,12 +68,13 @@ class SuggestAction(BaseAction):
                 else capitalize_movie_name(self.get_message_data(msg))
             )
             if imdb_row is None:
-                server_msg = await msg.channel.send(
-                    "Could not find the movie title you suggested in IMDb."
-                )
+                msg_data = {
+                    "content": "Could not find the movie title you suggested in IMDb.",
+                }
                 if message_timeout > 0:
-                    await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
-                return
+                    msg_data["delete_after"] = message_timeout
+                    msg_data["also_delete"] = [msg]
+                return (msg.channel, msg_data)
         else:
             imdb_row = None
             suggestion = capitalize_movie_name(self.get_message_data(msg))
@@ -86,17 +89,21 @@ class SuggestAction(BaseAction):
             self.controller.create(movie_data)
         except pw.IntegrityError as e:
             logger.debug("Movie insert error: {}\n{}".format(movie_data, str(e)))
-            server_msg = await msg.channel.send(
-                f"{suggestion} has already been suggested in this server."
-            )
+            msg_data = {
+                "content": f"{suggestion} has already been suggested in this server.",
+            }
             if message_timeout > 0:
-                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
-            return
-        server_msg = await msg.channel.send(
-            f"Your suggestion of {suggestion} ({imdb_row.year if imdb_row else ''}) has been added to the list."
-        )
+                msg_data["delete_after"] = message_timeout
+                msg_data["also_delete"] = [msg]
+            return (msg.channel, msg_data)
+        imdb_year = f"({imdb_row.year}) " if imdb_row else ""
+        msg_data = {
+            "content": f"Your suggestion of {suggestion} {imdb_year}has been added to the list.",
+        }
         if message_timeout > 0:
-            await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+            msg_data["delete_after"] = message_timeout
+            msg_data["also_delete"] = [msg]
+        return (msg.channel, msg_data)
 
     @property
     def help_text(self):

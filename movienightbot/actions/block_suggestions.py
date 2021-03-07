@@ -16,12 +16,11 @@ class BlockSuggestionsAction(BaseAction):
             block = False
             suggestions_text = "allowed"
         else:
-            await msg.channel.send(f"Unknown option for block_suggestions: `{option}`")
-            return
+            return (msg.channel, f"Unknown option for block_suggestions: `{option}`")
         server_row = self.controller.get_by_id(msg.guild.id)
         server_row.block_suggestions = block
         self.controller.update(server_row)
-        await msg.channel.send(f"Server suggestions are now {suggestions_text}")
+        return (msg.channel, f"Server suggestions are now {suggestions_text}")
 
     @property
     def help_text(self):

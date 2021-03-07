@@ -19,8 +19,7 @@ class StartVoteAction(BaseAction):
             try:
                 vote_row = self.controller.start_vote(server_id)
             except pw.IntegrityError:
-                await msg.channel.send("Vote already started!")
-                return
+                return (msg.channel, "Vote already started!")
             embed = build_vote_embed(server_id)
             vote_msg = await msg.channel.send(content=None, embed=embed)
             vote_row.message_id = vote_msg.id

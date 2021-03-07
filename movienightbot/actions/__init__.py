@@ -8,6 +8,7 @@ import logging
 import discord
 
 from movienightbot.db.controllers import ServerController
+from ..util import cleanup_messages
 
 __ALL__ = ["KNOWN_ACTIONS", "unknown_default_action"]
 logger = logging.getLogger("movienightbot")
@@ -18,6 +19,10 @@ async def unknown_default_action(msg: discord.message, command: str) -> None:
         f"Unknown command {command} given, try reading the tutorial at `m!help` "
         f"to see what commands are available!"
     )
+
+
+class ActionSendingError(Exception):
+    pass
 
 
 class BaseAction(ABC):
@@ -59,13 +64,48 @@ class BaseAction(ABC):
         except Exception as e:
             logger.error(e, exc_info=e)
             await msg.channel.send(error_message)
+
+        server_settings = ServerController().get_by_id(msg.guild.id)
         guild = msg.guild.name if msg.guild is not None else "DM"
-        logger.info(f"Running action {self.action_name} on server {guild}")
+        logger.info(
+            f"Running action {self.action_name} on {guild} from user {msg.author.name}"
+        )
+        target = None
+        args = None
+
         try:
-            await self.action(msg)
+            rt = await self.action(msg)
+            if type(rt) is tuple and len(rt) == 2:
+                target, args = rt
+
+                if (
+                    server_settings.message_timeout > 0
+                    and type(args) is dict
+                    and "also_delete" in args
+                ):
+                    await cleanup_messages(
+                        args["also_delete"], sec_delay=server_settings.message_timeout
+                    )
+
+                if type(args) is str:
+                    await target.send(args)
+                elif type(args) is tuple:
+                    await target.send(*args)
+                elif type(args) is dict:
+                    await target.send(**args)
+            else:
+                logger.error("Action did not return a two-member tuple!")
         except discord.Forbidden as e:
             if e.code == 50007:
-                await msg.channel.send(f"I can't DM you {msg.author.name}!")
+                if target is msg.author:
+                    if type(args) is str:
+                        await msg.channel.send(args)
+                    elif type(args) is tuple:
+                        await msg.channel.send(*args)
+                    elif type(args) is dict:
+                        await msg.channel.send(**args)
+                else:
+                    await msg.channel.send(f"I can't DM you {msg.author.name}!")
                 return
             else:
                 logger.error(e, exc_info=e)

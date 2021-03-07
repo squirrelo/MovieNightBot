@@ -12,16 +12,14 @@ class SetMessageTimeoutAction(BaseAction):
         try:
             timeout = int(timeout)
         except ValueError:
-            await msg.channel.send(f"Must send an number, got {timeout}")
-            return
+            return (msg.channel, f"Must send an number, got {timeout}")
         if timeout < 0:
-            await msg.channel.send(f"Timeout value must be >= 0, got {timeout}")
-            return
+            return (msg.channel, f"Timeout value must be >= 0, got {timeout}")
         with self.controller.transaction():
             server_row = self.controller.get_by_id(msg.guild.id)
             server_row.message_timeout = timeout
             self.controller.update(server_row)
-        await msg.channel.send(f"Message timeout updated to {timeout} seconds")
+        return (msg.channel, f"Message timeout updated to {timeout} seconds")
 
     @property
     def help_text(self):

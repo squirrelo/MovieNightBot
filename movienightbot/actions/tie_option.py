@@ -12,13 +12,12 @@ class TieAction(BaseAction):
     async def action(self, msg):
         tie_option = self.get_message_data(msg)
         if tie_option not in self.tie_options:
-            await msg.channel.send(f"Unknown tiebreaker option given: {tie_option}")
-            return
+            return (msg.channel, f"Unknown tiebreaker option given: {tie_option}")
         with self.controller.transaction():
             server_row = self.controller.get_by_id(msg.guild.id)
             server_row.tie_option = tie_option
             self.controller.update(server_row)
-        await msg.channel.send(f"Tiebreaker updated to {tie_option}")
+        return (msg.channel, f"Tiebreaker updated to {tie_option}")
 
     @property
     def help_text(self):

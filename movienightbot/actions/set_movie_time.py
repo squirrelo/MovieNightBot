@@ -13,15 +13,15 @@ class SetMovieTimeAction(BaseAction):
     async def action(self, msg):
         movie_time = self.get_message_data(msg)
         if not self.time_regex.search(movie_time):
-            await msg.channel.send(
-                "Movie time given in invalid format. Must be `HH:MM`"
+            return (
+                msg.channel,
+                "Movie time given in invalid format. Must be `HH:MM`",
             )
-            return
         with self.controller.transaction():
             server_row = self.controller.get_by_id(msg.guild.id)
             server_row.movie_time = movie_time
             self.controller.update(server_row)
-        await msg.channel.send(f"Movie time updated to {movie_time} UTC")
+        return (msg.channel, f"Movie time updated to {movie_time} UTC")
 
     @property
     def help_text(self):

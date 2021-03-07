@@ -20,12 +20,12 @@ class SetWatchedAction(BaseAction):
                     server_id=msg.guild.id, movie=watched
                 )
             except pw.DoesNotExist:
-                await msg.channel.send(f"No movie titled {watched} has been suggested")
-                return
+                return (msg.channel, f"No movie titled {watched} has been suggested")
             movie.watched_on = datetime.datetime.utcnow()
             self.controller.update(movie)
-        await msg.channel.send(
-            f"{watched} has been set as watched and will no longer show up in future votes."
+        return (
+            msg.channel,
+            f"{watched} has been set as watched and will no longer show up in future votes.",
         )
 
     @property

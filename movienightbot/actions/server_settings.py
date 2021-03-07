@@ -29,7 +29,7 @@ class ServerSettingsAction(BaseAction):
 
     async def action(self, msg):
         embed_data = self.format_embed(msg.guild.id)
-        await msg.author.send(content=None, embed=embed_data)
+        return (msg.author, {"content": None, "embed": embed_data})
 
     @property
     def help_text(self):

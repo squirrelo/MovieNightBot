@@ -8,24 +8,25 @@ class UserVoteCountAction(BaseAction):
     controller = ServerController()
 
     async def action(self, msg):
-        num_votes_per_user = self.get_message_data(msg)
+        num_votes_per_user = int(self.get_message_data(msg))
         num_votes_per_user = int(num_votes_per_user)
         if num_votes_per_user < 1:
-            await msg.channel.send(
-                "Failed to update: Number of votes per user must be > 0"
+            return (
+                msg.channel,
+                "Failed: Number of votes per user must be greater than zero.",
             )
-            return
         with self.controller.transaction():
             server_row = self.controller.get_by_id(msg.guild.id)
             if num_votes_per_user < server_row.num_votes_per_user:
-                await msg.channel.send(
-                    f"Failed to update: Number of votes per user must be >= {server_row.num_votes_per_user}"
+                return (
+                    msg.channel,
+                    f"Failed to update: Number of votes per user must be >= {server_row.num_votes_per_user}",
                 )
-                return
             server_row.num_votes_per_user = int(num_votes_per_user)
             self.controller.update(server_row)
-            await msg.channel.send(
-                f"Number of votes per user updated to {num_votes_per_user}"
+            return (
+                msg.channel,
+                f"Number of votes per user updated to {num_votes_per_user}",
             )
 
     @property

@@ -14,12 +14,11 @@ class CheckMovieNamesAction(BaseAction):
         elif option == "off":
             check_names = False
         else:
-            await msg.channel.send(f"Unknown option for check_movie_names: `{option}`")
-            return
+            return (msg.channel, f"Unknown option for check_movie_names: `{option}`")
         server_row = self.controller.get_by_id(msg.guild.id)
         server_row.check_movie_names = check_names
         self.controller.update(server_row)
-        await msg.channel.send(f"IMDB movie name checks are now {option}")
+        return (msg.channel, f"IMDB movie name checks are now {option}")
 
     @property
     def help_text(self):

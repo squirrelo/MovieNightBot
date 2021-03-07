@@ -31,8 +31,10 @@ class HelpAction(BaseAction):
         return embed
 
     async def action(self, msg):
-        embed_data = self._build_help_embed(msg.guild.id)
-        await msg.author.send(content=None, embed=embed_data)
+        return (
+            msg.author,
+            {"content": None, "embed": self._build_help_embed(msg.guild.id)},
+        )
 
     @property
     def help_text(self):

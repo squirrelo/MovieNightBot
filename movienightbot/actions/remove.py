@@ -18,11 +18,10 @@ class RemoveAction(BaseAction):
                     server_id=msg.guild.id, movie=movie
                 )
             except pw.DoesNotExist:
-                await msg.channel.send(f"Movie {movie} has not been suggested")
-                return
+                return (msg.channel, f"Movie {movie} has not been suggested")
             self.controller.delete(movie_row)
 
-        await msg.channel.send(f"The movie {movie} has been removed from the list.")
+        return (msg.channel, f"The movie {movie} has been removed from the list.")
 
     @property
     def help_text(self):

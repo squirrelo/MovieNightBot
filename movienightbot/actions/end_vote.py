@@ -19,8 +19,7 @@ class EndVoteAction(BaseAction):
             try:
                 vote_msg_id = self.controller.get_by_id(server_id).message_id
             except pw.DoesNotExist:
-                await msg.channel.send("No vote started!")
-                return
+                return (msg.channel, "No vote started!")
             winning_movies = self.controller.end_vote(server_id)
         # TODO: Make more robust so we don't assume the end message and vote message are in same channel
         # probably safe for now, only happens if admin changes bot channel in the middle of a vote
@@ -32,14 +31,16 @@ class EndVoteAction(BaseAction):
                 title=f"Wining movie: {winning_movie}",
                 description=f"Use `m!set_watched {winning_movie}` to set the movie as watched",
             )
-            await msg.channel.send(
+            return (
+                msg.channel,
                 f"The winning vote was `{winning_movie}`! "
-                f"To set the movie as watched use the command `m!set_watched {winning_movie}`"
+                f"To set the movie as watched use the command `m!set_watched {winning_movie}`",
             )
             await vote_msg.unpin()
         else:
-            await msg.channel.send(
-                "There was a tie! Check the vote message for new vote options"
+            return (
+                msg.channel,
+                "There was a tie! Check the vote message for new vote options",
             )
             with self.controller.transaction():
                 server_row = ServerController().get_by_id(server_id)

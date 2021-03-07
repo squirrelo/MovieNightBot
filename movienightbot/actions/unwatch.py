@@ -18,12 +18,12 @@ class UnwatchAction(BaseAction):
                     server_id=msg.guild.id, movie=unwatch
                 )
             except pw.DoesNotExist:
-                await msg.channel.send(f"No movie titled {unwatch} has been watched")
-                return
+                return (msg.channel, f"No movie titled {unwatch} has been watched")
             movie.watched_on = None
             self.controller.update(movie)
-        await msg.channel.send(
-            f"{unwatch} has been set as unwatched and will show up in future votes."
+        return (
+            msg.channel,
+            f"{unwatch} has been set as unwatched and will show up in future votes.",
         )
 
     @property

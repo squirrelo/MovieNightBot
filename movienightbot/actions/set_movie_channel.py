@@ -13,13 +13,13 @@ class SetMovieChannelAction(BaseAction):
             server_row = self.controller.get_by_id(msg.guild.id)
             channels = {c.name: c.id for c in msg.guild.text_channels}
             if channel not in channels:
-                await msg.channel.send(
-                    f"Failed update: unknown channel {channel} given."
+                return (
+                    msg.channel,
+                    f"Failed update: unknown channel {channel} given.",
                 )
-                return
             server_row.channel = channels[channel]
             self.controller.update(server_row)
-        await msg.channel.send(f"Bot channel updated to {channel}")
+        return (msg.channel, f"Bot channel updated to {channel}")
 
     @property
     def help_text(self):
