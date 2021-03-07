@@ -1,6 +1,6 @@
 from . import BaseAction
 from ..db.controllers import MoviesController, ServerController
-from ..util import cleanup_messages, capitalize_movie_name
+from ..util import capitalize_movie_name
 
 
 class SetIMDBId(BaseAction):
@@ -18,23 +18,29 @@ class SetIMDBId(BaseAction):
         updated_rows = self.controller.update_imdb_id(server_id, movie_name, imdb_id)
 
         if updated_rows == 1:
-            server_msg = await msg.channel.send(
-                f"Movie {movie_name} has been updated to imdb ID {imdb_id}"
-            )
+            msg_data = {
+                f"Movie {movie_name} has been updated to imdb ID {imdb_id}",
+            }
             if message_timeout > 0:
-                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+                msg_data["delete_after"] = message_timeout
+                msg_data["also_delete"] = [msg]
+            return (msg.channel, msg_data)
         elif updated_rows == 0:
-            server_msg = await msg.channel.send(
-                f"Unable to update IMDB id for {movie_name}"
-            )
+            msg_data = {
+                f"Unable to update IMDB id for {movie_name}",
+            }
             if message_timeout > 0:
-                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+                msg_data["delete_after"] = message_timeout
+                msg_data["also_delete"] = [msg]
+            return (msg.channel, msg_data)
         else:
-            server_msg = await msg.channel.send(
-                f"Movie {movie_name} updated multiple entries to IMDB id {imdb_id}"
-            )
+            msg_data = {
+                f"Movie {movie_name} updated multiple entries to IMDB id {imdb_id}",
+            }
             if message_timeout > 0:
-                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+                msg_data["delete_after"] = message_timeout
+                msg_data["also_delete"] = [msg]
+            return (msg.channel, msg_data)
 
     @property
     def help_text(self):

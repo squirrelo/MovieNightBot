@@ -7,8 +7,9 @@ class WatchedAction(BaseAction):
     async def action(self, msg):
         from ..application import client
 
-        await msg.channel.send(
-            f"Watched movies can be found at {client.config.base_url}/watched/{msg.guild.id}"
+        return (
+            msg.channel,
+            f"Watched movies can be found at {client.config.base_url}/watched/{msg.guild.id}",
         )
 
     @property
