@@ -18,7 +18,7 @@ class CleanupAction(BaseAction):
 
         message_identifier = client.config.message_identifier
         messages = []
-        for msg in channel.history(limit=max_messages):
+        async for msg in channel.history(limit=max_messages):
             if (
                 msg.content.startswith(message_identifier)
                 or msg.author.id == client.user.id
