@@ -86,6 +86,7 @@ class BaseAction(ABC):
                     await cleanup_messages(
                         args["also_delete"], sec_delay=server_settings.message_timeout
                     )
+                    del args["also_delete"]
 
                 if type(args) is str:
                     await target.send(args)
