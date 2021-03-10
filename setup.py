@@ -2,9 +2,20 @@ from setuptools import find_packages, setup
 
 from movienightbot import __version__ as bot_version
 
-requirements = ["discord-py>=1.3.4", "peewee", "marshmallow", "pyyaml", "imdbpy"]
+requirements = [
+    "discord-py>=1.3.4,<1.5.0",  # dpytest is not yet supporting discord.py 1.5.0 - WIP
+    "peewee",
+    "marshmallow",
+    "pyyaml",
+    "imdbpy",
+]
 
-test_requirements = ["pytest", "pytest-black", "pytest-flake8"]
+test_requirements = [
+    "pytest",
+    "pytest-black",
+    "pytest-flake8",
+    "dpytest",  # "dpytest @ https://github.com/bravosierra99/dpytest/archive/master.zip",
+]
 
 with open("README.rst") as f:
     long_description = f.read()
