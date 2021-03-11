@@ -202,7 +202,30 @@ async def test_cmd_tie_option(client):
 
 @pytest.mark.asyncio
 async def test_cmd_unwatch(client):
-    pass
+    test_title = "The Land Before Time"
+    await test.message(f"m!unwatch {test_title}")
+    test.verify_message("Hey now, you're not an admin on this server!")
+
+    guild = client.guilds[0]
+    admin_role = await guild.create_role(
+        name="TestAdmin", permissions=Permissions.all()
+    )
+    await guild.members[0].add_roles(admin_role)
+
+    test_title = "The Land Before Time"
+    await test.message(f"m!unwatch {test_title}")
+    test.verify_message(f"No movie titled {test_title} has been watched")
+
+    await test.message(f"m!suggest {test_title}")
+    test.get_message()
+
+    await test.message(f"m!unwatch {test_title}")
+    test.verify_message(
+        f"{test_title} has been set as unwatched and will show up in future votes."
+    )
+
+    await guild.members[0].remove_roles(admin_role)
+    await admin_role.delete()
 
 
 @pytest.mark.asyncio
