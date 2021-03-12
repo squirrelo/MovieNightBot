@@ -192,10 +192,32 @@ async def test_cmd_start_vote(client):
 
 @pytest.mark.asyncio
 async def test_cmd_suggest(client):
-    await test.message("m!suggest The Land Before Time")
+    """
+    - "Could not find the movie title you suggested in IMDb."
+    """
+
+    test_title = "The Land Before Time"
+    await test.message(f"m!suggest {test_title}")
     test.verify_message(
-        "Your suggestion of The Land Before Time () has been added to the list."
+        f"Your suggestion of {test_title} () has been added to the list."
     )
+
+    await test.message(f"m!suggest {test_title}")
+    test.verify_message(f"{test_title} has already been suggested in this server.")
+
+    test_role = await _set_test_role(client)
+    await test.message("m!block_suggestions on")
+    test.get_message()
+
+    await _clear_test_role(client, test_role)
+    await test.message(f"m!suggest {test_title}")
+    test.verify_message("Suggestions are currently disabled on the server")
+
+    test_role = await _set_test_role(client)
+    await test.message("m!block_suggestions off")
+    test.get_message()
+
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
