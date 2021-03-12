@@ -216,7 +216,6 @@ async def test_cmd_unwatch(client):
 
     test_role = await _set_test_role(client)
 
-    test_title = "The Land Before Time"
     await test.message(f"m!unwatch {test_title}")
     test.verify_message(f"No movie titled {test_title} has been watched")
 
