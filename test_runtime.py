@@ -1,7 +1,7 @@
+import discord
 import discord.ext.test as test
 import pytest
 
-from discord import Permissions
 
 """
 m!block_suggestions
@@ -73,6 +73,19 @@ def client(event_loop):
     return client
 
 
+async def _set_test_role(client, perms=discord.Permissions.all(), midx=0, gidx=0):
+    guild = client.guilds[gidx]
+    test_role = await guild.create_role(name="TestingRole", permissions=perms)
+    await guild.members[midx].add_roles(test_role)
+    return test_role
+
+
+async def _clear_test_role(client, role, midx=0, gidx=0):
+    guild = client.guilds[gidx]
+    await guild.members[midx].remove_roles(role)
+    await role.delete()
+
+
 @pytest.mark.asyncio
 async def test_cmd_unknown(client):
     await test.message("m!cmd_unknown")
@@ -88,11 +101,7 @@ async def test_cmd_block_suggestions(client):
     await test.message("m!block_suggestions on")
     test.verify_message("Hey now, you're not an admin on this server!")
 
-    guild = client.guilds[0]
-    admin_role = await guild.create_role(
-        name="TestAdmin", permissions=Permissions.all()
-    )
-    await guild.members[0].add_roles(admin_role)
+    test_role = await _set_test_role(client)
 
     await test.message("m!block_suggestions")
     test.verify_message("Unknown option for block_suggestions: ", contains=True)
@@ -103,8 +112,7 @@ async def test_cmd_block_suggestions(client):
     await test.message("m!block_suggestions off")
     test.verify_message("Server suggestions are now allowed")
 
-    await guild.members[0].remove_roles(admin_role)
-    await admin_role.delete()
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
@@ -206,11 +214,7 @@ async def test_cmd_unwatch(client):
     await test.message(f"m!unwatch {test_title}")
     test.verify_message("Hey now, you're not an admin on this server!")
 
-    guild = client.guilds[0]
-    admin_role = await guild.create_role(
-        name="TestAdmin", permissions=Permissions.all()
-    )
-    await guild.members[0].add_roles(admin_role)
+    test_role = await _set_test_role(client)
 
     test_title = "The Land Before Time"
     await test.message(f"m!unwatch {test_title}")
@@ -224,8 +228,7 @@ async def test_cmd_unwatch(client):
         f"{test_title} has been set as unwatched and will show up in future votes."
     )
 
-    await guild.members[0].remove_roles(admin_role)
-    await admin_role.delete()
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
