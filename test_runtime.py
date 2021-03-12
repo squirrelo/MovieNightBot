@@ -122,7 +122,19 @@ async def test_cmd_cancel_vote(client):
 
 @pytest.mark.asyncio
 async def test_cmd_check_movie_names(client):
-    pass
+    await test.message("m!check_movie_names on")
+    test.verify_message("Hey now, you're not an admin on this server!")
+
+    test_role = await _set_test_role(client)
+    await test.message("m!check_movie_names x")
+    test.verify_message("Unknown option for check_movie_names: `x`")
+
+    await test.message("m!check_movie_names on")
+    test.verify_message("IMDB movie name checks are now on")
+
+    await test.message("m!check_movie_names off")
+    test.verify_message("IMDB movie name checks are now off")
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
