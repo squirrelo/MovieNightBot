@@ -3,40 +3,17 @@ import discord.ext.test as test
 import pytest
 
 
+from movienightbot.application import client as BotClient, _server_controller
+from movienightbot.config import Config
+from movienightbot.db import initialize_db
+from movienightbot.util import build_vote_embed
+
+
 """
-m!block_suggestions
-m!cancel_vote
-m!check_movie_names
-m!cleanup
-m!end_vote
-m!help
-m!movie_option_count
-m!remove
-m!server_settings
-m!set_admin_role
-m!set_imdb_id
-m!set_message_timeout
-m!set_movie_channel
-m!set_movie_time
-m!set_watched
-m!start_vote
-m!suggest
-m!suggested
-m!tie_option
-m!unwatch
-m!user_vote_count
-m!watched
 
-
-unknown_default_action:
-    f"Unknown command {command} given, try reading the tutorial at `m!help` "
-    f"to see what commands are available!"
 
 guild_only:
     "You can't do this command from a DM!"
-
-is_admin & admin_only:
-    "Hey now, you're not an admin on this server!"
 
 error_message:
     "OOPSIE WOOPSIE!! UwU We made a fucky wucky!! A wittle fucko boingo! The code "
@@ -52,25 +29,23 @@ _TEST_SQLITE_FILE = "/testing_db.sqlite"
 
 @pytest.fixture
 def client(event_loop):
-    from movienightbot.application import client, _server_controller
-    from movienightbot.config import Config
-    from movienightbot.db import initialize_db
 
     bconfig = Config("unused_token", f"sqlite://{_TEST_SQLITE_FILE}")
     bconfig.message_identifier = "m!"
     bconfig.port = 8000
     bconfig.base_url = f"http://localhost:{bconfig.port}"
 
-    client.loop = event_loop
-    client.config = bconfig
+    bclient = BotClient
+    bclient.loop = event_loop
+    bclient.config = bconfig
     initialize_db(bconfig.db_url)
 
-    test.configure(client)
-    guild = client.guilds[0]
+    test.configure(bclient)
+    guild = bclient.guilds[0]
     guild_data = {"id": guild.id, "channel": guild.text_channels[0].id}
     _server_controller.create(guild_data)
 
-    return client
+    return bclient
 
 
 async def _set_test_role(client, perms=discord.Permissions.all(), midx=0, gidx=0):
