@@ -86,6 +86,12 @@ async def _clear_test_role(client, role, midx=0, gidx=0):
     await role.delete()
 
 
+async def _do_admin_test(test_msg, peek=False):
+    m = await test.message(test_msg)
+    test.verify_message("Hey now, you're not an admin on this server!", peek=peek)
+    return m
+
+
 async def _verify_deleted_message(client, msg_id, channel=0, guild=0):
     ch = client.guilds[guild].channels[channel]
     try:
@@ -111,8 +117,7 @@ async def test_cmd_block_suggestions(client):
     await test.empty_queue()
 
     # test admin command blocked first
-    await test.message("m!block_suggestions on")
-    test.verify_message("Hey now, you're not an admin on this server!")
+    await _do_admin_test("m!block_suggestions on")
 
     test_role = await _set_test_role(client)
 
@@ -137,8 +142,7 @@ async def test_cmd_cancel_vote(client):
 async def test_cmd_check_movie_names(client):
     await test.empty_queue()
 
-    await test.message("m!check_movie_names on")
-    test.verify_message("Hey now, you're not an admin on this server!")
+    await _do_admin_test("m!check_movie_names on")
 
     test_role = await _set_test_role(client)
     await test.message("m!check_movie_names x")
@@ -156,8 +160,7 @@ async def test_cmd_check_movie_names(client):
 async def test_cmd_cleanup(client):
     await test.empty_queue()
 
-    m0 = await test.message("m!cleanup")
-    test.verify_message("Hey now, you're not an admin on this server!", peek=True)
+    m0 = await _do_admin_test("m!cleanup", peek=True)
     r0 = test.get_message()
 
     test_role = await _set_test_role(client)
@@ -282,8 +285,7 @@ async def test_cmd_suggested(client):
 async def test_cmd_tie_option(client):
     await test.empty_queue()
 
-    await test.message("m!tie_option random")
-    test.verify_message("Hey now, you're not an admin on this server!")
+    await _do_admin_test("m!tie_option random")
 
     test_role = await _set_test_role(client)
     await test.message("m!tie_option silly-non-option")
@@ -302,8 +304,7 @@ async def test_cmd_unwatch(client):
     await test.empty_queue()
 
     test_title = "The Land Before Time"
-    await test.message(f"m!unwatch {test_title}")
-    test.verify_message("Hey now, you're not an admin on this server!")
+    await _do_admin_test(f"m!unwatch {test_title}")
 
     test_role = await _set_test_role(client)
     await test.message(f"m!unwatch {test_title}")
@@ -325,8 +326,7 @@ async def test_cmd_user_vote_count(client):
     # Once you go higher, you cannot go lower again. Should this be?
     await test.empty_queue()
 
-    await test.message("m!user_vote_count 0")
-    test.verify_message("Hey now, you're not an admin on this server!")
+    await _do_admin_test("m!user_vote_count 0")
 
     test_role = await _set_test_role(client)
     await test.message("m!user_vote_count 0")
