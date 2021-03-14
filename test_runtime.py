@@ -198,22 +198,72 @@ async def test_cmd_set_message_timeout(client):
 
 @pytest.mark.asyncio
 async def test_cmd_set_movie_channel(client):
-    pass
+    await test.empty_queue()
+    channel = "TestChannel"
+
+    await _do_admin_test(f"m!set_channel {channel}")
+
+    test_role = await _set_test_role(client)
+    await test.message(f"m!set_channel {channel}")
+    test.verify_message(f"Failed update: unknown channel {channel} given.")
+
+    channel = client.guilds[0].channels[0].name
+    await test.message(f"m!set_channel {channel}")
+    test.verify_message(f"Bot channel updated to {channel}")
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
 async def test_cmd_set_movie_time(client):
-    pass
+    await test.empty_queue()
+    time_str = "12:00"
+
+    await _do_admin_test(f"m!set_movie_time {time_str}")
+
+    test_role = await _set_test_role(client)
+    await test.message(f"m!set_movie_time {time_str}PM")
+    test.verify_message("Movie time given in invalid format. Must be `HH:MM`")
+
+    await test.message(f"m!set_movie_time {time_str}")
+    test.verify_message(f"Movie time updated to {time_str} UTC")
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
 async def test_cmd_set_watched(client):
-    pass
+    await test.empty_queue()
+    watched = "Some Movie Title"
+
+    await _do_admin_test(f"m!set_watched {watched}")
+
+    test_role = await _set_test_role(client)
+    await test.message(f"m!set_watched {watched}")
+    test.verify_message(f"No movie titled {watched} has been suggested")
+
+    await test.message(f"m!suggest {watched}")
+    test.get_message()
+    await test.message(f"m!set_watched {watched}")
+    test.verify_message(
+        f"{watched} has been set as watched and will no longer show up in future votes."
+    )
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
 async def test_cmd_start_vote(client):
-    pass
+    await test.empty_queue()
+
+    await _do_admin_test("m!start_vote")
+
+    test_role = await _set_test_role(client)
+    await test.message("m!start_vote")
+    test_embed = build_vote_embed(client.guilds[0].id)
+    test.verify_embed(embed=test_embed, allow_text=True)
+
+    # clean up the vote state.
+    await test.message("m!end_vote")
+    test.get_message()
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
