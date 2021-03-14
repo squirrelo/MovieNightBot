@@ -59,7 +59,7 @@ def client(event_loop):
     bconfig = Config("unused_token", f"sqlite://{_TEST_SQLITE_FILE}")
     bconfig.message_identifier = "m!"
     bconfig.port = 8000
-    bconfig.base_url = f"http://localhost:{bconfig.port}/"
+    bconfig.base_url = f"http://localhost:{bconfig.port}"
 
     client.loop = event_loop
     client.config = bconfig
@@ -86,8 +86,19 @@ async def _clear_test_role(client, role, midx=0, gidx=0):
     await role.delete()
 
 
+async def _verify_deleted_message(client, msg_id, channel=0, guild=0):
+    ch = client.guilds[guild].channels[channel]
+    try:
+        await ch.fetch_message(msg_id)
+    except discord.NotFound:
+        return True
+    return False
+
+
 @pytest.mark.asyncio
 async def test_cmd_unknown(client):
+    await test.empty_queue()
+
     await test.message("m!cmd_unknown")
     test.verify_message(
         "Unknown command cmd_unknown given, try reading the tutorial at `m!help` "
@@ -97,6 +108,8 @@ async def test_cmd_unknown(client):
 
 @pytest.mark.asyncio
 async def test_cmd_block_suggestions(client):
+    await test.empty_queue()
+
     # test admin command blocked first
     await test.message("m!block_suggestions on")
     test.verify_message("Hey now, you're not an admin on this server!")
@@ -122,6 +135,8 @@ async def test_cmd_cancel_vote(client):
 
 @pytest.mark.asyncio
 async def test_cmd_check_movie_names(client):
+    await test.empty_queue()
+
     await test.message("m!check_movie_names on")
     test.verify_message("Hey now, you're not an admin on this server!")
 
@@ -139,7 +154,28 @@ async def test_cmd_check_movie_names(client):
 
 @pytest.mark.asyncio
 async def test_cmd_cleanup(client):
-    pass
+    await test.empty_queue()
+
+    m0 = await test.message("m!cleanup")
+    test.verify_message("Hey now, you're not an admin on this server!", peek=True)
+    r0 = test.get_message()
+
+    test_role = await _set_test_role(client)
+    m1 = await test.message("m!suggested")
+    r1 = test.get_message()
+    m2 = await test.message("m!watched")
+    r2 = test.get_message()
+    m3 = await test.message("m!cleanup")
+    test.verify_message(assert_nothing=True)
+
+    msgs = [m0, r0, m1, r1, m2, r2, m3]
+    for msg in msgs:
+        status = await _verify_deleted_message(client, msg.id)
+        assert (
+            status is True
+        ), "Expected message to be deleted, but message still exists."
+
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
@@ -207,6 +243,7 @@ async def test_cmd_suggest(client):
     """
     - "Could not find the movie title you suggested in IMDb."
     """
+    await test.empty_queue()
 
     test_title = "The Land Before Time"
     await test.message(f"m!suggest {test_title}")
@@ -228,28 +265,47 @@ async def test_cmd_suggest(client):
     test_role = await _set_test_role(client)
     await test.message("m!block_suggestions off")
     test.get_message()
-
     await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
 async def test_cmd_suggested(client):
-    pass
+    await test.empty_queue()
+
+    base_url = client.config.base_url
+    guild_id = client.guilds[0].id
+    await test.message("m!suggested")
+    test.verify_message(f"Suggestions can be found at {base_url}/suggested/{guild_id}")
 
 
 @pytest.mark.asyncio
 async def test_cmd_tie_option(client):
-    pass
+    await test.empty_queue()
+
+    await test.message("m!tie_option random")
+    test.verify_message("Hey now, you're not an admin on this server!")
+
+    test_role = await _set_test_role(client)
+    await test.message("m!tie_option silly-non-option")
+    test.verify_message("Unknown tiebreaker option given: silly-non-option")
+
+    await test.message("m!tie_option random")
+    test.verify_message("Tiebreaker updated to random")
+
+    await test.message("m!tie_option breaker")
+    test.verify_message("Tiebreaker updated to breaker")
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
 async def test_cmd_unwatch(client):
+    await test.empty_queue()
+
     test_title = "The Land Before Time"
     await test.message(f"m!unwatch {test_title}")
     test.verify_message("Hey now, you're not an admin on this server!")
 
     test_role = await _set_test_role(client)
-
     await test.message(f"m!unwatch {test_title}")
     test.verify_message(f"No movie titled {test_title} has been watched")
 
@@ -260,15 +316,35 @@ async def test_cmd_unwatch(client):
     test.verify_message(
         f"{test_title} has been set as unwatched and will show up in future votes."
     )
-
     await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
 async def test_cmd_user_vote_count(client):
-    pass
+    # Writing this test I realized that the setting is a one-way setting.
+    # Once you go higher, you cannot go lower again. Should this be?
+    await test.empty_queue()
+
+    await test.message("m!user_vote_count 0")
+    test.verify_message("Hey now, you're not an admin on this server!")
+
+    test_role = await _set_test_role(client)
+    await test.message("m!user_vote_count 0")
+    test.verify_message("Failed to update: Number of votes per user must be > 0")
+
+    await test.message("m!user_vote_count 1")
+    test.verify_message("Failed to update: Number of votes per user must be >= 4")
+
+    await test.message("m!user_vote_count 6")
+    test.verify_message("Number of votes per user updated to 6")
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
 async def test_cmd_watched(client):
-    pass
+    await test.empty_queue()
+
+    base_url = client.config.base_url
+    guild_id = client.guilds[0].id
+    await test.message("m!watched")
+    test.verify_message(f"Watched movies can be found at {base_url}/watched/{guild_id}")
