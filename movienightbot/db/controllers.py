@@ -189,6 +189,11 @@ class VoteController(BaseController):
             self.delete(vote_data, recursive=True)
         return movies
 
+    def cancel_vote(self, server_id: int) -> None:
+        with self.transaction():
+            vote_data = self.get_by_id(server_id)
+            self.delete(vote_data, recursive=True)
+
 
 class MovieVoteController(BaseController):
     model = MovieVote
