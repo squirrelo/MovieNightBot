@@ -75,6 +75,20 @@ class BaseAction(ABC):
             await msg.channel.send(error_message)
 
     @staticmethod
+    async def get_message(
+        channel: discord.TextChannel, msg_id: int
+    ) -> Union[None, discord.Message]:
+        """Retrives a message, or returns None if cannot retrieve the message"""
+        try:
+            return await channel.fetch_message(msg_id)
+        except (
+            discord.errors.NotFound,
+            discord.errors.HTTPException,
+            discord.errors.Forbidden,
+        ):
+            return None
+
+    @staticmethod
     def get_message_data(
         msg: discord.message, data_parts: int = 1
     ) -> Union[str, Tuple[str]]:

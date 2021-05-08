@@ -26,10 +26,12 @@ class CancelVoteAction(BaseAction):
             description=f"Vote was cancelled. Get better movies.",
         )
         self.controller.cancel_vote(server_id)
-        vote_msg = await msg.channel.fetch_message(vote_msg_id)
-        await vote_msg.unpin()
-        await vote_msg.clear_reactions()
-        await vote_msg.edit(content=None, embed=embed)
+        vote_msg = await self.get_message(msg.channel, vote_msg_id)
+        if vote_msg:
+            await vote_msg.unpin()
+            await vote_msg.clear_reactions()
+            await vote_msg.edit(content=None, embed=embed)
+        await msg.channel.send("Vote cancelled")
 
     @property
     def help_text(self):
