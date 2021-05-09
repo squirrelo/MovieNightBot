@@ -22,8 +22,8 @@ class CancelVoteAction(BaseAction):
                 return
 
         embed = discord.Embed(
-            title=f"Vote Cancelled",
-            description=f"Vote was cancelled. Get better movies.",
+            title="Vote Cancelled",
+            description="Vote was cancelled. Get better movies.",
         )
         self.controller.cancel_vote(server_id)
         vote_msg = await self.get_message(msg.channel, vote_msg_id)
