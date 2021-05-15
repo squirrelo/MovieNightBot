@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import List
+from typing import List, Optional
 import asyncio
 import logging
 
@@ -117,7 +117,7 @@ async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
     await vote_msg.add_reaction(emojis_text[":arrows_counterclockwise:"])
 
 
-def get_imdb_info(movie_name: str, kind: str = "movie"):
+def get_imdb_info(movie_name: str, kind: Optional[str] = None):
     if not movie_name:
         return None
 
@@ -136,8 +136,8 @@ def get_imdb_info(movie_name: str, kind: str = "movie"):
         results = im_db.search_movie(movie_name)
     logger.debug("IMDB RESULTS: " + str(results))
     for r in results:
-        if kind not in r.get("kind", ""):
-            logger.debug(str(r) + " is not movie, skipping")
+        if kind and kind not in r.get("kind", ""):
+            logger.debug(f"{r} is not {kind}, skipping")
             continue
         if r["title"].lower() == movie_name.lower():
             logger.debug(movie_name + "  Matched  " + str(r))

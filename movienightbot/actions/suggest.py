@@ -18,9 +18,9 @@ class SuggestAction(BaseAction):
     server_controller = ServerController()
     imdb_controller = IMDBInfoController()
 
-    def imdb_data(self, msg) -> Union[None, IMDBInfo]:
+    def imdb_data(self, msg, kind) -> Union[None, IMDBInfo]:
         suggestion = capitalize_movie_name(self.get_message_data(msg))
-        imdb_info = get_imdb_info(suggestion)
+        imdb_info = get_imdb_info(suggestion, kind=kind)
         if not imdb_info:
             return None
         # see if the row already exists
@@ -59,7 +59,9 @@ class SuggestAction(BaseAction):
             return
 
         if server_row.check_movie_names:
-            imdb_row = self.imdb_data(msg)
+            allow_tv_shows = server_row.allow_tv_shows
+            kind = None if allow_tv_shows else "movie"
+            imdb_row = self.imdb_data(msg, kind=kind)
             suggestion = (
                 capitalize_movie_name(imdb_row.title)
                 if imdb_row
