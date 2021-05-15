@@ -1,7 +1,12 @@
+import logging
+
 import discord
 
 from . import BaseAction
 from ..db.controllers import ServerController
+
+
+logger = logging.getLogger("movienightbot")
 
 
 class HelpAction(BaseAction):
@@ -9,30 +14,56 @@ class HelpAction(BaseAction):
     guild_only = False
     controller = ServerController()
 
-    def _build_help_embed(self, server_id: int) -> discord.Embed:
+    def _build_help_embed(self) -> discord.Embed:
         from . import KNOWN_ACTIONS
         from ..application import client
 
-        server_role = self.controller.get_by_id(server_id).admin_role
-        admin_mark = ":no_entry:"
         embed = discord.Embed(
             title="Help Commands",
-            description=f"I heard you asked for some help. We all need some from time to time, so here it is."
-            f"Commands marked with {admin_mark} require the user to be a server admin or have the role `{server_role}`",
+            description="I heard you asked for some help. We all need some from time to time, so here it is.",
         )
         for action in sorted(KNOWN_ACTIONS):
             cls = KNOWN_ACTIONS[action]
-            admin_cls = admin_mark if cls.admin else ""
+            if cls.admin:
+                continue
             embed.add_field(
                 name=f"{client.config.message_identifier}{action} {' '.join(cls.help_options)}",
-                value=admin_cls + cls.help_text,
+                value=cls.help_text,
+                inline=False,
+            )
+        return embed
+
+    def _build_admin_help_embed(self) -> discord.Embed:
+        from . import KNOWN_ACTIONS
+        from ..application import client
+
+        embed = discord.Embed(
+            title="Admin Help Commands",
+            description="Oh look, you're a super special admin. That means you can do this stuff too.",
+        )
+        for action in sorted(KNOWN_ACTIONS):
+            cls = KNOWN_ACTIONS[action]
+            if not cls.admin:
+                continue
+            embed.add_field(
+                name=f"{client.config.message_identifier}{action} {' '.join(cls.help_options)}",
+                value=cls.help_text,
                 inline=False,
             )
         return embed
 
     async def action(self, msg):
-        embed_data = self._build_help_embed(msg.guild.id)
+        embed_data = self._build_help_embed()
         await msg.author.send(content=None, embed=embed_data)
+        server_role = self.controller.get_by_id(msg.guild.id).admin_role
+        user_roles = {r.name for r in msg.author.roles}
+        logger.debug(
+            f"Checking user {msg.author.nick} with roles {user_roles} against {server_role}"
+        )
+        if server_role in user_roles:
+            logger.debug(f"user {msg.author.nick} is an admin, showing admin help")
+            admin_embed_data = self._build_admin_help_embed()
+            await msg.author.send(content=None, embed=admin_embed_data)
 
     @property
     def help_text(self):
