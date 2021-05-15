@@ -9,10 +9,17 @@ class SetAdminRoleAction(BaseAction):
 
     async def action(self, msg):
         toggle_value = self.get_message_data(msg)
-        if toggle_value.lower() == "on":
-            toggle_value = True
-        elif toggle_value.lower() == "off":
-            toggle_value = False
+        if not toggle_value:
+            await msg.channel.send(
+                f"Must give value of on or off for imdb_tv_shows command"
+            )
+            return
+
+        toggle_value = toggle_value.lower()
+        if toggle_value == "on":
+            allow_tv_shows = True
+        elif toggle_value == "off":
+            allow_tv_shows = False
         else:
             await msg.channel.send(
                 f"Unknown value given. Value must be on or off, got {toggle_value}."
@@ -21,9 +28,9 @@ class SetAdminRoleAction(BaseAction):
 
         with self.controller.transaction():
             server_row = self.controller.get_by_id(msg.guild.id)
-            server_row.allow_tv_shows = toggle_value
+            server_row.allow_tv_shows = allow_tv_shows
             self.controller.update(server_row)
-        await msg.channel.send(f"Allow IMDB tv show search set to {toggle_value}")
+        await msg.channel.send(f"Allow IMDB tv show search turned {toggle_value}")
 
     @property
     def help_text(self):
