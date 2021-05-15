@@ -14,7 +14,6 @@ class SetAdminRoleAction(BaseAction):
                 f"Must give value of on or off for imdb_tv_shows command"
             )
             return
-
         toggle_value = toggle_value.lower()
         if toggle_value == "on":
             allow_tv_shows = True
