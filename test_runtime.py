@@ -3,6 +3,8 @@ import discord.ext.test as test
 import pytest
 
 
+from movienightbot.actions.help import HelpAction
+from movienightbot.actions.server_settings import ServerSettingsAction
 from movienightbot.application import client as BotClient, _server_controller
 from movienightbot.config import Config
 from movienightbot.db import initialize_db
@@ -163,37 +165,127 @@ async def test_cmd_end_vote(client):
 
 @pytest.mark.asyncio
 async def test_cmd_help(client):
-    pass
+    await test.empty_queue()
+    ha = HelpAction()
+    test_embed = ha._build_help_embed(client.guilds[0].id)
+
+    await test.message("m!help")
+    test.verify_embed(embed=test_embed, allow_text=True)
 
 
 @pytest.mark.asyncio
 async def test_cmd_movie_option_count(client):
-    pass
+    await test.empty_queue()
+    test_number = 7
+
+    await _do_admin_test(f"m!movie_option_count {test_number}")
+
+    test_role = await _set_test_role(client)
+    await test.message(f"m!movie_option_count {test_number}")
+    test.verify_message(f"Number of movies per vote updated to {test_number}")
+
+    tests = [0, 1, 26, 27]
+    for test_number in tests:
+        await test.message(f"m!movie_option_count {test_number}")
+        test.verify_message(
+            "Failed to update: Number of movies per vote must be between 2 and 25, inclusive"
+        )
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
 async def test_cmd_remove(client):
-    pass
+    await test.empty_queue()
+    test_title = "The Land Before Time"
+
+    await _do_admin_test(f"m!remove {test_title}")
+
+    test_role = await _set_test_role(client)
+    await test.message(f"m!remove {test_title}")
+    test.verify_message(f"Movie {test_title} has not been suggested")
+
+    await test.message(f"m!suggest {test_title}")
+    test.get_message()
+    await test.message(f"m!remove {test_title}")
+    test.verify_message(f"The movie {test_title} has been removed from the list.")
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
 async def test_cmd_server_settings(client):
-    pass
+    await test.empty_queue()
+    ssa = ServerSettingsAction()
+    test_embed = ssa.format_embed(client.guilds[0].id)
+
+    await _do_admin_test("m!server_settings")
+
+    test_role = await _set_test_role(client)
+    await test.message("m!server_settings")
+    test.verify_embed(embed=test_embed, allow_text=True)
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
 async def test_cmd_set_admin_role(client):
-    pass
+    await test.empty_queue()
+    role_name = "AdminRole"
+
+    await _do_admin_test(f"m!set_admin_role {role_name}")
+
+    test_role = await _set_test_role(client)
+    await test.message(f"m!set_admin_role {role_name}")
+    test.verify_message(f"Role not found: {role_name}.")
+
+    await test.message(f"m!set_admin_role {test_role.name}")
+    test.verify_message(f"Admin role updated to {test_role.name}")
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
 async def test_cmd_set_imdb_id(client):
-    pass
+    await test.empty_queue()
+
+    # The Land Before Time (1988)
+    # https://www.imdb.com/title/tt0095489/
+    test_title = "The Land Before Time"
+    test_id = "0095489"
+    await test.message(f"m!set_imdb_id {test_id} {test_title}")
+    test.verify_message(f"Unable to update IMDB id for {test_title}")
+
+    await test.message(f"m!suggest {test_title}")
+    test.get_message()
+    await test.message(f"m!set_imdb_id {test_id} {test_title}")
+    test.verify_message(f"Movie {test_title} has been updated to imdb ID {test_id}")
+
+    # not sure how to reach this output...
+    # test_title2 = test_title[:-4]
+    # await test.message(f"m!suggest {test_title2}")
+    # test.get_message()
+    # await test.message(f"m!set_imdb_id {test_id} {test_title2}")
+    # test.verify_message(f"Movie {test_title2} updated multiple entries to IMDB id {test_id}")
+    return
 
 
 @pytest.mark.asyncio
 async def test_cmd_set_message_timeout(client):
-    pass
+    await test.empty_queue()
+    timeout = 10
+
+    await _do_admin_test(f"m!set_message_timeout {timeout}")
+
+    timeout = "TT"
+    test_role = await _set_test_role(client)
+    await test.message(f"m!set_message_timeout {timeout}")
+    test.verify_message(f"Must send an number, got {timeout}")
+
+    timeout = -2
+    await test.message(f"m!set_message_timeout {timeout}")
+    test.verify_message(f"Timeout value must be >= 0, got {timeout}")
+
+    timeout = 10
+    await test.message(f"m!set_message_timeout {timeout}")
+    test.verify_message(f"Message timeout updated to {timeout} seconds")
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
