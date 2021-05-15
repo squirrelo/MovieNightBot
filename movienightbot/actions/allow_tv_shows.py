@@ -11,7 +11,7 @@ class SetAdminRoleAction(BaseAction):
         toggle_value = self.get_message_data(msg)
         if not toggle_value:
             await msg.channel.send(
-                f"Must give value of on or off for imdb_tv_shows command"
+                "Must give value of on or off for imdb_tv_shows command"
             )
             return
         toggle_value = toggle_value.lower()
