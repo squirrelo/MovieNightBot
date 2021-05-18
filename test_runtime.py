@@ -42,7 +42,8 @@ def client(event_loop):
     bclient.config = bconfig
     initialize_db(bconfig.db_url)
 
-    test.configure(bclient)
+    test.configure(bclient, num_guilds=1, num_members=3)
+
     guild = bclient.guilds[0]
     guild_data = {"id": guild.id, "channel": guild.text_channels[0].id}
     _server_controller.create(guild_data)
@@ -128,6 +129,8 @@ async def test_cmd_check_movie_names(client):
     await test.message("m!check_movie_names on")
     test.verify_message("IMDB movie name checks are now on")
 
+    # TODO: add tests for when this option is enabled, since it changes returned data.
+
     await test.message("m!check_movie_names off")
     test.verify_message("IMDB movie name checks are now off")
     await _clear_test_role(client, test_role)
@@ -159,8 +162,102 @@ async def test_cmd_cleanup(client):
 
 
 @pytest.mark.asyncio
-async def test_cmd_end_vote(client):
-    pass
+async def test_cmd_end_vote_winner(client):
+    await test.empty_queue()
+    cfg = test.get_config()
+    tester1 = cfg.members[0]
+    tester2 = cfg.members[1]
+
+    await test.message("m!end_vote")
+    test.verify_message("No vote started!")
+
+    # So you CAN start a vote without any or enough suggested titles.
+    # TODO: Fix that...
+
+    await test.message("m!suggest The Shining")
+    test.get_message()
+    await test.message("m!suggest Pulp Fiction")
+    test.get_message()
+    await test.message("m!suggest Bad Santa")
+    test.get_message()
+    await test.message("m!suggest Hook")
+    test.get_message()
+    await test.message("m!suggest The Little Mermaid")
+    test.get_message()
+    await test.message("m!suggest A Nightmare on Elm Street")
+    test.get_message()
+    await test.message("m!suggest Final Fantasy: The Spirits Within")
+    test.get_message()
+
+    test_role = await _set_test_role(client)
+    await test.message("m!start_vote")
+    test_embed = build_vote_embed(client.guilds[0].id)
+
+    test.verify_embed(test_embed, peek=True)
+    vote_msg = test.get_message(peek=True)
+    await _clear_test_role(client, test_role)
+
+    await test.simulate_reaction(vote_msg, ":regional_indicator_a:", tester1)
+    await test.simulate_reaction(vote_msg, ":regional_indicator_a:", tester2)
+
+    await test.message("m!end_vote")
+    test.verify_message("The winning vote was `", contains=True, equals=False)
+
+
+@pytest.mark.asyncio
+async def test_cmd_end_vote_tiebreaker(client):
+    await test.empty_queue()
+    cfg = test.get_config()
+    tester1 = cfg.members[0]
+    tester2 = cfg.members[1]
+
+    await test.message("m!end_vote")
+    test.verify_message("No vote started!")
+
+    # So you CAN start a vote without any or enough suggested titles.
+    # TODO: Fix that...
+
+    await test.message("m!suggest The Shining")
+    test.get_message()
+    await test.message("m!suggest Pulp Fiction")
+    test.get_message()
+    await test.message("m!suggest Bad Santa")
+    test.get_message()
+    await test.message("m!suggest Hook")
+    test.get_message()
+    await test.message("m!suggest The Little Mermaid")
+    test.get_message()
+    await test.message("m!suggest A Nightmare on Elm Street")
+    test.get_message()
+    await test.message("m!suggest Final Fantasy: The Spirits Within")
+    test.get_message()
+
+    test_role = await _set_test_role(client)
+    await test.message("m!start_vote")
+    test_embed = build_vote_embed(client.guilds[0].id)
+    vote_msg = test.get_message(peek=True)
+    test.verify_embed(test_embed, peek=True)
+    await _clear_test_role(client, test_role)
+
+    await test.simulate_reaction(vote_msg, ":regional_indicator_a:", tester1)
+    await test.simulate_reaction(vote_msg, ":regional_indicator_b:", tester2)
+
+    await test.message("m!end_vote")
+
+    end_vote_msg = test.get_message(peek=True)
+    tie_vote_embed = build_vote_embed(client.guilds[0].id)
+    assert (
+        tie_vote_embed is not end_vote_msg.embeds[0]
+    ), "Vote embed was not updated with tie breaker embed."
+
+    await test.simulate_reaction(vote_msg, ":regional_indicator_a:", tester1)
+    await test.simulate_reaction(vote_msg, ":regional_indicator_a:", tester2)
+
+    test.get_message()
+    test.verify_message("There was a tie! Check the vote message for new vote options")
+
+    await test.message("m!end_vote")
+    test.verify_message("The winning vote was `", contains=True, equals=False)
 
 
 @pytest.mark.asyncio
@@ -291,7 +388,7 @@ async def test_cmd_set_message_timeout(client):
 @pytest.mark.asyncio
 async def test_cmd_set_movie_channel(client):
     await test.empty_queue()
-    channel = "TestChannel"
+    channel = "DummyTestChannel"
 
     await _do_admin_test(f"m!set_channel {channel}")
 
