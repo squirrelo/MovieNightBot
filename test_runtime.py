@@ -264,10 +264,20 @@ async def test_cmd_end_vote_tiebreaker(client):
 async def test_cmd_help(client):
     await test.empty_queue()
     ha = HelpAction()
-    test_embed = ha._build_help_embed(client.guilds[0].id)
+    test_embed = ha._build_help_embed()
+    test_admin_embed = ha._build_admin_help_embed()
 
     await test.message("m!help")
-    test.verify_embed(embed=test_embed, allow_text=True)
+    test.verify_embed(embed=test_embed)
+
+    test_role = await _set_test_role(client)
+    await test.message("m!set_admin_role TestingRole")
+    test.get_message()
+
+    await test.message("m!help")
+    test.verify_embed(embed=test_embed)
+    test.verify_embed(embed=test_admin_embed)
+    await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
