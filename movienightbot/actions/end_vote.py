@@ -24,8 +24,12 @@ class EndVoteAction(BaseAction):
             winning_movies = self.controller.end_vote(server_id)
         # TODO: Make more robust so we don't assume the end message and vote message are in same channel
         # probably safe for now, only happens if admin changes bot channel in the middle of a vote
-        vote_msg = await msg.channel.fetch_message(vote_msg_id)
-        await vote_msg.clear_reactions()
+        vote_msg = await self.get_message(msg.channel, vote_msg_id)
+        if vote_msg:
+            await vote_msg.clear_reactions()
+        else:
+            # Vote message was deleted or is unavailable, so make a new one
+            vote_msg = await msg.channel.send("replacement vote message")
         if len(winning_movies) == 1:
             winning_movie = winning_movies[0].movie_name
             embed = discord.Embed(

@@ -23,7 +23,7 @@ with open("README.rst") as f:
 setup(
     name="movienight-bot",
     version=bot_version,
-    license="BSD",
+    license="WTFPL",
     description="Movie night suggestion and voting bot for Discord",
     long_description=long_description,
     author="Joshua Shorenstein",
