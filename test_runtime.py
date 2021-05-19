@@ -113,7 +113,22 @@ async def test_cmd_block_suggestions(client):
 
 @pytest.mark.asyncio
 async def test_cmd_cancel_vote(client):
-    pass
+    await test.empty_queue()
+
+    await test.message("m!cancel_vote")
+    test.verify_message("No vote started!")
+
+    test_role = await _set_test_role(client)
+    await test.message("m!start_vote")
+    test.get_message()
+    await _clear_test_role(client, test_role)
+    await test.message("m!cancel_vote")
+
+    # TODO: figure out why I cannot verify the edited embed...
+    #  It simply doesn't edit.
+    #  Using peek=True to leave it on the stack doesn't help, unlike end_vote_tie.
+
+    test.verify_message("Vote cancelled")
 
 
 @pytest.mark.asyncio
