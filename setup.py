@@ -14,7 +14,7 @@ test_requirements = [
     "pytest",
     "pytest-black",
     "pytest-flake8",
-    "dpytest>=0.1.1",
+    "dpytest @ https://github.com/itsTheFae/dpytest/archive/refs/heads/support-moviebot.zip",  # "dpytest>=0.1.1",
 ]
 
 with open("README.rst") as f:
