@@ -8,7 +8,7 @@ from movienightbot.actions.server_settings import ServerSettingsAction
 from movienightbot.application import client as BotClient, _server_controller
 from movienightbot.config import Config
 from movienightbot.db import initialize_db
-from movienightbot.util import build_vote_embed
+from movienightbot.util import build_vote_embed, emojis_text
 
 
 """
@@ -66,7 +66,10 @@ async def _clear_test_role(client, role, midx=0, gidx=0):
 
 async def _do_admin_test(test_msg, peek=False):
     m = await test.message(test_msg)
-    test.verify_message("Hey now, you're not an admin on this server!", peek=peek)
+    t = test.verify().message().content("Hey now, you're not an admin on this server!")
+    if peek:
+        t.peek()
+    assert t
     return m
 
 
@@ -81,42 +84,40 @@ async def _verify_deleted_message(client, msg_id, channel=0, guild=0):
 
 @pytest.mark.asyncio
 async def test_cmd_unknown(client):
-    await test.empty_queue()
-
     await test.message("m!cmd_unknown")
-    test.verify_message(
-        "Unknown command cmd_unknown given, try reading the tutorial at `m!help` "
-        "to see what commands are available!"
+    assert (
+        test.verify()
+        .message()
+        .content(
+            "Unknown command cmd_unknown given, try reading the tutorial at `m!help` "
+            "to see what commands are available!"
+        )
     )
 
 
 @pytest.mark.asyncio
 async def test_cmd_block_suggestions(client):
-    await test.empty_queue()
-
     # test admin command blocked first
     await _do_admin_test("m!block_suggestions on")
 
     test_role = await _set_test_role(client)
 
     await test.message("m!block_suggestions")
-    test.verify_message("Unknown option for block_suggestions: ", contains=True)
+    assert test.verify().message().content("Unknown option for block_suggestions: ``")
 
     await test.message("m!block_suggestions on")
-    test.verify_message("Server suggestions are now disallowed")
+    assert test.verify().message().content("Server suggestions are now disallowed")
 
     await test.message("m!block_suggestions off")
-    test.verify_message("Server suggestions are now allowed")
+    assert test.verify().message().content("Server suggestions are now allowed")
 
     await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
 async def test_cmd_cancel_vote(client):
-    await test.empty_queue()
-
     await test.message("m!cancel_vote")
-    test.verify_message("No vote started!")
+    assert test.verify().message().content("No vote started!")
 
     test_role = await _set_test_role(client)
     await test.message("m!start_vote")
@@ -128,7 +129,7 @@ async def test_cmd_cancel_vote(client):
     #  It simply doesn't edit.
     #  Using peek=True to leave it on the stack doesn't help, unlike end_vote_tie.
 
-    test.verify_message("Vote cancelled")
+    assert test.verify().message().content("Vote cancelled")
 
 
 @pytest.mark.asyncio
@@ -139,22 +140,20 @@ async def test_cmd_check_movie_names(client):
 
     test_role = await _set_test_role(client)
     await test.message("m!check_movie_names x")
-    test.verify_message("Unknown option for check_movie_names: `x`")
+    assert test.verify().message().content("Unknown option for check_movie_names: `x`")
 
     await test.message("m!check_movie_names on")
-    test.verify_message("IMDB movie name checks are now on")
+    assert test.verify().message().content("IMDB movie name checks are now on")
 
     # TODO: add tests for when this option is enabled, since it changes returned data.
 
     await test.message("m!check_movie_names off")
-    test.verify_message("IMDB movie name checks are now off")
+    assert test.verify().message().content("IMDB movie name checks are now off")
     await _clear_test_role(client, test_role)
 
 
 @pytest.mark.asyncio
 async def test_cmd_cleanup(client):
-    await test.empty_queue()
-
     m0 = await _do_admin_test("m!cleanup", peek=True)
     r0 = test.get_message()
 
@@ -164,7 +163,7 @@ async def test_cmd_cleanup(client):
     m2 = await test.message("m!watched")
     r2 = test.get_message()
     m3 = await test.message("m!cleanup")
-    test.verify_message(assert_nothing=True)
+    assert test.verify().message().nothing()
 
     msgs = [m0, r0, m1, r1, m2, r2, m3]
     for msg in msgs:
@@ -178,13 +177,12 @@ async def test_cmd_cleanup(client):
 
 @pytest.mark.asyncio
 async def test_cmd_end_vote_winner(client):
-    await test.empty_queue()
     cfg = test.get_config()
     tester1 = cfg.members[0]
     tester2 = cfg.members[1]
 
     await test.message("m!end_vote")
-    test.verify_message("No vote started!")
+    assert test.verify().message().content("No vote started!")
 
     # So you CAN start a vote without any or enough suggested titles.
     # TODO: Fix that...
@@ -205,18 +203,23 @@ async def test_cmd_end_vote_winner(client):
     test.get_message()
 
     test_role = await _set_test_role(client)
-    await test.message("m!start_vote")
-    test_embed = build_vote_embed(client.guilds[0].id)
+    m = await test.message("m!start_vote")
+    test_embed = build_vote_embed(m.channel.guild.id)
 
-    test.verify_embed(test_embed, peek=True)
+    assert test.verify().message().embed(test_embed).peek()
     vote_msg = test.get_message(peek=True)
     await _clear_test_role(client, test_role)
 
-    await test.simulate_reaction(vote_msg, ":regional_indicator_a:", tester1)
-    await test.simulate_reaction(vote_msg, ":regional_indicator_a:", tester2)
+    await test.add_reaction(
+        user=tester1, message=vote_msg, emoji=emojis_text[":regional_indicator_a:"]
+    )
+    await test.add_reaction(
+        user=tester2, message=vote_msg, emoji=emojis_text[":regional_indicator_a:"]
+    )
+    test.get_message()
 
     await test.message("m!end_vote")
-    test.verify_message("The winning vote was `", contains=True, equals=False)
+    assert test.verify().message().contains().content("The winning vote was `")
 
 
 @pytest.mark.asyncio
@@ -227,7 +230,7 @@ async def test_cmd_end_vote_tiebreaker(client):
     tester2 = cfg.members[1]
 
     await test.message("m!end_vote")
-    test.verify_message("No vote started!")
+    assert test.verify().message().content("No vote started!")
 
     # So you CAN start a vote without any or enough suggested titles.
     # TODO: Fix that...
@@ -248,31 +251,41 @@ async def test_cmd_end_vote_tiebreaker(client):
     test.get_message()
 
     test_role = await _set_test_role(client)
-    await test.message("m!start_vote")
-    test_embed = build_vote_embed(client.guilds[0].id)
+    m = await test.message("m!start_vote")
+    test_embed = build_vote_embed(m.channel.guild.id)
     vote_msg = test.get_message(peek=True)
-    test.verify_embed(test_embed, peek=True)
+    assert test.verify().message().embed(test_embed).peek()
     await _clear_test_role(client, test_role)
 
-    await test.simulate_reaction(vote_msg, ":regional_indicator_a:", tester1)
-    await test.simulate_reaction(vote_msg, ":regional_indicator_b:", tester2)
+    await test.add_reaction(
+        message=vote_msg, user=tester1, emoji=emojis_text[":regional_indicator_a:"]
+    )
+    await test.add_reaction(
+        message=vote_msg, user=tester2, emoji=emojis_text[":regional_indicator_b:"]
+    )
 
     await test.message("m!end_vote")
-
-    end_vote_msg = test.get_message(peek=True)
-    tie_vote_embed = build_vote_embed(client.guilds[0].id)
+    tie_vote_embed = build_vote_embed(m.channel.guild.id)
     assert (
-        tie_vote_embed is not end_vote_msg.embeds[0]
+        tie_vote_embed is not vote_msg.embeds[0]
     ), "Vote embed was not updated with tie breaker embed."
 
-    await test.simulate_reaction(vote_msg, ":regional_indicator_a:", tester1)
-    await test.simulate_reaction(vote_msg, ":regional_indicator_a:", tester2)
+    await test.add_reaction(
+        message=vote_msg, user=tester1, emoji=emojis_text[":regional_indicator_a:"]
+    )
+    await test.add_reaction(
+        message=vote_msg, user=tester2, emoji=emojis_text[":regional_indicator_a:"]
+    )
 
     test.get_message()
-    test.verify_message("There was a tie! Check the vote message for new vote options")
+    assert (
+        test.verify()
+        .message()
+        .content("There was a tie! Check the vote message for new vote options")
+    )
 
     await test.message("m!end_vote")
-    test.verify_message("The winning vote was `", contains=True, equals=False)
+    assert test.verify().message().contains().content("The winning vote was `")
 
 
 @pytest.mark.asyncio
@@ -283,15 +296,15 @@ async def test_cmd_help(client):
     test_admin_embed = ha._build_admin_help_embed()
 
     await test.message("m!help")
-    test.verify_embed(embed=test_embed)
+    assert test.verify().message().embed(test_embed)
 
     test_role = await _set_test_role(client)
     await test.message("m!set_admin_role TestingRole")
     test.get_message()
 
     await test.message("m!help")
-    test.verify_embed(embed=test_embed)
-    test.verify_embed(embed=test_admin_embed)
+    assert test.verify().message().embed(test_embed)
+    assert test.verify().message().embed(test_admin_embed)
     await _clear_test_role(client, test_role)
 
 
@@ -304,13 +317,21 @@ async def test_cmd_movie_option_count(client):
 
     test_role = await _set_test_role(client)
     await test.message(f"m!movie_option_count {test_number}")
-    test.verify_message(f"Number of movies per vote updated to {test_number}")
+    assert (
+        test.verify()
+        .message()
+        .content(f"Number of movies per vote updated to {test_number}")
+    )
 
     tests = [0, 1, 26, 27]
     for test_number in tests:
         await test.message(f"m!movie_option_count {test_number}")
-        test.verify_message(
-            "Failed to update: Number of movies per vote must be between 2 and 25, inclusive"
+        assert (
+            test.verify()
+            .message()
+            .content(
+                "Failed to update: Number of movies per vote must be between 2 and 25, inclusive"
+            )
         )
     await _clear_test_role(client, test_role)
 
@@ -324,12 +345,16 @@ async def test_cmd_remove(client):
 
     test_role = await _set_test_role(client)
     await test.message(f"m!remove {test_title}")
-    test.verify_message(f"Movie {test_title} has not been suggested")
+    assert test.verify().message().content(f"Movie {test_title} has not been suggested")
 
     await test.message(f"m!suggest {test_title}")
     test.get_message()
     await test.message(f"m!remove {test_title}")
-    test.verify_message(f"The movie {test_title} has been removed from the list.")
+    assert (
+        test.verify()
+        .message()
+        .content(f"The movie {test_title} has been removed from the list.")
+    )
     await _clear_test_role(client, test_role)
 
 
@@ -343,7 +368,7 @@ async def test_cmd_server_settings(client):
 
     test_role = await _set_test_role(client)
     await test.message("m!server_settings")
-    test.verify_embed(embed=test_embed, allow_text=True)
+    assert test.verify().message().embed(test_embed)
     await _clear_test_role(client, test_role)
 
 
@@ -356,10 +381,10 @@ async def test_cmd_set_admin_role(client):
 
     test_role = await _set_test_role(client)
     await test.message(f"m!set_admin_role {role_name}")
-    test.verify_message(f"Role not found: {role_name}.")
+    assert test.verify().message().content(f"Role not found: {role_name}.")
 
     await test.message(f"m!set_admin_role {test_role.name}")
-    test.verify_message(f"Admin role updated to {test_role.name}")
+    assert test.verify().message().content(f"Admin role updated to {test_role.name}")
     await _clear_test_role(client, test_role)
 
 
@@ -372,20 +397,23 @@ async def test_cmd_set_imdb_id(client):
     test_title = "The Land Before Time"
     test_id = "0095489"
     await test.message(f"m!set_imdb_id {test_id} {test_title}")
-    test.verify_message(f"Unable to update IMDB id for {test_title}")
+    assert test.verify().message().content(f"Unable to update IMDB id for {test_title}")
 
     await test.message(f"m!suggest {test_title}")
     test.get_message()
     await test.message(f"m!set_imdb_id {test_id} {test_title}")
-    test.verify_message(f"Movie {test_title} has been updated to imdb ID {test_id}")
+    assert (
+        test.verify()
+        .message()
+        .content(f"Movie {test_title} has been updated to imdb ID {test_id}")
+    )
 
     # not sure how to reach this output...
     # test_title2 = test_title[:-4]
     # await test.message(f"m!suggest {test_title2}")
     # test.get_message()
     # await test.message(f"m!set_imdb_id {test_id} {test_title2}")
-    # test.verify_message(f"Movie {test_title2} updated multiple entries to IMDB id {test_id}")
-    return
+    # assert test.verify().message().content(f"Movie {test_title2} updated multiple entries to IMDB id {test_id}")
 
 
 @pytest.mark.asyncio
@@ -398,15 +426,17 @@ async def test_cmd_set_message_timeout(client):
     timeout = "TT"
     test_role = await _set_test_role(client)
     await test.message(f"m!set_message_timeout {timeout}")
-    test.verify_message(f"Must send an number, got {timeout}")
+    assert test.verify().message().content(f"Must send an number, got {timeout}")
 
     timeout = -2
     await test.message(f"m!set_message_timeout {timeout}")
-    test.verify_message(f"Timeout value must be >= 0, got {timeout}")
+    assert test.verify().message().content(f"Timeout value must be >= 0, got {timeout}")
 
     timeout = 10
     await test.message(f"m!set_message_timeout {timeout}")
-    test.verify_message(f"Message timeout updated to {timeout} seconds")
+    assert (
+        test.verify().message().content(f"Message timeout updated to {timeout} seconds")
+    )
     await _clear_test_role(client, test_role)
 
 
@@ -419,11 +449,15 @@ async def test_cmd_set_movie_channel(client):
 
     test_role = await _set_test_role(client)
     await test.message(f"m!set_channel {channel}")
-    test.verify_message(f"Failed update: unknown channel {channel} given.")
+    assert (
+        test.verify()
+        .message()
+        .content(f"Failed update: unknown channel {channel} given.")
+    )
 
     channel = client.guilds[0].channels[0].name
     await test.message(f"m!set_channel {channel}")
-    test.verify_message(f"Bot channel updated to {channel}")
+    assert test.verify().message().content(f"Bot channel updated to {channel}")
     await _clear_test_role(client, test_role)
 
 
@@ -436,10 +470,14 @@ async def test_cmd_set_movie_time(client):
 
     test_role = await _set_test_role(client)
     await test.message(f"m!set_movie_time {time_str}PM")
-    test.verify_message("Movie time given in invalid format. Must be `HH:MM`")
+    assert (
+        test.verify()
+        .message()
+        .content("Movie time given in invalid format. Must be `HH:MM`")
+    )
 
     await test.message(f"m!set_movie_time {time_str}")
-    test.verify_message(f"Movie time updated to {time_str} UTC")
+    assert test.verify().message().content(f"Movie time updated to {time_str} UTC")
     await _clear_test_role(client, test_role)
 
 
@@ -452,13 +490,19 @@ async def test_cmd_set_watched(client):
 
     test_role = await _set_test_role(client)
     await test.message(f"m!set_watched {watched}")
-    test.verify_message(f"No movie titled {watched} has been suggested")
+    assert (
+        test.verify().message().content(f"No movie titled {watched} has been suggested")
+    )
 
     await test.message(f"m!suggest {watched}")
     test.get_message()
     await test.message(f"m!set_watched {watched}")
-    test.verify_message(
-        f"{watched} has been set as watched and will no longer show up in future votes."
+    assert (
+        test.verify()
+        .message()
+        .content(
+            f"{watched} has been set as watched and will no longer show up in future votes."
+        )
     )
     await _clear_test_role(client, test_role)
 
@@ -472,7 +516,7 @@ async def test_cmd_start_vote(client):
     test_role = await _set_test_role(client)
     await test.message("m!start_vote")
     test_embed = build_vote_embed(client.guilds[0].id)
-    test.verify_embed(embed=test_embed, allow_text=True)
+    assert test.verify().message().embed(test_embed)
 
     # clean up the vote state.
     await test.message("m!end_vote")
@@ -489,12 +533,18 @@ async def test_cmd_suggest(client):
 
     test_title = "The Land Before Time"
     await test.message(f"m!suggest {test_title}")
-    test.verify_message(
-        f"Your suggestion of {test_title} () has been added to the list."
+    assert (
+        test.verify()
+        .message()
+        .content(f"Your suggestion of {test_title} () has been added to the list.")
     )
 
     await test.message(f"m!suggest {test_title}")
-    test.verify_message(f"{test_title} has already been suggested in this server.")
+    assert (
+        test.verify()
+        .message()
+        .content(f"{test_title} has already been suggested in this server.")
+    )
 
     test_role = await _set_test_role(client)
     await test.message("m!block_suggestions on")
@@ -502,7 +552,11 @@ async def test_cmd_suggest(client):
 
     await _clear_test_role(client, test_role)
     await test.message(f"m!suggest {test_title}")
-    test.verify_message("Suggestions are currently disabled on the server")
+    assert (
+        test.verify()
+        .message()
+        .content("Suggestions are currently disabled on the server")
+    )
 
     test_role = await _set_test_role(client)
     await test.message("m!block_suggestions off")
@@ -517,7 +571,11 @@ async def test_cmd_suggested(client):
     base_url = client.config.base_url
     guild_id = client.guilds[0].id
     await test.message("m!suggested")
-    test.verify_message(f"Suggestions can be found at {base_url}/suggested/{guild_id}")
+    assert (
+        test.verify()
+        .message()
+        .content(f"Suggestions can be found at {base_url}/suggested/{guild_id}")
+    )
 
 
 @pytest.mark.asyncio
@@ -528,13 +586,17 @@ async def test_cmd_tie_option(client):
 
     test_role = await _set_test_role(client)
     await test.message("m!tie_option silly-non-option")
-    test.verify_message("Unknown tiebreaker option given: silly-non-option")
+    assert (
+        test.verify()
+        .message()
+        .content("Unknown tiebreaker option given: silly-non-option")
+    )
 
     await test.message("m!tie_option random")
-    test.verify_message("Tiebreaker updated to random")
+    assert test.verify().message().content("Tiebreaker updated to random")
 
     await test.message("m!tie_option breaker")
-    test.verify_message("Tiebreaker updated to breaker")
+    assert test.verify().message().content("Tiebreaker updated to breaker")
     await _clear_test_role(client, test_role)
 
 
@@ -547,14 +609,22 @@ async def test_cmd_unwatch(client):
 
     test_role = await _set_test_role(client)
     await test.message(f"m!unwatch {test_title}")
-    test.verify_message(f"No movie titled {test_title} has been watched")
+    assert (
+        test.verify()
+        .message()
+        .content(f"No movie titled {test_title} has been watched")
+    )
 
     await test.message(f"m!suggest {test_title}")
     test.get_message()
 
     await test.message(f"m!unwatch {test_title}")
-    test.verify_message(
-        f"{test_title} has been set as unwatched and will show up in future votes."
+    assert (
+        test.verify()
+        .message()
+        .content(
+            f"{test_title} has been set as unwatched and will show up in future votes."
+        )
     )
     await _clear_test_role(client, test_role)
 
@@ -569,13 +639,21 @@ async def test_cmd_user_vote_count(client):
 
     test_role = await _set_test_role(client)
     await test.message("m!user_vote_count 0")
-    test.verify_message("Failed to update: Number of votes per user must be > 0")
+    assert (
+        test.verify()
+        .message()
+        .content("Failed to update: Number of votes per user must be > 0")
+    )
 
     await test.message("m!user_vote_count 1")
-    test.verify_message("Failed to update: Number of votes per user must be >= 4")
+    assert (
+        test.verify()
+        .message()
+        .content("Failed to update: Number of votes per user must be >= 4")
+    )
 
     await test.message("m!user_vote_count 6")
-    test.verify_message("Number of votes per user updated to 6")
+    assert test.verify().message().content("Number of votes per user updated to 6")
     await _clear_test_role(client, test_role)
 
 
@@ -586,4 +664,8 @@ async def test_cmd_watched(client):
     base_url = client.config.base_url
     guild_id = client.guilds[0].id
     await test.message("m!watched")
-    test.verify_message(f"Watched movies can be found at {base_url}/watched/{guild_id}")
+    assert (
+        test.verify()
+        .message()
+        .content(f"Watched movies can be found at {base_url}/watched/{guild_id}")
+    )
