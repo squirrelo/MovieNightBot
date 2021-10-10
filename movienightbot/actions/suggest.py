@@ -10,7 +10,6 @@ from ..db.controllers import (
     ServerController,
     IMDBInfoController,
     IMDBInfo,
-    Movie,
 )
 from ..util import get_imdb_info, cleanup_messages, capitalize_movie_name
 from . import logger
@@ -53,9 +52,12 @@ class SuggestAction(BaseAction):
             return None, None
         return imdb_row, imdb_info
 
-    def add_genre_info(self, movie: Movie, genres: List[str]):
+    def add_genre_info(
+        self, server_id: int, movie_name: str, genres: List[str]
+    ) -> None:
+        clean_movie_name = capitalize_movie_name(movie_name)
         for genre in genres:
-            self.genre_controller.add_genre_to_movie(movie, genre)
+            self.genre_controller.add_genre_to_movie(server_id, clean_movie_name, genre)
 
     async def action(self, msg):
         server_id = msg.guild.id
@@ -96,7 +98,7 @@ class SuggestAction(BaseAction):
             "imdb_id": imdb_row,
         }
         try:
-            movie = self.controller.create(movie_data)
+            self.controller.create(movie_data)
         except pw.IntegrityError as e:
             logger.debug("Movie insert error: {}\n{}".format(movie_data, str(e)))
             server_msg = await msg.channel.send(
@@ -108,7 +110,7 @@ class SuggestAction(BaseAction):
 
         if imdb_info:
             try:
-                self.add_genre_info(movie, imdb_info["genres"])
+                self.add_genre_info(server_id, suggestion, imdb_info["genres"])
             except pw.IntegrityError as e:
                 logger.debug(
                     f"Genre insert error: {imdb_info['genres']} {suggestion}\n{e}"

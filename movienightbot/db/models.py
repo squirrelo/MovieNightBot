@@ -56,25 +56,17 @@ class Movie(BaseModel):
         )
 
 
-class Genre(BaseModel):
-    id = pw.AutoField(primary_key=True)
-    genre = pw.TextField(null=False, index=True)
-
-    class Meta:
-        table_name = "genres"
-
-
 # Genre linked to Movie and not IMDBInfo because this allows non-IMDB servers to still manually add genres to movies
 # and do votes by genre
 class MovieGenre(BaseModel):
     movie_id = pw.ForeignKeyField(Movie, backref="movie_genres")
-    genre_id = pw.ForeignKeyField(Genre, backref="genre_movies")
+    genre = pw.TextField(null=False, index=True)
 
     class Meta:
         table_name = "movie_genre"
         indexes = (
             # create a unique index on movie and genre
-            (("movie_id", "genre_id"), True),
+            (("movie_id", "genre"), True),
         )
 
 

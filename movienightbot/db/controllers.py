@@ -17,7 +17,6 @@ from .models import (
     UserVote,
     IMDBInfo,
     MovieGenre,
-    Genre,
 )
 from . import BaseController
 
@@ -126,12 +125,11 @@ class MoviesController(BaseController):
             return (
                 Movie.select()
                 .join(MovieGenre)
-                .join(Genre)
                 .order_by(pw.fn.Random())
                 .where(
                     (Movie.server == server_id)
                     & Movie.watched_on.is_null(True)
-                    & (Genre.genre == genre.lower())
+                    & (MovieGenre.genre == genre.lower())
                 )
                 .limit(num_movies)
             )
@@ -148,33 +146,22 @@ def movie_score_weightings(server_id: int) -> Dict[int, float]:
 
 
 class GenreController(BaseController):
-    model = Genre
+    model = MovieGenre
 
-    def get_by_genre(self, genre: str) -> Genre:
-        return Genre.select().where(Genre.genre == genre.lower())
-
-    def genre_exists(self, genre: str) -> bool:
-        return bool(Genre.select().where(Genre.genre == genre))
-
-    def add_genre(self, genre: str) -> None:
-        with self.transaction():
-            if not self.genre_exists(genre):
-                Genre.create(genre=genre.lower())
+    def get_by_genre(self, genre: str) -> List[MovieGenre]:
+        return MovieGenre.select().where(MovieGenre.genre == genre.lower())
 
     def get_movies_by_genre(self, server_id: int, genre: str) -> List[Movie]:
         return (
             Movie.select()
             .join(MovieGenre, on=(MovieGenre.movie_id == Movie.id))
-            .join(Genre, on=(MovieGenre.genre_id == Genre.id))
-            .where(Genre.genre == genre)
-            .where(Movie.server == server_id)
+            .where(Movie.server == server_id & MovieGenre.genre == genre.lower())
         )
 
-    def add_genre_to_movie(self, movie: Movie, genre: str):
+    def add_genre_to_movie(self, server_id: int, movie: str, genre: str) -> MovieGenre:
         with self.transaction():
-            self.add_genre(genre)
-            genre_obj = self.get_by_genre(genre)
-            MovieGenre.create(genre_id=genre_obj, movie_id=movie)
+            movie = MoviesController().get_by_server_and_id(server_id, movie)
+            return MovieGenre.create(genre=genre.lower(), movie_id=movie)
 
 
 class VoteController(BaseController):
