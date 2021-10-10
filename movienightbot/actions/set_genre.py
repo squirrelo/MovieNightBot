@@ -3,7 +3,7 @@ from ..db.controllers import MoviesController, ServerController, GenreController
 from ..util import cleanup_messages, capitalize_movie_name
 
 
-class SetIMDBId(BaseAction):
+class SetGenre(BaseAction):
     action_name = "set_genre"
     admin = False
     controller = MoviesController()
