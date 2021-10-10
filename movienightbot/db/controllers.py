@@ -8,7 +8,16 @@ import discord
 from imdb import IMDb
 from imdb._exceptions import IMDbDataAccessError
 
-from .models import Server, Movie, Vote, MovieVote, UserVote, IMDBInfo
+from .models import (
+    Server,
+    Movie,
+    Vote,
+    MovieVote,
+    UserVote,
+    IMDBInfo,
+    MovieGenre,
+    Genre,
+)
 from . import BaseController
 
 logger = logging.getLogger("movienightbot")
@@ -103,7 +112,7 @@ class MoviesController(BaseController):
         )
 
 
-def movie_score_weightings(server_id: int):
+def movie_score_weightings(server_id: int) -> Dict[int, float]:
     num_votes_allowed = ServerController().get_by_id(server_id).num_votes_per_user
     scores_dict = defaultdict(float)
     scores = [
@@ -111,6 +120,20 @@ def movie_score_weightings(server_id: int):
     ][::-1]
     scores_dict.update({x + 1: s for x, s in enumerate(scores)})
     return scores_dict
+
+
+class GenreController(BaseController):
+    def genre_exists(self, genre: str) -> bool:
+        return bool(Genre.select().where(Genre.genre == genre))
+
+    def get_movies_by_genre(self, server_id: int, genre: str) -> List[Movie]:
+        return (
+            Movie.select()
+            .join(MovieGenre)
+            .join(Genre)
+            .where(Genre.genre == genre)
+            .where(Movie.server == server_id)
+        )
 
 
 class VoteController(BaseController):

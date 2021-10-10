@@ -56,6 +56,26 @@ class Movie(BaseModel):
         )
 
 
+class Genre(BaseModel):
+    id = pw.AutoField(primary_key=True)
+    genre = pw.TextField(null=False, index=True)
+
+    class Meta:
+        table_name = "genres"
+
+
+class MovieGenre(BaseModel):
+    movie_id = pw.ForeignKeyField(Movie, backref="movie_genres")
+    genre_id = pw.ForeignKeyField(Genre, backref="genre_movies")
+
+    class Meta:
+        table_name = "moviegenre"
+        indexes = (
+            # create a unique index on movie and genre
+            (("movie_id", "genre_id"), True),
+        )
+
+
 class Vote(BaseModel):
     """Tracks the actual vote going on in a server"""
 
