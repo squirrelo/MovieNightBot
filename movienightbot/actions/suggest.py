@@ -29,7 +29,7 @@ class SuggestAction(BaseAction):
         suggestion = capitalize_movie_name(self.get_message_data(msg))
         imdb_info = get_imdb_info(suggestion, kind=kind)
         if not imdb_info:
-            return None
+            return None, None
         # see if the row already exists
         try:
             imdb_row = self.imdb_controller.get_by_id(imdb_info.movieID)
