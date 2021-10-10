@@ -1,4 +1,4 @@
-from typing import List, Union, Dict, Any
+from typing import List, Union, Dict, Any, Optional
 from string import ascii_lowercase
 from collections import defaultdict
 import logging
@@ -8,6 +8,7 @@ import discord
 from imdb import IMDb
 from imdb._exceptions import IMDbDataAccessError
 
+from ..exc import VoteError
 from .models import (
     Server,
     Movie,
@@ -111,6 +112,30 @@ class MoviesController(BaseController):
             .execute()
         )
 
+    def get_random_movies(
+        self, server_id: int, num_movies: int, genre: Optional[str] = None
+    ) -> List[Movie]:
+        if genre is None:
+            return (
+                Movie.select()
+                .order_by(pw.fn.Random())
+                .where((Movie.server == server_id) & Movie.watched_on.is_null(True))
+                .limit(num_movies)
+            )
+        else:
+            return (
+                Movie.select()
+                .join(MovieGenre)
+                .join(Genre)
+                .order_by(pw.fn.Random())
+                .where(
+                    (Movie.server == server_id)
+                    & Movie.watched_on.is_null(True)
+                    & (Genre.genre == genre.lower())
+                )
+                .limit(num_movies)
+            )
+
 
 def movie_score_weightings(server_id: int) -> Dict[int, float]:
     num_votes_allowed = ServerController().get_by_id(server_id).num_votes_per_user
@@ -123,14 +148,21 @@ def movie_score_weightings(server_id: int) -> Dict[int, float]:
 
 
 class GenreController(BaseController):
+    model = Genre
+
     def genre_exists(self, genre: str) -> bool:
         return bool(Genre.select().where(Genre.genre == genre))
+
+    def add_genre(self, genre: str) -> None:
+        with self.transaction():
+            if not self.genre_exists(genre):
+                Genre.create(genre=genre.lower())
 
     def get_movies_by_genre(self, server_id: int, genre: str) -> List[Movie]:
         return (
             Movie.select()
-            .join(MovieGenre)
-            .join(Genre)
+            .join(MovieGenre, on=(MovieGenre.movie_id == Movie.id))
+            .join(Genre, on=(MovieGenre.genre_id == Genre.id))
             .where(Genre.genre == genre)
             .where(Movie.server == server_id)
         )
@@ -142,16 +174,15 @@ class VoteController(BaseController):
     def get_by_id(self, server_id: int) -> Union[Vote, None]:
         return super().get_by_id(id=server_id, primary_key="server_id")
 
-    def start_vote(self, server_id: int) -> Vote:
+    def start_vote(self, server_id: int, genre: Optional[str] = None) -> Vote:
         with self.transaction():
             server_row = ServerController().get_by_id(server_id)
             num_movies = server_row.num_movies_per_vote
-            movies_for_vote = (
-                Movie.select()
-                .order_by(pw.fn.Random())
-                .where((Movie.server == server_id) & Movie.watched_on.is_null(True))
-                .limit(num_movies)
+            movies_for_vote = MoviesController().get_random_movies(
+                server_id, num_movies, genre
             )
+            if len(movies_for_vote) == 0:
+                raise VoteError("No movies found")
             vote_row = self.create({"server_id": server_id})
             movie_vote_controller = MovieVoteController()
             for movie, emoji_letter in zip(movies_for_vote, ascii_lowercase):

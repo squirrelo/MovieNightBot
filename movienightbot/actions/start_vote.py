@@ -2,6 +2,7 @@ import peewee as pw
 import logging
 
 from . import BaseAction
+from ..exc import VoteError
 from ..db.controllers import VoteController
 from ..util import build_vote_embed, add_vote_emojis
 
@@ -15,11 +16,21 @@ class StartVoteAction(BaseAction):
 
     async def action(self, msg):
         server_id = msg.guild.id
+        genre = self.get_message_data(msg, 1)
+        if not genre:
+            genre = None
+
         with self.controller.transaction():
             try:
-                vote_row = self.controller.start_vote(server_id)
+                vote_row = self.controller.start_vote(server_id, genre=genre)
             except pw.IntegrityError:
                 await msg.channel.send("Vote already started!")
+                return
+            except VoteError:
+                err_msg = "No movies found"
+                if genre:
+                    err_msg += f" for genre {genre}"
+                await msg.channel.send(err_msg)
                 return
             embed = build_vote_embed(server_id)
             vote_msg = await msg.channel.send(content=None, embed=embed)

@@ -69,7 +69,7 @@ class MovieGenre(BaseModel):
     genre_id = pw.ForeignKeyField(Genre, backref="genre_movies")
 
     class Meta:
-        table_name = "moviegenre"
+        table_name = "movie_genre"
         indexes = (
             # create a unique index on movie and genre
             (("movie_id", "genre_id"), True),
