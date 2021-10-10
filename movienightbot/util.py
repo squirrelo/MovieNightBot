@@ -1,13 +1,13 @@
 import datetime
 import re
-from typing import List, Optional
+from typing import List, Optional, Union
 import asyncio
 import logging
 
 import discord
+import imdb
 
 from .db.controllers import ServerController, MovieVoteController, MovieVote
-from imdb import IMDb
 
 
 logger = logging.getLogger("movienightbot")
@@ -108,7 +108,7 @@ emojis_text = {
 emojis_unicode = {v: k for k, v in emojis_text.items()}
 
 
-imdb_url_regex = re.compile(r"title/tt([0-9]+)/?")  # noqa
+imdb_url_regex = re.compile(r"title/tt([0-9]+)")  # noqa
 
 
 async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
@@ -117,33 +117,37 @@ async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
     await vote_msg.add_reaction(emojis_text[":arrows_counterclockwise:"])
 
 
-def get_imdb_info(movie_name: str, kind: Optional[str] = None):
+def get_imdb_info(
+    movie_name: str, kind: Optional[str] = None
+) -> Union[None, imdb.Movie.Movie]:
     if not movie_name:
         return None
 
-    im_db = IMDb()
+    im_db = imdb.IMDb()
     if movie_name.lower().startswith("http"):
         movie_id = imdb_url_regex.findall(movie_name)
         logger.debug(f"movie regex: `{movie_name}` >> {movie_id}")
         if len(movie_id) == 1:
-            results = im_db.get_movie(movie_id[0])
-            movie_name = capitalize_movie_name(results["title"])
-            results = [results]
+            imdb_id = movie_id[0]
         else:
-            results = []
+            return None
     else:
         logger.debug(f"searching for `{movie_name}`")
         results = im_db.search_movie(movie_name)
-    logger.debug("IMDB RESULTS: " + str(results))
-    for r in results:
-        if kind and kind not in r.get("kind", ""):
-            logger.debug(f"{r} is not {kind}, skipping")
-            continue
-        if r["title"].lower() == movie_name.lower():
-            logger.debug(movie_name + "  Matched  " + str(r))
-            return r
-    logger.debug(movie_name + "  Unmatched")
-    return None
+        logger.debug("IMDB RESULTS: " + str(results))
+        for r in results:
+            if kind and kind not in r.get("kind", ""):
+                continue
+            if r["title"].lower() == movie_name.lower():
+                logger.debug(f"{movie_name}  Matched {r}")
+                imdb_id = r.movieID
+                break
+        # for/else hell yeah!
+        else:
+            logger.debug(movie_name + "  Unmatched")
+            return None
+
+    return im_db.get_movie(imdb_id)
 
 
 def capitalize_movie_name(movie_name: str) -> str:

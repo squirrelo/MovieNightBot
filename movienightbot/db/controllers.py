@@ -150,6 +150,9 @@ def movie_score_weightings(server_id: int) -> Dict[int, float]:
 class GenreController(BaseController):
     model = Genre
 
+    def get_by_genre(self, genre: str) -> Genre:
+        return Genre.select().where(Genre.genre == genre.lower())
+
     def genre_exists(self, genre: str) -> bool:
         return bool(Genre.select().where(Genre.genre == genre))
 
@@ -166,6 +169,12 @@ class GenreController(BaseController):
             .where(Genre.genre == genre)
             .where(Movie.server == server_id)
         )
+
+    def add_genre_to_movie(self, movie: Movie, genre: str):
+        with self.transaction():
+            self.add_genre(genre)
+            genre_obj = self.get_by_genre(genre)
+            MovieGenre.create(genre_id=genre_obj, movie_id=movie)
 
 
 class VoteController(BaseController):

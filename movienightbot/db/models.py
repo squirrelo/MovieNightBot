@@ -64,6 +64,8 @@ class Genre(BaseModel):
         table_name = "genres"
 
 
+# Genre linked to Movie and not IMDBInfo because this allows non-IMDB servers to still manually add genres to movies
+# and do votes by genre
 class MovieGenre(BaseModel):
     movie_id = pw.ForeignKeyField(Movie, backref="movie_genres")
     genre_id = pw.ForeignKeyField(Genre, backref="genre_movies")

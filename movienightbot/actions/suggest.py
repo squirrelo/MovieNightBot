@@ -1,12 +1,16 @@
-from typing import Union
+from typing import Union, Tuple, List
+
 import peewee as pw
+import imdb
 
 from . import BaseAction
 from ..db.controllers import (
     MoviesController,
+    GenreController,
     ServerController,
     IMDBInfoController,
     IMDBInfo,
+    Movie,
 )
 from ..util import get_imdb_info, cleanup_messages, capitalize_movie_name
 from . import logger
@@ -17,8 +21,11 @@ class SuggestAction(BaseAction):
     controller = MoviesController()
     server_controller = ServerController()
     imdb_controller = IMDBInfoController()
+    genre_controller = GenreController()
 
-    def imdb_data(self, msg, kind) -> Union[None, IMDBInfo]:
+    def imdb_data(
+        self, msg, kind
+    ) -> Tuple[Union[None, IMDBInfo], Union[None, imdb.Movie.Movie]]:
         suggestion = capitalize_movie_name(self.get_message_data(msg))
         imdb_info = get_imdb_info(suggestion, kind=kind)
         if not imdb_info:
@@ -29,7 +36,7 @@ class SuggestAction(BaseAction):
         except pw.DoesNotExist:
             pass
         else:
-            return imdb_row
+            return imdb_row, imdb_info
         # row doesnt exist, so add it
         imdb_data = {
             "imdb_id": imdb_info.movieID,
@@ -43,8 +50,12 @@ class SuggestAction(BaseAction):
             imdb_row = self.imdb_controller.create(imdb_data)
         except pw.IntegrityError as e:
             logger.error("IMDB entry insert error: {}\n{}".format(imdb_data, str(e)))
-            return None
-        return imdb_row
+            return None, None
+        return imdb_row, imdb_info
+
+    def add_genre_info(self, movie: Movie, genres: List[str]):
+        for genre in genres:
+            self.genre_controller.add_genre_to_movie(movie, genre)
 
     async def action(self, msg):
         server_id = msg.guild.id
@@ -61,7 +72,7 @@ class SuggestAction(BaseAction):
         if server_row.check_movie_names:
             allow_tv_shows = server_row.allow_tv_shows
             kind = None if allow_tv_shows else "movie"
-            imdb_row = self.imdb_data(msg, kind=kind)
+            imdb_row, imdb_info = self.imdb_data(msg, kind=kind)
             suggestion = (
                 capitalize_movie_name(imdb_row.title)
                 if imdb_row
@@ -75,7 +86,7 @@ class SuggestAction(BaseAction):
                     await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
                 return
         else:
-            imdb_row = None
+            imdb_row, imdb_info = None, None
             suggestion = capitalize_movie_name(self.get_message_data(msg))
 
         movie_data = {
@@ -85,7 +96,7 @@ class SuggestAction(BaseAction):
             "imdb_id": imdb_row,
         }
         try:
-            self.controller.create(movie_data)
+            movie = self.controller.create(movie_data)
         except pw.IntegrityError as e:
             logger.debug("Movie insert error: {}\n{}".format(movie_data, str(e)))
             server_msg = await msg.channel.send(
@@ -94,6 +105,21 @@ class SuggestAction(BaseAction):
             if message_timeout > 0:
                 await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
             return
+
+        if imdb_info:
+            try:
+                self.add_genre_info(movie, imdb_info["genres"])
+            except pw.IntegrityError as e:
+                logger.debug(
+                    f"Genre insert error: {imdb_info['genres']} {suggestion}\n{e}"
+                )
+                server_msg = await msg.channel.send(
+                    f"Error adding suggestion {suggestion}"
+                )
+                if message_timeout > 0:
+                    await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+                return
+
         server_msg = await msg.channel.send(
             f"Your suggestion of {suggestion} ({imdb_row.year if imdb_row else ''}) has been added to the list."
         )
