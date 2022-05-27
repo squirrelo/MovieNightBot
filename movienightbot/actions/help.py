@@ -51,10 +51,19 @@ class HelpAction(BaseAction):
                 inline=False,
             )
         return embed
+	
+	async def _safe_send(msg, content_data, embed_data):
+        try:
+            await msg.author.send(content=content_data, embed=embed_data)
+        except discord.Forbidden as ex:
+            if ex.code == 50007:
+                await msg.channel.send(content=content_data, embed=embed_data)
+            else:
+                raise
 
     async def action(self, msg):
         embed_data = self._build_help_embed()
-        await msg.author.send(content=None, embed=embed_data)
+        await self._safe_send(msg, None, embed_data)
         server_role = self.controller.get_by_id(msg.guild.id).admin_role
         user_roles = {r.name for r in msg.author.roles}
         logger.debug(
@@ -63,7 +72,7 @@ class HelpAction(BaseAction):
         if server_role in user_roles:
             logger.debug(f"user {msg.author.nick} is an admin, showing admin help")
             admin_embed_data = self._build_admin_help_embed()
-            await msg.author.send(content=None, embed=admin_embed_data)
+            await self._safe_send(msg, None, admin_embed_data)
 
     @property
     def help_text(self):
