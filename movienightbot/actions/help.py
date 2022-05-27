@@ -51,8 +51,8 @@ class HelpAction(BaseAction):
                 inline=False,
             )
         return embed
-	
-	async def _safe_send(msg, content_data, embed_data):
+    
+    async def _safe_send(msg, content_data, embed_data):
         try:
             await msg.author.send(content=content_data, embed=embed_data)
         except discord.Forbidden as ex:
