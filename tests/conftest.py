@@ -8,13 +8,10 @@ from movienightbot.config import Config
 from movienightbot.db import initialize_db
 
 
-_TEST_SQLITE_FILE = os.path.join(os.path.dirname(__file__), "testing_db.sqlite")
-
-
 @pytest.fixture
 def client(event_loop):
 
-    bconfig = Config("unused_token", f"sqlite:///{_TEST_SQLITE_FILE}")
+    bconfig = Config("unused_token", f"sqlite:///:memory:")
     bconfig.message_identifier = "m!"
     bconfig.port = 8000
     bconfig.base_url = f"http://localhost:{bconfig.port}"
