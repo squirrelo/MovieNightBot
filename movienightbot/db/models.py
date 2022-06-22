@@ -52,7 +52,7 @@ class Movie(BaseModel):
         table_name = "movies"
         indexes = (
             # create a unique index on server and movie name
-            (("server", "movie_name"), True),
+            (("server", "movie_name", "imdb_id"), True),
         )
 
 
