@@ -12,7 +12,7 @@ from .db.controllers import (
     MovieVoteController,
 )
 
-client = discord.Client()
+client = discord.Client(intents=discord.Intents.all())
 _server_controller = ServerController()
 _vote_controller = VoteController()
 _movie_vote_controller = MovieVoteController()
