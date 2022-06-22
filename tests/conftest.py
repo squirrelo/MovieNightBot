@@ -1,4 +1,3 @@
-import os
 import pytest
 import discord.ext.test as test
 
@@ -11,7 +10,7 @@ from movienightbot.db import initialize_db
 @pytest.fixture
 def client(event_loop):
 
-    bconfig = Config("unused_token", f"sqlite:///:memory:")
+    bconfig = Config("unused_token", "sqlite:///:memory:")
     bconfig.message_identifier = "m!"
     bconfig.port = 8000
     bconfig.base_url = f"http://localhost:{bconfig.port}"
@@ -37,7 +36,7 @@ async def cleanup():
 
 
 def pytest_sessionfinish(session, exitstatus):
-    """ Code to execute after all tests. """
+    """Code to execute after all tests."""
 
     # This would have cleaned up the testing db but it is left open forever,
     # meaning we should just use bash and delete post pytest...
