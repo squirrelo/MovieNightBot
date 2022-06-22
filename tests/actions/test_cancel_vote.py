@@ -5,6 +5,7 @@ import discord.ext.test as test
 from tests.utils import (
     _clear_test_role,
     _set_test_role,
+    _add_movies,
 )
 
 
@@ -13,7 +14,9 @@ async def test_cancel_vote(client):
     await test.message("m!cancel_vote")
     assert test.verify().message().content("No vote started!")
 
+    await _add_movies(client, ["Movie1", "Movie2"])
     test_role = await _set_test_role(client)
+
     await test.message("m!start_vote")
     test.get_message()
     await _clear_test_role(client, test_role)
@@ -23,4 +26,4 @@ async def test_cancel_vote(client):
     #  It simply doesn't edit.
     #  Using peek=True to leave it on the stack doesn't help, unlike end_vote_tie.
 
-    assert test.verify().message().content("Vote cancelled")
+    assert test.get_message().content == "Vote cancelled"
