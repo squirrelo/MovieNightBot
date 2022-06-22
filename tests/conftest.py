@@ -26,7 +26,7 @@ def client(event_loop):
     guild_data = {"id": guild.id, "channel": guild.text_channels[0].id}
     _server_controller.create(guild_data)
 
-    return bclient
+    yield bclient
 
 
 @pytest.fixture(autouse=True)

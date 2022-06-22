@@ -30,6 +30,12 @@ async def test_suggest(client):
         .content(f"{test_title} has already been suggested in this server.")
     )
 
+
+@pytest.mark.asyncio
+async def test_suggest_blocked(client):
+    await test.empty_queue()
+
+    test_title = "The Land Before Time"
     test_role = await _set_test_role(client)
     await test.message("m!block_suggestions on")
     test.get_message()

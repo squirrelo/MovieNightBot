@@ -12,8 +12,9 @@ requirements = [
 
 test_requirements = [
     "pytest",
-    "pytest-black",
-    "pytest-flake8",
+    "pytest-asyncio",
+    "black",
+    "flake8",
     "dpytest>=0.5.1",
 ]
 
