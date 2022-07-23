@@ -52,16 +52,16 @@ class HelpAction(BaseAction):
             )
         return embed
     
-    async def _safe_send(self, msg, content_data, embed_data):
+    async def _safe_send(self, msg: discord.Message, content_data: Optional[str], embed_data: discord.Embed) -> None:
         try:
             await msg.author.send(content=content_data, embed=embed_data)
         except discord.Forbidden as ex:
             if ex.code == 50007:
-                await msg.channel.send(content=content_data, embed=embed_data)
+                await msg.channel.send(content=content_data, embed=embed_data, delete_after=60)
             else:
                 raise
 
-    async def action(self, msg):
+    async def action(self, msg: discord.Message):
         embed_data = self._build_help_embed()
         await self._safe_send(msg, None, embed_data)
         server_role = self.controller.get_by_id(msg.guild.id).admin_role
