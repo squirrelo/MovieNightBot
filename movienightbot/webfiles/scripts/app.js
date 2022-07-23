@@ -219,7 +219,6 @@ function MovieNightBotConstructor() {
 			for (let j = 0; j < matchChars.length; j++) {
 				let match = matchChars[j];
 				let title = this.FilterMovieTitle(itemsArray[i].title);
-				console.log(title);
 				let matched = title != "";
 				matched &= title.substring(0, 1).toUpperCase() == match;
 
