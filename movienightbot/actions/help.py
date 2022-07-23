@@ -64,9 +64,10 @@ class HelpAction(BaseAction):
         except discord.Forbidden as ex:
             # For error/exception codes see: https://discord.com/developers/docs/topics/opcodes-and-status-codes#json
             if ex.code == 50007:  # Cannot Send messages to this user
-                await msg.channel.send(
-                    content=content_data, embed=embed_data, delete_after=60
+                thread = await msg.create_thread(
+                    name="Help thread", auto_archive_duration=120
                 )
+                await thread.send(content=content_data, embed=embed_data)
             else:
                 raise
 
