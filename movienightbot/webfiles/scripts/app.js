@@ -245,7 +245,6 @@ function MovieNightBotConstructor() {
 
 	//Removes common items like "The" from the start of a movie title for more accurate letter matching.
 	this.matchTerms = [ "THE" ];
-
 	this.FilterMovieTitle = function(title) {
         let result = title;
         for (let i = 0; i < this.matchTerms.length; i++) {
@@ -254,6 +253,9 @@ function MovieNightBotConstructor() {
                 result = result.substring(term.length+1);//+1 is for the space after the term
             }
         }
+		//If the entire title got filtered out, just use the original input
+		if (result.length < 1)
+			result = title;
         return result;
 	}
 
