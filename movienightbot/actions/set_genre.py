@@ -31,4 +31,4 @@ class SetGenre(BaseAction):
 
     @property
     def help_options(self):
-        return ["[genre] [movie_name]"]
+        return ["[genre]", "[movie_name]"]

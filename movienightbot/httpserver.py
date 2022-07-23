@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
@@ -6,7 +6,11 @@ import logging
 import json
 import re
 
-from movienightbot.db.controllers import MoviesController, Movie, GenreController, MovieGenre
+from movienightbot.db.controllers import (
+    MoviesController,
+    Movie,
+    GenreController,
+)
 
 
 logger = logging.getLogger("movienightbot")
@@ -20,7 +24,7 @@ class BotRequestHandler(BaseHTTPRequestHandler):
     static_regex = re.compile(r"^/static/.+$")
     favicon_url = "/favicon.ico"
     movies_controller = MoviesController()
-    genre_controller = GenreController();
+    genre_controller = GenreController()
 
     def set_json_headers(self, response_code: int = 200):
         self.send_response(response_code)
@@ -58,9 +62,7 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         for genre in movie_genres:
             genre_list.append(genre.genre)
 
-        movie_info.update({
-            "genre": genre_list
-        })
+        movie_info.update({"genre": genre_list})
         return movie_info
 
     def get_suggested_json(self, server_id: int):
