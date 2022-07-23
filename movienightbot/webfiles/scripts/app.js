@@ -93,10 +93,11 @@ function MovieNightBotConstructor() {
 
 			this.maxAverageVotePower = Math.max(this.maxAverageVotePower, item.votePower);
 			this.maxAveragePopularity = Math.max(this.maxAveragePopularity, item.popularity);
-			if (Utility.CharIsNumber(item.title.substring(0, 1).toUpperCase()))
+			let filteredTitle = this.FilterMovieTitle(item.title);
+			if (Utility.CharIsNumber(filteredTitle.substring(0, 1).toUpperCase()))
 				includedLetters.push("#");
 			else
-				includedLetters.push(item.title.substring(0, 1).toUpperCase());
+				includedLetters.push(filteredTitle.substring(0, 1).toUpperCase());
 		}
 
 		this.GenerateLetterNav(includedLetters);
@@ -216,9 +217,13 @@ function MovieNightBotConstructor() {
 		let itemIndex = -1;
 		for (let i = 0; i < itemsArray.length; i++) {
 			for (let j = 0; j < matchChars.length; j++) {
-				let item = itemsArray[i];
 				let match = matchChars[j];
-				if (item.title != "" && item.title.substring(0, 1).toUpperCase() == match) {
+				let title = this.FilterMovieTitle(itemsArray[i].title);
+				console.log(title);
+				let matched = title != "";
+				matched &= title.substring(0, 1).toUpperCase() == match;
+
+				if (matched) {
 					itemIndex = i;
 					break;
 				}
@@ -237,6 +242,21 @@ function MovieNightBotConstructor() {
 		}
 
 	}
+
+	//Removes common items like "The" from the start of a movie title for more accurate letter matching.
+	this.matchTerms = [ "THE" ];
+
+	this.FilterMovieTitle = function(title) {
+        let result = title;
+        for (let i = 0; i < this.matchTerms.length; i++) {
+            let term = this.matchTerms[i];
+            if (title.substring(0, term.length).toUpperCase() == term) {
+                result = result.substring(term.length+1);//+1 is for the space after the term
+            }
+        }
+        return result;
+	}
+
 }
 
 function SuggestedMovie(suggestionJSON) {
