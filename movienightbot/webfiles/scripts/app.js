@@ -268,6 +268,7 @@ function MovieNightBotConstructor() {
 	}
 
 	this.SortyByTitle = function() {
+	    this.UnselectAllBullets();
 		document.querySelector("#BtnSortByTitle .bullet").classList.add("selected");
 		this.SortData((a, b) => {
 			let aTitle = MovieNightBot.FilterMovieTitle(a.title);
@@ -277,6 +278,7 @@ function MovieNightBotConstructor() {
 	}
 
 	this.SortBySuggestor = function() {
+	    this.UnselectAllBullets();
 		document.querySelector("#BtnSortBySuggestor .bullet").classList.add("selected");
 		this.SortData((a, b) => {
 			let val = a.suggestor.localeCompare(b.suggestor);
@@ -290,6 +292,7 @@ function MovieNightBotConstructor() {
 	}
 
 	this.SortBySuggestDate = function() {
+	    this.UnselectAllBullets();
 		document.querySelector("#BtnSortBySuggestDate .bullet").classList.add("selected");
 		this.SortData((a, b) => {
 			let dateA = new Date(a.date_suggested);
@@ -299,6 +302,7 @@ function MovieNightBotConstructor() {
 	}
 
 	this.SortByWatchDate = function() {
+	    this.UnselectAllBullets();
 		document.querySelector("#BtnSortByWatchDate .bullet").classList.add("selected");
 		this.SortData((a, b) => {
 			let dateA = new Date(a.date_watched);
@@ -308,6 +312,7 @@ function MovieNightBotConstructor() {
 	}
 
 	this.SortByVoteCount = function() {
+	    this.UnselectAllBullets();
 		document.querySelector("#BtnSortByVoteCount .bullet").classList.add("selected");
 		this.SortData((a, b) => {
 			val = 0;
