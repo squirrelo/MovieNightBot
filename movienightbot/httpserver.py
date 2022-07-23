@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
@@ -6,7 +6,7 @@ import logging
 import json
 import re
 
-from movienightbot.db.controllers import MoviesController, Movie
+from movienightbot.db.controllers import MoviesController, Movie, GenreController, MovieGenre
 
 
 logger = logging.getLogger("movienightbot")
@@ -20,6 +20,7 @@ class BotRequestHandler(BaseHTTPRequestHandler):
     static_regex = re.compile(r"^/static/.+$")
     favicon_url = "/favicon.ico"
     movies_controller = MoviesController()
+    genre_controller = GenreController();
 
     def set_json_headers(self, response_code: int = 200):
         self.send_response(response_code)
@@ -27,7 +28,7 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
-    def build_movie_base_info(self, movie: Movie) -> Dict[str, Any]:
+    def build_movie_base_info(self, movie: Movie, movie_genres: List[MovieGenre]) -> Dict[str, Any]:
         movie_info = {
             "title": movie.movie_name,
             "suggestor": movie.suggested_by,
@@ -36,6 +37,7 @@ class BotRequestHandler(BaseHTTPRequestHandler):
             "total_score": movie.total_score,
             "total_votes": movie.total_votes,
             "num_votes_entered": movie.num_votes_entered,
+            "genre": None,
             "imdb_id": None,
             "year": None,
             "poster_url": None,
@@ -50,13 +52,22 @@ class BotRequestHandler(BaseHTTPRequestHandler):
                     "full_size_poster_url": movie.imdb_id.full_size_poster_url,
                 }
             )
+
+        genre_list = []
+        for genre in movie_genres:
+            genre_list.append(genre.genre)
+
+        movie_info.update({
+            "genre": genre_list
+        })
         return movie_info
 
     def get_suggested_json(self, server_id: int):
         suggested_movies = self.movies_controller.get_suggested_for_server(server_id)
         suggestion_list = []
         for suggestion in suggested_movies:
-            movie_info = self.build_movie_base_info(suggestion)
+            movie_genre = self.genre_controller.get_genres_by_movie_id(suggestion.id)
+            movie_info = self.build_movie_base_info(suggestion, movie_genre)
             suggestion_list.append(movie_info)
 
         self.set_json_headers()
@@ -67,7 +78,8 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         watched_movies = self.movies_controller.get_watched_for_server(server_id)
         watched_list = []
         for watched in watched_movies:
-            movie_info = self.build_movie_base_info(watched)
+            movie_genre = self.genre_controller.get_genres_by_movie_id(watched.id)
+            movie_info = self.build_movie_base_info(watched, movie_genre)
             watched_list.append(movie_info)
 
         self.set_json_headers()

@@ -338,14 +338,22 @@ h1, h2 {
     margin-bottom: 10px;
 }
 
+/* .section.content .items .item #image {
+	width: 20%;
+} */
+
 .section.content .items .item .coverImage {
     width: 200px;
     height: 200px;
     object-fit: contain;
 }
 
+.section.content .items .item .genres {
+	width: 20%;
+}
+
 .section.content .items .item .imdbData {
-    width: 20%;
+    width: 15%;
     padding-left: 15px;
     padding-right: 15px;
 }
@@ -360,7 +368,7 @@ h1, h2 {
     color: #5385C2;
 }
 
-@media screen and (max-width: 1018px) {
+@media screen and (max-width: 1150px) {
 
 	
 	.section.content .letterNav {
@@ -368,6 +376,10 @@ h1, h2 {
 	}
 
 	.section.content .items .item .data2 {
+		display: none;
+	}
+
+	.section.content .items .item .genres {
 		display: none;
 	}
 

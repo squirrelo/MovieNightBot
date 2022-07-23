@@ -333,8 +333,10 @@ function SuggestedMovie(suggestionJSON) {
 
 	this.Init = function() {
 		this.domObject = document.createElement('div');
-		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>'
+		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>';
 		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
+		if (this.suggestionJSON.genre && this.suggestionJSON.genre.length > 0)
+			htmlText += '<div id="genres" class="genres"><ul></ul></h2></div>';
 		htmlText += '<div id="data1"><p id="txtSuggestor"></p><p id="txtSuggestDate"></p></div>';
 		htmlText += '<div id="data2" class="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p></p><p id="txtVoteEvents"></div>';
 //		htmlText += '<div id="health"><div id="background"><div id="bar">100%</div></div></div>'
@@ -375,6 +377,15 @@ function SuggestedMovie(suggestionJSON) {
 			this.domObject.querySelector("#imdbLink").href = "https://www.imdb.com/title/tt" + this.suggestionJSON.imdb_id;
 		else
 			this.domObject.querySelector("#imdbLink").href = "#";
+
+		if (this.suggestionJSON.genre && this.suggestionJSON.genre.length > 0) {
+			let ul = this.domObject.querySelector("#genres ul");
+			for (let i = 0; i < this.suggestionJSON.genre.length; i++) {
+				let element = document.createElement("li");
+				element.innerHTML = this.suggestionJSON.genre[i];
+				ul.appendChild(element);
+			}
+		}
 	}
 }
 
@@ -384,8 +395,10 @@ function WatchedMovie(watchedJSON) {
 
 	this.Init = function() {
 		this.domObject = document.createElement('div');
-		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>'
+		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>';
 		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
+		if (this.watchedJSON.genre && this.watchedJSON.genre.length > 0)
+			htmlText += '<div id="genres" class="genres"><ul></ul></h2></div>';
 		htmlText += '<div id="data1"><p id="txtSuggestor"><p id="txtSuggestDate"></p></p><p id="txtWatchDate"></p></div>';
 		htmlText += '<div id="data2" class="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p><p id="txtVoteEvents"></p></div>';
 		this.domObject.innerHTML = htmlText;
@@ -416,6 +429,15 @@ function WatchedMovie(watchedJSON) {
 			this.domObject.querySelector("#imdbLink").href = "https://www.imdb.com/title/tt" + this.watchedJSON.imdb_id;
 		else
 			this.domObject.querySelector("#imdbLink").href = "#";
+
+		if (this.watchedJSON.genre && this.watchedJSON.genre.length > 0) {
+			let ul = this.domObject.querySelector("#genres ul");
+			for (let i = 0; i < this.watchedJSON.genre.length; i++) {
+				let element = document.createElement("li");
+				element.innerHTML = this.watchedJSON.genre[i];
+				ul.appendChild(element);
+			}
+		}
 	}
 } 
 
