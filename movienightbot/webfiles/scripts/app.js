@@ -1,10 +1,10 @@
 
 var suggestionsRequest = "/dev/movienightbot/testData.json";
 
-var app = new MovieNightBot();
-var settings = new Settings();
+var MovieNightBot = new MovieNightBotConstructor();
+var Settings = new SettingsConstructor();
 
-function MovieNightBot() {
+function MovieNightBotConstructor() {
 
 	this.items = null;
 	this.txtPositionP = null;
@@ -30,31 +30,20 @@ function MovieNightBot() {
 		this.txtPositionP = document.querySelector("#PageControls > #Position > p");
 		this.txtPositionP2 = document.querySelector("#PageControls2 > #Position > p");
 
-		let btnSettingText = document.querySelector("#PageControls > #BtnSetting > p");
+		let btnSettingText = document.querySelector("#BtnSetting h2");
 		let txtPageTitle = document.querySelector("#TxtPageTitle");
 
 		if (window.location.href.includes("suggested")) {
 			this.bGetSuggested = true;
 			btnSettingText.innerHTML = "Show Watched";
 			txtPageTitle.innerHTML = "Movie Night Bot Suggested Movies";
+			document.querySelector("#BtnSortByWatchDate").classList.add("hidden");
 		} else {
 			this.bGetSuggested = false;
 			btnSettingText.innerHTML = "Show Suggested";
 			txtPageTitle.innerHTML = "Movie Night Bot Watched Movies";
+			document.querySelector("#BtnSortByWatchDate").classList.remove("hidden");
 		}
-
-		document.querySelector("#PageControls > #BtnSetting").onclick = this.OnClickBtnSetting.bind(this);
-		document.querySelector("#PageControls > #BtnFirst").onclick = this.OnClickBtnFirst.bind(this);
-		document.querySelector("#PageControls > #BtnPrevious").onclick = this.OnClickBtnPrevious.bind(this);
-		document.querySelector("#PageControls > #BtnNext").onclick = this.OnClickBtnNext.bind(this);
-		document.querySelector("#PageControls > #BtnLast").onclick = this.OnClicBtnLast.bind(this);
-
-		document.querySelector("#PageControls2 > #BtnFirst").onclick = this.OnClickBtnFirst.bind(this);
-		document.querySelector("#PageControls2 > #BtnPrevious").onclick = this.OnClickBtnPrevious.bind(this);
-		document.querySelector("#PageControls2 > #BtnNext").onclick = this.OnClickBtnNext.bind(this);
-		document.querySelector("#PageControls2 > #BtnLast").onclick = this.OnClicBtnLast.bind(this);
-
-		//this.GenerateLetterNav();
 
 		this.RequestItems();
 	}
@@ -63,8 +52,8 @@ function MovieNightBot() {
 		let xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				app.lastData = JSON.parse(this.responseText);
-				app.RefreshItems();
+				MovieNightBot.lastData = JSON.parse(this.responseText);
+				MovieNightBot.RefreshItems();
 			}
 		}
 
@@ -106,16 +95,17 @@ function MovieNightBot() {
 
 			this.maxAverageVotePower = Math.max(this.maxAverageVotePower, item.votePower);
 			this.maxAveragePopularity = Math.max(this.maxAveragePopularity, item.popularity);
-			if (Utility.CharIsNumber(item.title.substring(0, 1).toUpperCase()))
+			let filteredTitle = this.FilterMovieTitle(item.title);
+			if (Utility.CharIsNumber(filteredTitle.substring(0, 1).toUpperCase()))
 				includedLetters.push("#");
 			else
-				includedLetters.push(item.title.substring(0, 1).toUpperCase());
+				includedLetters.push(filteredTitle.substring(0, 1).toUpperCase());
 		}
 
 		this.GenerateLetterNav(includedLetters);
 		
 
-		this.pageCount = Math.ceil(itemsArray.length / settings.itemsPerPage);
+		this.pageCount = Math.ceil(itemsArray.length / Settings.itemsPerPage);
 		this.currentPage = 0;
 		this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
 		this.txtPositionP2.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
@@ -151,7 +141,7 @@ function MovieNightBot() {
 			itemsArray = this.lastData.watched;
 		}
 		
-		for (let i = this.currentPage * settings.itemsPerPage; i < this.currentPage * settings.itemsPerPage + settings.itemsPerPage; i++) {
+		for (let i = this.currentPage * Settings.itemsPerPage; i < this.currentPage * Settings.itemsPerPage + Settings.itemsPerPage; i++) {
 			if (i >= itemsArray.length)
 				break;
 			
@@ -165,13 +155,13 @@ function MovieNightBot() {
 			item.Init();
 			this.items.appendChild(item.domObject);
 		}
+
+		this.UpdatePositionText();
 	}
 
 	this.OnClickBtnFirst = function() {
 		if (this.currentPage != 0) {
 			this.currentPage = 0;
-			this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
-			this.txtPositionP2.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
 			this.LoadItems();
 		}
 	}
@@ -179,8 +169,6 @@ function MovieNightBot() {
 	this.OnClickBtnPrevious = function() {
 		if (this.currentPage > 0) {
 			this.currentPage -= 1;
-			this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
-			this.txtPositionP2.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
 			this.LoadItems();
 		}
 	}
@@ -188,19 +176,20 @@ function MovieNightBot() {
 	this.OnClickBtnNext = function() {
 		if (this.currentPage < this.pageCount-1) {
 			this.currentPage += 1;
-			this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
-			this.txtPositionP2.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
 			this.LoadItems();
 		}
 	}
 
-	this.OnClicBtnLast = function() {
+	this.OnClickBtnLast = function() {
 		if (this.currentPage != this.pageCount -1) {
 			this.currentPage = this.pageCount-1;
-			this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
-			this.txtPositionP2.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
 			this.LoadItems();
 		}
+	}
+
+	this.UpdatePositionText = function() {
+		this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
+		this.txtPositionP2.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
 	}
 
 	this.OnClickBtnSetting = function() {
@@ -229,9 +218,12 @@ function MovieNightBot() {
 		let itemIndex = -1;
 		for (let i = 0; i < itemsArray.length; i++) {
 			for (let j = 0; j < matchChars.length; j++) {
-				let item = itemsArray[i];
 				let match = matchChars[j];
-				if (item.title != "" && item.title.substring(0, 1).toUpperCase() == match) {
+				let title = this.FilterMovieTitle(itemsArray[i].title);
+				let matched = title != "";
+				matched &= title.substring(0, 1).toUpperCase() == match;
+
+				if (matched) {
 					itemIndex = i;
 					break;
 				}
@@ -242,7 +234,7 @@ function MovieNightBot() {
 
 		if (itemIndex != -1) {
 			//Navigate to the appropriate location.
-			let targetPage = Math.floor(itemIndex / settings.itemsPerPage);
+			let targetPage = Math.floor(itemIndex / Settings.itemsPerPage);
 			this.currentPage = targetPage;
 			this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
 			this.txtPositionP2.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
@@ -250,6 +242,88 @@ function MovieNightBot() {
 		}
 
 	}
+
+	//Removes common items like "The" from the start of a movie title for more accurate letter matching.
+	this.matchTerms = [ "THE ", "A " ];
+	this.FilterMovieTitle = function(title) {
+        let result = title;
+        for (let i = 0; i < this.matchTerms.length; i++) {
+            let term = this.matchTerms[i];
+            if (title.substring(0, term.length).toUpperCase() == term) {
+                result = result.substring(term.length);//+1 is for the space after the term
+            }
+        }
+		//If the entire title got filtered out, just use the original input
+		if (result.length < 1)
+			result = title;
+        return result;
+	}
+
+	this.SortyByTitle = function() {
+		console.log("Sorting by title");
+		document.querySelector("#BtnSortByTitle .bullet").classList.add("selected");
+		document.querySelector("#BtnSortBySuggestor .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortBySuggestDate .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortByWatchDate .bullet").classList.remove("selected");
+		this.SortData((a, b) => {
+			let aTitle = MovieNightBot.FilterMovieTitle(a.title);
+			let bTitle = MovieNightBot.FilterMovieTitle(b.title);
+			return aTitle.localeCompare(bTitle);
+		});
+	}
+
+	this.SortBySuggestor = function() {
+		console.log("Sorting by suggestor");
+		document.querySelector("#BtnSortByTitle .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortBySuggestor .bullet").classList.add("selected");
+		document.querySelector("#BtnSortBySuggestDate .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortByWatchDate .bullet").classList.remove("selected");
+		this.SortData((a, b) => {
+			let val = a.suggestor.localeCompare(b.suggestor);
+			if (val == 0) {
+				let aTitle = MovieNightBot.FilterMovieTitle(a.title);
+				let bTitle = MovieNightBot.FilterMovieTitle(b.title);
+				val = aTitle.localeCompare(bTitle);
+			}
+			return val;
+		});
+	}
+
+	this.SortBySuggestDate = function() {
+		console.log("Sorting by suggest date");
+		document.querySelector("#BtnSortByTitle .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortBySuggestor .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortBySuggestDate .bullet").classList.add("selected");
+		document.querySelector("#BtnSortByWatchDate .bullet").classList.remove("selected");
+		this.SortData((a, b) => {
+			let dateA = new Date(a.date_suggested);
+			let dateB = new Date(b.date_suggested);
+			return dateA.getTime() >= dateB? -1 : 1;
+		});
+	}
+
+	this.SortByWatchDate = function() {
+		document.querySelector("#BtnSortByTitle .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortBySuggestor .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortBySuggestDate .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortByWatchDate .bullet").classList.add("selected");
+		this.SortData((a, b) => {
+			let dateA = new Date(a.date_watched);
+			let dateB = new Date(b.date_watched);
+			return dateA.getTime() >= dateB? -1 : 1;
+		});
+	}
+
+	this.SortData = function(sortFunction) {
+		if (this.bGetSuggested) {
+			this.lastData.suggested = this.lastData.suggested.sort(sortFunction);
+		} else {
+			this.lastData.watched = this.lastData.watched.sort(sortFunction);
+		}
+		this.currentPage = 0;
+		this.LoadItems();
+	}
+
 }
 
 function SuggestedMovie(suggestionJSON) {
@@ -259,11 +333,11 @@ function SuggestedMovie(suggestionJSON) {
 
 	this.Init = function() {
 		this.domObject = document.createElement('div');
-		let htmlText = '<div id="image"><img id="imgCover" src="../static/content/images/loading.gif" /></div>'
-		htmlText += '<div id="imdbData"><a id="imdbLink" href=""><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
+		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>'
+		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
 		htmlText += '<div id="data1"><p id="txtSuggestor"></p><p id="txtSuggestDate"></p></div>';
-		htmlText += '<div id="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p></p><p id="txtVoteEvents"></div>';
-		htmlText += '<div id="health"><div id="background"><div id="bar">100%</div></div></div>'
+		htmlText += '<div id="data2" class="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p></p><p id="txtVoteEvents"></div>';
+//		htmlText += '<div id="health"><div id="background"><div id="bar">100%</div></div></div>'
 		this.domObject.innerHTML = htmlText;
 
 		this.domObject.classList.add("item");
@@ -286,17 +360,17 @@ function SuggestedMovie(suggestionJSON) {
 		this.domObject.querySelector("#txtTotalVotes").innerHTML = "Total Votes: " + this.suggestionJSON.total_votes;
 		this.domObject.querySelector("#txtTotalScore").innerHTML = "Total Score: " + this.suggestionJSON.total_score;
 		this.domObject.querySelector("#txtVoteEvents").innerHTML = "Vote Events Entered: " + this.suggestionJSON.num_votes_entered;
-		let bar = this.domObject.querySelector("#bar");
+//		let bar = this.domObject.querySelector("#bar");
 
 		let healthPercentOfMaximum = 0;
-		if (app.maxAveragePopularity != 0 && !isNaN(app.maxAveragePopularity))
-			healthPercentOfMaximum = Math.round((this.suggestionJSON.popularity / app.maxAveragePopularity) * 100);
+		if (MovieNightBot.maxAveragePopularity != 0 && !isNaN(MovieNightBot.maxAveragePopularity))
+			healthPercentOfMaximum = Math.round((this.suggestionJSON.popularity / MovieNightBot.maxAveragePopularity) * 100);
 
-		bar.innerHTML = healthPercentOfMaximum + "%";
-		bar.style.width = healthPercentOfMaximum + "%";
-		let color = sVector3.Lerp(app.healthRed, app.healthGreen, healthPercentOfMaximum / 100.0);
-		color.Scale(256);
-		bar.style.backgroundColor = color.RGB();
+//		bar.innerHTML = healthPercentOfMaximum + "%";
+//		bar.style.width = healthPercentOfMaximum + "%";
+//		let color = sVector3.Lerp(MovieNightBot.healthRed, MovieNightBot.healthGreen, healthPercentOfMaximum / 100.0);
+//		color.Scale(256);
+//		bar.style.backgroundColor = color.RGB();
 		if (this.suggestionJSON.imdb_id != null)
 			this.domObject.querySelector("#imdbLink").href = "https://www.imdb.com/title/tt" + this.suggestionJSON.imdb_id;
 		else
@@ -310,10 +384,10 @@ function WatchedMovie(watchedJSON) {
 
 	this.Init = function() {
 		this.domObject = document.createElement('div');
-		let htmlText = '<div id="image"><img id="imgCover" src="../static/content/images/loading.gif" /></div>'
-		htmlText += '<div id="imdbData"><a id="imdbLink" href=""><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
-		htmlText += '<div id="data1"><p id="txtSuggestor"></p><p id="txtWatchDate"></p></div>';
-		htmlText += '<div id="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p><p id="txtVoteEvents"></p></div>';
+		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>'
+		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
+		htmlText += '<div id="data1"><p id="txtSuggestor"><p id="txtSuggestDate"></p></p><p id="txtWatchDate"></p></div>';
+		htmlText += '<div id="data2" class="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p><p id="txtVoteEvents"></p></div>';
 		this.domObject.innerHTML = htmlText;
 
 		this.domObject.classList.add("item");
@@ -331,8 +405,10 @@ function WatchedMovie(watchedJSON) {
 		this.domObject.querySelector("#txtTitle").innerHTML = this.watchedJSON.title;
 		this.domObject.querySelector("#txtYear").innerHTML = this.watchedJSON.year;
 		this.domObject.querySelector("#txtSuggestor").innerHTML = "Suggested by: " + this.watchedJSON.suggestor;
-		let suggestDate = new Date(this.watchedJSON.date_watched);
-		this.domObject.querySelector("#txtWatchDate").innerHTML = "Watched On: " + suggestDate.toLocaleDateString();
+		let suggestDate = new Date(this.watchedJSON.date_suggested);
+		let watchDate = new Date(this.watchedJSON.date_watched);
+		this.domObject.querySelector("#txtSuggestDate").innerHTML = "Suggested On: " + suggestDate.toLocaleDateString();
+		this.domObject.querySelector("#txtWatchDate").innerHTML = "Watched On: " + watchDate.toLocaleDateString();
 		this.domObject.querySelector("#txtTotalVotes").innerHTML = "Total Votes: " + this.watchedJSON.total_votes;
 		this.domObject.querySelector("#txtTotalScore").innerHTML = "Total Score: " + this.watchedJSON.total_score;
 		this.domObject.querySelector("#txtVoteEvents").innerHTML = "Vote Events Entered: " + this.watchedJSON.num_votes_entered;
@@ -343,6 +419,6 @@ function WatchedMovie(watchedJSON) {
 	}
 } 
 
-function Settings() {
+function SettingsConstructor() {
 	this.itemsPerPage = 10;
 }
