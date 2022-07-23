@@ -42,4 +42,8 @@ class StartVoteAction(BaseAction):
 
     @property
     def help_text(self):
-        return "Selects a number of random movie suggestions to be voted on."
+        return "Selects a number of random movie suggestions to be voted on. Filters to only genre, if given."
+
+    @property
+    def help_options(self):
+        return ["[genre (optional)]"]

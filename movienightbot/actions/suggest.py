@@ -98,6 +98,14 @@ class SuggestAction(BaseAction):
             "imdb_id": imdb_row,
         }
         try:
+            if imdb_row is None:
+                try:
+                    self.controller.get_by_server_and_id(server_id, suggestion)
+                except pw.DoesNotExist:
+                    # Movie not found, and no IMDB info to go by, so keep going
+                    pass
+                else:
+                    raise pw.IntegrityError("Already suggested, but no IMDB info given")
             self.controller.create(movie_data)
         except pw.IntegrityError as e:
             logger.debug("Movie insert error: {}\n{}".format(movie_data, str(e)))

@@ -32,9 +32,17 @@ class EndVoteAction(BaseAction):
             vote_msg = await msg.channel.send("replacement vote message")
         if len(winning_movies) == 1:
             winning_movie = winning_movies[0].movie_name
+            imdb_info = winning_movies[0].imdb_id
+            if imdb_info:
+                imdb_url = f"https://www.imdb.com/title/tt{imdb_info.imdb_id}/"
+                imdb_markup_link = f"[IMDb Page]({imdb_url})"
+                imdb_year = f"({imdb_info.year})"
+            else:
+                imdb_url, imdb_markup_link, imdb_year = "", "", ""
+
             embed = discord.Embed(
-                title=f"Wining movie: {winning_movie}",
-                description=f"Use `m!set_watched {winning_movie}` to set the movie as watched",
+                title=f"Wining movie: {winning_movie} {imdb_year}",
+                description=f"{imdb_markup_link} Use `m!set_watched {winning_movie}` to set the movie as watched",
             )
             await msg.channel.send(
                 f"The winning vote was `{winning_movie}`! "

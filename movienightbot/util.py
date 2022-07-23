@@ -6,7 +6,9 @@ import logging
 
 import discord
 import imdb
+import peewee as pw
 
+from .exc import VoteError
 from .db.controllers import ServerController, MovieVoteController, MovieVote
 
 
@@ -34,7 +36,10 @@ async def cleanup_messages(
 
 def build_vote_embed(server_id: int):
     server_row = ServerController().get_by_id(server_id)
-    movie_rows = MovieVoteController().get_movies_for_server_vote(server_id)
+    try:
+        movie_rows = MovieVoteController().get_movies_for_server_vote(server_id)
+    except pw.DoesNotExist:
+        raise VoteError(f"No vote started for server {server_id}")
     embed = discord.Embed(
         title="Movie Vote!",
         description=f"""Use the emojis to vote on your preferred movies, in the order you would prefer them.
