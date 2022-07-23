@@ -37,10 +37,12 @@ function MovieNightBotConstructor() {
 			this.bGetSuggested = true;
 			btnSettingText.innerHTML = "Show Watched";
 			txtPageTitle.innerHTML = "Movie Night Bot Suggested Movies";
+			document.querySelector("#BtnSortByWatchDate").classList.add("hidden");
 		} else {
 			this.bGetSuggested = false;
 			btnSettingText.innerHTML = "Show Suggested";
 			txtPageTitle.innerHTML = "Movie Night Bot Watched Movies";
+			document.querySelector("#BtnSortByWatchDate").classList.remove("hidden");
 		}
 
 		this.RequestItems();
@@ -153,13 +155,13 @@ function MovieNightBotConstructor() {
 			item.Init();
 			this.items.appendChild(item.domObject);
 		}
+
+		this.UpdatePositionText();
 	}
 
 	this.OnClickBtnFirst = function() {
 		if (this.currentPage != 0) {
 			this.currentPage = 0;
-			this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
-			this.txtPositionP2.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
 			this.LoadItems();
 		}
 	}
@@ -167,8 +169,6 @@ function MovieNightBotConstructor() {
 	this.OnClickBtnPrevious = function() {
 		if (this.currentPage > 0) {
 			this.currentPage -= 1;
-			this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
-			this.txtPositionP2.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
 			this.LoadItems();
 		}
 	}
@@ -176,8 +176,6 @@ function MovieNightBotConstructor() {
 	this.OnClickBtnNext = function() {
 		if (this.currentPage < this.pageCount-1) {
 			this.currentPage += 1;
-			this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
-			this.txtPositionP2.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
 			this.LoadItems();
 		}
 	}
@@ -185,10 +183,13 @@ function MovieNightBotConstructor() {
 	this.OnClickBtnLast = function() {
 		if (this.currentPage != this.pageCount -1) {
 			this.currentPage = this.pageCount-1;
-			this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
-			this.txtPositionP2.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
 			this.LoadItems();
 		}
+	}
+
+	this.UpdatePositionText = function() {
+		this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
+		this.txtPositionP2.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
 	}
 
 	this.OnClickBtnSetting = function() {
@@ -243,19 +244,84 @@ function MovieNightBotConstructor() {
 	}
 
 	//Removes common items like "The" from the start of a movie title for more accurate letter matching.
-	this.matchTerms = [ "THE" ];
+	this.matchTerms = [ "THE ", "A " ];
 	this.FilterMovieTitle = function(title) {
         let result = title;
         for (let i = 0; i < this.matchTerms.length; i++) {
             let term = this.matchTerms[i];
             if (title.substring(0, term.length).toUpperCase() == term) {
-                result = result.substring(term.length+1);//+1 is for the space after the term
+                result = result.substring(term.length);//+1 is for the space after the term
             }
         }
 		//If the entire title got filtered out, just use the original input
 		if (result.length < 1)
 			result = title;
         return result;
+	}
+
+	this.SortyByTitle = function() {
+		console.log("Sorting by title");
+		document.querySelector("#BtnSortByTitle .bullet").classList.add("selected");
+		document.querySelector("#BtnSortBySuggestor .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortBySuggestDate .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortByWatchDate .bullet").classList.remove("selected");
+		this.SortData((a, b) => {
+			let aTitle = MovieNightBot.FilterMovieTitle(a.title);
+			let bTitle = MovieNightBot.FilterMovieTitle(b.title);
+			return aTitle.localeCompare(bTitle);
+		});
+	}
+
+	this.SortBySuggestor = function() {
+		console.log("Sorting by suggestor");
+		document.querySelector("#BtnSortByTitle .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortBySuggestor .bullet").classList.add("selected");
+		document.querySelector("#BtnSortBySuggestDate .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortByWatchDate .bullet").classList.remove("selected");
+		this.SortData((a, b) => {
+			let val = a.suggestor.localeCompare(b.suggestor);
+			if (val == 0) {
+				let aTitle = MovieNightBot.FilterMovieTitle(a.title);
+				let bTitle = MovieNightBot.FilterMovieTitle(b.title);
+				val = aTitle.localeCompare(bTitle);
+			}
+			return val;
+		});
+	}
+
+	this.SortBySuggestDate = function() {
+		console.log("Sorting by suggest date");
+		document.querySelector("#BtnSortByTitle .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortBySuggestor .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortBySuggestDate .bullet").classList.add("selected");
+		document.querySelector("#BtnSortByWatchDate .bullet").classList.remove("selected");
+		this.SortData((a, b) => {
+			let dateA = new Date(a.date_suggested);
+			let dateB = new Date(b.date_suggested);
+			return dateA.getTime() >= dateB? -1 : 1;
+		});
+	}
+
+	this.SortByWatchDate = function() {
+		document.querySelector("#BtnSortByTitle .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortBySuggestor .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortBySuggestDate .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortByWatchDate .bullet").classList.add("selected");
+		this.SortData((a, b) => {
+			let dateA = new Date(a.date_watched);
+			let dateB = new Date(b.date_watched);
+			return dateA.getTime() >= dateB? -1 : 1;
+		});
+	}
+
+	this.SortData = function(sortFunction) {
+		if (this.bGetSuggested) {
+			this.lastData.suggested = this.lastData.suggested.sort(sortFunction);
+		} else {
+			this.lastData.watched = this.lastData.watched.sort(sortFunction);
+		}
+		this.currentPage = 0;
+		this.LoadItems();
 	}
 
 }
@@ -339,9 +405,10 @@ function WatchedMovie(watchedJSON) {
 		this.domObject.querySelector("#txtTitle").innerHTML = this.watchedJSON.title;
 		this.domObject.querySelector("#txtYear").innerHTML = this.watchedJSON.year;
 		this.domObject.querySelector("#txtSuggestor").innerHTML = "Suggested by: " + this.watchedJSON.suggestor;
-		let suggestDate = new Date(this.watchedJSON.date_watched);
+		let suggestDate = new Date(this.watchedJSON.date_suggested);
+		let watchDate = new Date(this.watchedJSON.date_watched);
 		this.domObject.querySelector("#txtSuggestDate").innerHTML = "Suggested On: " + suggestDate.toLocaleDateString();
-		this.domObject.querySelector("#txtWatchDate").innerHTML = "Watched On: " + suggestDate.toLocaleDateString();
+		this.domObject.querySelector("#txtWatchDate").innerHTML = "Watched On: " + watchDate.toLocaleDateString();
 		this.domObject.querySelector("#txtTotalVotes").innerHTML = "Total Votes: " + this.watchedJSON.total_votes;
 		this.domObject.querySelector("#txtTotalScore").innerHTML = "Total Score: " + this.watchedJSON.total_score;
 		this.domObject.querySelector("#txtVoteEvents").innerHTML = "Vote Events Entered: " + this.watchedJSON.num_votes_entered;

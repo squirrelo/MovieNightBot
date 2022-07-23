@@ -220,6 +220,50 @@ h1, h2 {
 	color: #D9E9FC;
 }
 
+.section.content .sorting {
+	display: flex;
+}
+
+.section.content .sorting * {
+	margin-top: 0px;
+}
+
+.section.content .sorting div {
+	margin-right: 15px;
+}
+
+.section.content .sorting .button {
+	padding: 15px;
+    background-color: #254770;
+    margin-left: 5px;
+    margin-right: 5px;
+    border-radius: 5px;
+
+    cursor: pointer;
+	-webkit-user-select: none; /* Safari */
+	-ms-user-select: none; /* IE 10 and IE 11 */
+	user-select: none; /* Standard syntax */
+}
+
+.section.content .sorting .button.hidden {
+	display: none;
+}
+
+.section.content .sorting .button:hover {
+	transition: 0.2s;
+	background-color: #263D59;
+	color: #5385C2;
+}
+
+.section.content .sorting .button .bullet {
+	font-weight:900;
+	display: none;
+}
+
+.section.content .sorting .button .bullet.selected {
+	display: inline;
+}
+
 .section.content .letterNav {
     display: flex;
     float: right;
@@ -301,7 +345,7 @@ h1, h2 {
 }
 
 .section.content .items .item .imdbData {
-    width: 15%;
+    width: 20%;
     padding-left: 15px;
     padding-right: 15px;
 }

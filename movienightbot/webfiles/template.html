@@ -22,6 +22,13 @@
 			</div>
 		</div>
 		<div class="section content" id="FlexBox">
+			<div class="sorting">
+				<div><h2>Sort by </h2></div>
+				<div id="BtnSortByTitle" class="button" onclick="javascript: MovieNightBot.SortyByTitle()"><span>Title</span><span class="bullet selected"> •</span></div>
+				<div id="BtnSortBySuggestor" class="button" onclick="javascript: MovieNightBot.SortBySuggestor()"><span>Suggested By</span><span class="bullet"> •</span></div>
+				<div id="BtnSortBySuggestDate" class="button" onclick="javascript: MovieNightBot.SortBySuggestDate()"><span>Suggested Date</span><span class="bullet"> •</span></div>
+				<div id="BtnSortByWatchDate" class="button hidden" onclick="javascript: MovieNightBot.SortByWatchDate()"><span>Watched Date</span><span class="bullet"> •</span></div>
+			</div>
 			<div class="letterNav" id="LetterNav"></div>
 			<div id="PageControls" class="controls">
 				<div class="button" onclick="javascript: MovieNightBot.OnClickBtnFirst()"><p>&lt;&lt;</p></div>
