@@ -1,10 +1,10 @@
 
 var suggestionsRequest = "/dev/movienightbot/testData.json";
 
-var app = new MovieNightBot();
-var settings = new Settings();
+var MovieNightBot = new MovieNightBotConstructor();
+var Settings = new SettingsConstructor();
 
-function MovieNightBot() {
+function MovieNightBotConstructor() {
 
 	this.items = null;
 	this.txtPositionP = null;
@@ -30,7 +30,7 @@ function MovieNightBot() {
 		this.txtPositionP = document.querySelector("#PageControls > #Position > p");
 		this.txtPositionP2 = document.querySelector("#PageControls2 > #Position > p");
 
-		let btnSettingText = document.querySelector("#PageControls > #BtnSetting > p");
+		let btnSettingText = document.querySelector("#BtnSetting h2");
 		let txtPageTitle = document.querySelector("#TxtPageTitle");
 
 		if (window.location.href.includes("suggested")) {
@@ -43,19 +43,6 @@ function MovieNightBot() {
 			txtPageTitle.innerHTML = "Movie Night Bot Watched Movies";
 		}
 
-		document.querySelector("#PageControls > #BtnSetting").onclick = this.OnClickBtnSetting.bind(this);
-		document.querySelector("#PageControls > #BtnFirst").onclick = this.OnClickBtnFirst.bind(this);
-		document.querySelector("#PageControls > #BtnPrevious").onclick = this.OnClickBtnPrevious.bind(this);
-		document.querySelector("#PageControls > #BtnNext").onclick = this.OnClickBtnNext.bind(this);
-		document.querySelector("#PageControls > #BtnLast").onclick = this.OnClicBtnLast.bind(this);
-
-		document.querySelector("#PageControls2 > #BtnFirst").onclick = this.OnClickBtnFirst.bind(this);
-		document.querySelector("#PageControls2 > #BtnPrevious").onclick = this.OnClickBtnPrevious.bind(this);
-		document.querySelector("#PageControls2 > #BtnNext").onclick = this.OnClickBtnNext.bind(this);
-		document.querySelector("#PageControls2 > #BtnLast").onclick = this.OnClicBtnLast.bind(this);
-
-		//this.GenerateLetterNav();
-
 		this.RequestItems();
 	}
 
@@ -63,8 +50,8 @@ function MovieNightBot() {
 		let xhttp = new XMLHttpRequest();
 		xhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				app.lastData = JSON.parse(this.responseText);
-				app.RefreshItems();
+				MovieNightBot.lastData = JSON.parse(this.responseText);
+				MovieNightBot.RefreshItems();
 			}
 		}
 
@@ -115,7 +102,7 @@ function MovieNightBot() {
 		this.GenerateLetterNav(includedLetters);
 		
 
-		this.pageCount = Math.ceil(itemsArray.length / settings.itemsPerPage);
+		this.pageCount = Math.ceil(itemsArray.length / Settings.itemsPerPage);
 		this.currentPage = 0;
 		this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
 		this.txtPositionP2.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
@@ -151,7 +138,7 @@ function MovieNightBot() {
 			itemsArray = this.lastData.watched;
 		}
 		
-		for (let i = this.currentPage * settings.itemsPerPage; i < this.currentPage * settings.itemsPerPage + settings.itemsPerPage; i++) {
+		for (let i = this.currentPage * Settings.itemsPerPage; i < this.currentPage * Settings.itemsPerPage + Settings.itemsPerPage; i++) {
 			if (i >= itemsArray.length)
 				break;
 			
@@ -194,7 +181,7 @@ function MovieNightBot() {
 		}
 	}
 
-	this.OnClicBtnLast = function() {
+	this.OnClickBtnLast = function() {
 		if (this.currentPage != this.pageCount -1) {
 			this.currentPage = this.pageCount-1;
 			this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
@@ -242,7 +229,7 @@ function MovieNightBot() {
 
 		if (itemIndex != -1) {
 			//Navigate to the appropriate location.
-			let targetPage = Math.floor(itemIndex / settings.itemsPerPage);
+			let targetPage = Math.floor(itemIndex / Settings.itemsPerPage);
 			this.currentPage = targetPage;
 			this.txtPositionP.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
 			this.txtPositionP2.innerHTML = this.currentPage + 1 + " of " + this.pageCount;
@@ -259,11 +246,11 @@ function SuggestedMovie(suggestionJSON) {
 
 	this.Init = function() {
 		this.domObject = document.createElement('div');
-		let htmlText = '<div id="image"><img id="imgCover" src="../static/content/images/loading.gif" /></div>'
-		htmlText += '<div id="imdbData"><a id="imdbLink" href=""><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
+		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>'
+		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
 		htmlText += '<div id="data1"><p id="txtSuggestor"></p><p id="txtSuggestDate"></p></div>';
-		htmlText += '<div id="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p></p><p id="txtVoteEvents"></div>';
-		htmlText += '<div id="health"><div id="background"><div id="bar">100%</div></div></div>'
+		htmlText += '<div id="data2" class="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p></p><p id="txtVoteEvents"></div>';
+//		htmlText += '<div id="health"><div id="background"><div id="bar">100%</div></div></div>'
 		this.domObject.innerHTML = htmlText;
 
 		this.domObject.classList.add("item");
@@ -286,17 +273,17 @@ function SuggestedMovie(suggestionJSON) {
 		this.domObject.querySelector("#txtTotalVotes").innerHTML = "Total Votes: " + this.suggestionJSON.total_votes;
 		this.domObject.querySelector("#txtTotalScore").innerHTML = "Total Score: " + this.suggestionJSON.total_score;
 		this.domObject.querySelector("#txtVoteEvents").innerHTML = "Vote Events Entered: " + this.suggestionJSON.num_votes_entered;
-		let bar = this.domObject.querySelector("#bar");
+//		let bar = this.domObject.querySelector("#bar");
 
 		let healthPercentOfMaximum = 0;
-		if (app.maxAveragePopularity != 0 && !isNaN(app.maxAveragePopularity))
-			healthPercentOfMaximum = Math.round((this.suggestionJSON.popularity / app.maxAveragePopularity) * 100);
+		if (MovieNightBot.maxAveragePopularity != 0 && !isNaN(MovieNightBot.maxAveragePopularity))
+			healthPercentOfMaximum = Math.round((this.suggestionJSON.popularity / MovieNightBot.maxAveragePopularity) * 100);
 
-		bar.innerHTML = healthPercentOfMaximum + "%";
-		bar.style.width = healthPercentOfMaximum + "%";
-		let color = sVector3.Lerp(app.healthRed, app.healthGreen, healthPercentOfMaximum / 100.0);
-		color.Scale(256);
-		bar.style.backgroundColor = color.RGB();
+//		bar.innerHTML = healthPercentOfMaximum + "%";
+//		bar.style.width = healthPercentOfMaximum + "%";
+//		let color = sVector3.Lerp(MovieNightBot.healthRed, MovieNightBot.healthGreen, healthPercentOfMaximum / 100.0);
+//		color.Scale(256);
+//		bar.style.backgroundColor = color.RGB();
 		if (this.suggestionJSON.imdb_id != null)
 			this.domObject.querySelector("#imdbLink").href = "https://www.imdb.com/title/tt" + this.suggestionJSON.imdb_id;
 		else
@@ -310,10 +297,10 @@ function WatchedMovie(watchedJSON) {
 
 	this.Init = function() {
 		this.domObject = document.createElement('div');
-		let htmlText = '<div id="image"><img id="imgCover" src="../static/content/images/loading.gif" /></div>'
-		htmlText += '<div id="imdbData"><a id="imdbLink" href=""><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
+		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>'
+		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
 		htmlText += '<div id="data1"><p id="txtSuggestor"></p><p id="txtWatchDate"></p></div>';
-		htmlText += '<div id="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p><p id="txtVoteEvents"></p></div>';
+		htmlText += '<div id="data2" class="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p><p id="txtVoteEvents"></p></div>';
 		this.domObject.innerHTML = htmlText;
 
 		this.domObject.classList.add("item");
@@ -343,6 +330,6 @@ function WatchedMovie(watchedJSON) {
 	}
 } 
 
-function Settings() {
+function SettingsConstructor() {
 	this.itemsPerPage = 10;
 }
