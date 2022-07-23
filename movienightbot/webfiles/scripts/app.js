@@ -259,12 +259,16 @@ function MovieNightBotConstructor() {
         return result;
 	}
 
-	this.SortyByTitle = function() {
-		console.log("Sorting by title");
-		document.querySelector("#BtnSortByTitle .bullet").classList.add("selected");
+	this.UnselectAllBullets = function() {
+		document.querySelector("#BtnSortByTitle .bullet").classList.remove("selected");
 		document.querySelector("#BtnSortBySuggestor .bullet").classList.remove("selected");
 		document.querySelector("#BtnSortBySuggestDate .bullet").classList.remove("selected");
 		document.querySelector("#BtnSortByWatchDate .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortByVoteCount .bullet").classList.remove("selected");
+	}
+
+	this.SortyByTitle = function() {
+		document.querySelector("#BtnSortByTitle .bullet").classList.add("selected");
 		this.SortData((a, b) => {
 			let aTitle = MovieNightBot.FilterMovieTitle(a.title);
 			let bTitle = MovieNightBot.FilterMovieTitle(b.title);
@@ -273,11 +277,7 @@ function MovieNightBotConstructor() {
 	}
 
 	this.SortBySuggestor = function() {
-		console.log("Sorting by suggestor");
-		document.querySelector("#BtnSortByTitle .bullet").classList.remove("selected");
 		document.querySelector("#BtnSortBySuggestor .bullet").classList.add("selected");
-		document.querySelector("#BtnSortBySuggestDate .bullet").classList.remove("selected");
-		document.querySelector("#BtnSortByWatchDate .bullet").classList.remove("selected");
 		this.SortData((a, b) => {
 			let val = a.suggestor.localeCompare(b.suggestor);
 			if (val == 0) {
@@ -290,11 +290,7 @@ function MovieNightBotConstructor() {
 	}
 
 	this.SortBySuggestDate = function() {
-		console.log("Sorting by suggest date");
-		document.querySelector("#BtnSortByTitle .bullet").classList.remove("selected");
-		document.querySelector("#BtnSortBySuggestor .bullet").classList.remove("selected");
 		document.querySelector("#BtnSortBySuggestDate .bullet").classList.add("selected");
-		document.querySelector("#BtnSortByWatchDate .bullet").classList.remove("selected");
 		this.SortData((a, b) => {
 			let dateA = new Date(a.date_suggested);
 			let dateB = new Date(b.date_suggested);
@@ -303,14 +299,25 @@ function MovieNightBotConstructor() {
 	}
 
 	this.SortByWatchDate = function() {
-		document.querySelector("#BtnSortByTitle .bullet").classList.remove("selected");
-		document.querySelector("#BtnSortBySuggestor .bullet").classList.remove("selected");
-		document.querySelector("#BtnSortBySuggestDate .bullet").classList.remove("selected");
 		document.querySelector("#BtnSortByWatchDate .bullet").classList.add("selected");
 		this.SortData((a, b) => {
 			let dateA = new Date(a.date_watched);
 			let dateB = new Date(b.date_watched);
 			return dateA.getTime() >= dateB? -1 : 1;
+		});
+	}
+
+	this.SortByVoteCount = function() {
+		document.querySelector("#BtnSortByVoteCount .bullet").classList.add("selected");
+		this.SortData((a, b) => {
+			val = 0;
+			if (a.total_votes > b.total_votes) {
+			    val = -1;
+			}
+			if (b.total_votes > a.total_votes) {
+			    val = 1;
+			}
+			return val;
 		});
 	}
 

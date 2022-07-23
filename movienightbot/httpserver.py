@@ -53,8 +53,9 @@ class BotRequestHandler(BaseHTTPRequestHandler):
                 }
             )
 
-        genre_list = self.genre_controller.get_genres_by_movie_id(movie.id) or []
-        for genre in genre_list:
+        movie_genres = self.genre_controller.get_genres_by_movie_id(movie.id) or []
+        genre_list = []
+        for genre in movie_genres:
             genre_list.append(genre.genre)
 
         movie_info.update({
