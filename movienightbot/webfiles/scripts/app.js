@@ -259,12 +259,17 @@ function MovieNightBotConstructor() {
         return result;
 	}
 
-	this.SortyByTitle = function() {
-		console.log("Sorting by title");
-		document.querySelector("#BtnSortByTitle .bullet").classList.add("selected");
+	this.UnselectAllBullets = function() {
+		document.querySelector("#BtnSortByTitle .bullet").classList.remove("selected");
 		document.querySelector("#BtnSortBySuggestor .bullet").classList.remove("selected");
 		document.querySelector("#BtnSortBySuggestDate .bullet").classList.remove("selected");
 		document.querySelector("#BtnSortByWatchDate .bullet").classList.remove("selected");
+		document.querySelector("#BtnSortByVoteCount .bullet").classList.remove("selected");
+	}
+
+	this.SortyByTitle = function() {
+	    this.UnselectAllBullets();
+		document.querySelector("#BtnSortByTitle .bullet").classList.add("selected");
 		this.SortData((a, b) => {
 			let aTitle = MovieNightBot.FilterMovieTitle(a.title);
 			let bTitle = MovieNightBot.FilterMovieTitle(b.title);
@@ -273,11 +278,8 @@ function MovieNightBotConstructor() {
 	}
 
 	this.SortBySuggestor = function() {
-		console.log("Sorting by suggestor");
-		document.querySelector("#BtnSortByTitle .bullet").classList.remove("selected");
+	    this.UnselectAllBullets();
 		document.querySelector("#BtnSortBySuggestor .bullet").classList.add("selected");
-		document.querySelector("#BtnSortBySuggestDate .bullet").classList.remove("selected");
-		document.querySelector("#BtnSortByWatchDate .bullet").classList.remove("selected");
 		this.SortData((a, b) => {
 			let val = a.suggestor.localeCompare(b.suggestor);
 			if (val == 0) {
@@ -290,11 +292,8 @@ function MovieNightBotConstructor() {
 	}
 
 	this.SortBySuggestDate = function() {
-		console.log("Sorting by suggest date");
-		document.querySelector("#BtnSortByTitle .bullet").classList.remove("selected");
-		document.querySelector("#BtnSortBySuggestor .bullet").classList.remove("selected");
+	    this.UnselectAllBullets();
 		document.querySelector("#BtnSortBySuggestDate .bullet").classList.add("selected");
-		document.querySelector("#BtnSortByWatchDate .bullet").classList.remove("selected");
 		this.SortData((a, b) => {
 			let dateA = new Date(a.date_suggested);
 			let dateB = new Date(b.date_suggested);
@@ -303,14 +302,27 @@ function MovieNightBotConstructor() {
 	}
 
 	this.SortByWatchDate = function() {
-		document.querySelector("#BtnSortByTitle .bullet").classList.remove("selected");
-		document.querySelector("#BtnSortBySuggestor .bullet").classList.remove("selected");
-		document.querySelector("#BtnSortBySuggestDate .bullet").classList.remove("selected");
+	    this.UnselectAllBullets();
 		document.querySelector("#BtnSortByWatchDate .bullet").classList.add("selected");
 		this.SortData((a, b) => {
 			let dateA = new Date(a.date_watched);
 			let dateB = new Date(b.date_watched);
 			return dateA.getTime() >= dateB? -1 : 1;
+		});
+	}
+
+	this.SortByVoteCount = function() {
+	    this.UnselectAllBullets();
+		document.querySelector("#BtnSortByVoteCount .bullet").classList.add("selected");
+		this.SortData((a, b) => {
+			val = 0;
+			if (a.total_votes > b.total_votes) {
+			    val = -1;
+			}
+			if (b.total_votes > a.total_votes) {
+			    val = 1;
+			}
+			return val;
 		});
 	}
 
@@ -333,8 +345,10 @@ function SuggestedMovie(suggestionJSON) {
 
 	this.Init = function() {
 		this.domObject = document.createElement('div');
-		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>'
+		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>';
 		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
+		if (this.suggestionJSON.genre && this.suggestionJSON.genre.length > 0)
+			htmlText += '<div id="genres" class="genres"><ul></ul></h2></div>';
 		htmlText += '<div id="data1"><p id="txtSuggestor"></p><p id="txtSuggestDate"></p></div>';
 		htmlText += '<div id="data2" class="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p></p><p id="txtVoteEvents"></div>';
 //		htmlText += '<div id="health"><div id="background"><div id="bar">100%</div></div></div>'
@@ -375,6 +389,15 @@ function SuggestedMovie(suggestionJSON) {
 			this.domObject.querySelector("#imdbLink").href = "https://www.imdb.com/title/tt" + this.suggestionJSON.imdb_id;
 		else
 			this.domObject.querySelector("#imdbLink").href = "#";
+
+		if (this.suggestionJSON.genre && this.suggestionJSON.genre.length > 0) {
+			let ul = this.domObject.querySelector("#genres ul");
+			for (let i = 0; i < this.suggestionJSON.genre.length; i++) {
+				let element = document.createElement("li");
+				element.innerHTML = this.suggestionJSON.genre[i];
+				ul.appendChild(element);
+			}
+		}
 	}
 }
 
@@ -384,8 +407,10 @@ function WatchedMovie(watchedJSON) {
 
 	this.Init = function() {
 		this.domObject = document.createElement('div');
-		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>'
+		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>';
 		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
+		if (this.watchedJSON.genre && this.watchedJSON.genre.length > 0)
+			htmlText += '<div id="genres" class="genres"><ul></ul></h2></div>';
 		htmlText += '<div id="data1"><p id="txtSuggestor"><p id="txtSuggestDate"></p></p><p id="txtWatchDate"></p></div>';
 		htmlText += '<div id="data2" class="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p><p id="txtVoteEvents"></p></div>';
 		this.domObject.innerHTML = htmlText;
@@ -416,6 +441,15 @@ function WatchedMovie(watchedJSON) {
 			this.domObject.querySelector("#imdbLink").href = "https://www.imdb.com/title/tt" + this.watchedJSON.imdb_id;
 		else
 			this.domObject.querySelector("#imdbLink").href = "#";
+
+		if (this.watchedJSON.genre && this.watchedJSON.genre.length > 0) {
+			let ul = this.domObject.querySelector("#genres ul");
+			for (let i = 0; i < this.watchedJSON.genre.length; i++) {
+				let element = document.createElement("li");
+				element.innerHTML = this.watchedJSON.genre[i];
+				ul.appendChild(element);
+			}
+		}
 	}
 } 
 

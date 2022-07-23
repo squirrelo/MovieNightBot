@@ -199,6 +199,10 @@ class GenreController(BaseController):
             movie = MoviesController().get_by_server_and_id(server_id, movie)
             return MovieGenre.create(genre=genre.lower(), movie_id=movie)
 
+    def get_genres_by_movie_id(self, movie_id: int) -> List[MovieGenre]:
+        return MovieGenre.select().where(movie_id == MovieGenre.movie_id);
+
+
 
 class VoteController(BaseController):
     model = Vote
