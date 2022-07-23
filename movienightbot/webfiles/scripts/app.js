@@ -299,7 +299,7 @@ function WatchedMovie(watchedJSON) {
 		this.domObject = document.createElement('div');
 		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>'
 		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
-		htmlText += '<div id="data1"><p id="txtSuggestor"></p><p id="txtWatchDate"></p></div>';
+		htmlText += '<div id="data1"><p id="txtSuggestor"><p id="txtSuggestDate"></p></p><p id="txtWatchDate"></p></div>';
 		htmlText += '<div id="data2" class="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p><p id="txtVoteEvents"></p></div>';
 		this.domObject.innerHTML = htmlText;
 
@@ -319,6 +319,7 @@ function WatchedMovie(watchedJSON) {
 		this.domObject.querySelector("#txtYear").innerHTML = this.watchedJSON.year;
 		this.domObject.querySelector("#txtSuggestor").innerHTML = "Suggested by: " + this.watchedJSON.suggestor;
 		let suggestDate = new Date(this.watchedJSON.date_watched);
+		this.domObject.querySelector("#txtSuggestDate").innerHTML = "Suggested On: " + suggestDate.toLocaleDateString();
 		this.domObject.querySelector("#txtWatchDate").innerHTML = "Watched On: " + suggestDate.toLocaleDateString();
 		this.domObject.querySelector("#txtTotalVotes").innerHTML = "Total Votes: " + this.watchedJSON.total_votes;
 		this.domObject.querySelector("#txtTotalScore").innerHTML = "Total Score: " + this.watchedJSON.total_score;
