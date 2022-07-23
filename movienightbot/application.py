@@ -46,11 +46,15 @@ async def on_ready():
     )
 
 
-@client.event
-async def on_guild_join(guild: discord.Guild):
+def register_guild(guild: discord.Guild):
     guild_data = {"id": guild.id, "channel": guild.text_channels[0].id}
     _server_controller.create(guild_data)
     logger.info(f"Registered on new server {guild.name}")
+
+
+@client.event
+async def on_guild_join(guild: discord.Guild):
+    register_guild(guild)
 
 
 @client.event
@@ -77,6 +81,13 @@ async def on_message(message: discord.message):
     except KeyError:
         await unknown_default_action(message, command)
         return
+
+    # Make sure server is registered, and register if not (#55)
+    try:
+        _server_controller.get_by_id(message.guild.id)
+    except pw.DoesNotExist:
+        register_guild(message.guild)
+
     await action(message)
 
 
