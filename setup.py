@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 from movienightbot import __version__ as bot_version
 
 requirements = [
-    "py-cord[speed]>=1.5.1",
+    "py-cord[speed]>=1.5.1,<2",
     "peewee",
     "marshmallow",
     "pyyaml",
@@ -13,8 +13,8 @@ requirements = [
 test_requirements = [
     "pytest",
     "pytest-asyncio",
-    "black",
-    "flake8",
+    "pytest-black",
+    "pytest-flake8",
     "dpytest>=0.5.1",
 ]
 
