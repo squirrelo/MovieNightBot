@@ -5,6 +5,7 @@ import discord
 
 from . import BaseAction
 from ..db.controllers import ServerController
+from ..util import delete_thread
 
 
 logger = logging.getLogger("movienightbot")
@@ -64,10 +65,9 @@ class HelpAction(BaseAction):
         except discord.Forbidden as ex:
             # For error/exception codes see: https://discord.com/developers/docs/topics/opcodes-and-status-codes#json
             if ex.code == 50007:  # Cannot Send messages to this user
-                thread = await msg.create_thread(
-                    name="Help thread", auto_archive_duration=120
-                )
+                thread = await msg.create_thread(name="Help thread")
                 await thread.send(content=content_data, embed=embed_data)
+                await delete_thread(thread, sec_delay=120)
             else:
                 raise
 
