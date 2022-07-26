@@ -1,3 +1,4 @@
+import pathlib
 from typing import Dict, Any
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -39,6 +40,20 @@ class BotRequestHandler(BaseHTTPRequestHandler):
     def set_json_headers(self, response_code: int = 200):
         self.send_response(response_code)
         self.send_header("Content-type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+
+    def set_headers_by_extension(self, extension: str, response_code: int = 200):
+        # Ensures that browsers won't block content if the content type isn't specified
+        # Only bothering to add the types that get served
+        self.send_response(response_code)
+        if extension == ".css":
+            self.send_header("Content-type", "text/css")
+        elif extension == ".js":
+            self.send_header("Content-type", "application/javascript")
+        elif extension == ".ico":
+            self.send_header("Content-type", "image/vnd.microsoft.icon")
+
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
@@ -97,13 +112,14 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(suggested).encode())
 
     def get_vote_json(self, server_id: int):
-        movies_vote_data = self.movie_vote_controller.get_movies_for_server_vote(server_id) or []
+        movies_vote_data = self.movie_vote_controller.get_movies_for_server_vote(server_id)
         movies_list = []
         for movie_vote in movies_vote_data:
             movie_info = self.build_movie_base_info(movie_vote.movie)
             movie_info.update({"score": movie_vote.score})
             movies_list.append(movie_info)
 
+        self.set_json_headers()
         vote_info = {"movies": movies_list}
         self.wfile.write(json.dumps(vote_info).encode())
 
@@ -126,8 +142,8 @@ class BotRequestHandler(BaseHTTPRequestHandler):
     def serve_static(self, path: str):
         static_parts = path.split("/")[2:]
         static_path = Path(Path(__file__).parent, "webfiles", *static_parts)
-        logger.debug("static_parts: {}".format(static_parts))
-        logger.debug("static_path: {}".format(static_path))
+        # logger.debug("static_parts: {}".format(static_parts))
+        # logger.debug("static_path: {}".format(static_path))
         if not static_path.exists():
             self.send_response(404)
             self.end_headers()
@@ -135,8 +151,7 @@ class BotRequestHandler(BaseHTTPRequestHandler):
             return
 
         with static_path.open("rb") as f:
-            self.send_response(200)
-            self.end_headers()
+            self.set_headers_by_extension(pathlib.Path(path).suffix)
             self.wfile.write(f.read())
 
     def get_server_id(self, path: str):
