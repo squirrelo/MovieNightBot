@@ -10,8 +10,13 @@ from movienightbot.db.controllers import (
     MoviesController,
     Movie,
     GenreController,
+    VoteController,
+    Vote,
+    MovieVoteController,
+    MovieVote,
+    UserVoteController,
+    UserVote,
 )
-
 
 logger = logging.getLogger("movienightbot")
 
@@ -19,12 +24,17 @@ logger = logging.getLogger("movienightbot")
 class BotRequestHandler(BaseHTTPRequestHandler):
     suggested_json_regex = re.compile(r"^/json/suggested/[0-9]+$")
     watched_json_regex = re.compile(r"^/json/watched/[0-9]+$")
+    vote_json_regex = re.compile(r"^/json/vote/[0-9]+$")
     suggested_regex = re.compile(r"^/suggested/[0-9]+$")
     watched_regex = re.compile(r"^/watched/[0-9]+$")
+    vote_regex = re.compile(r"^/vote/[0-9]+$")
     static_regex = re.compile(r"^/static/.+$")
     favicon_url = "/favicon.ico"
     movies_controller = MoviesController()
     genre_controller = GenreController()
+    vote_controller = VoteController()
+    movie_vote_controller = MovieVoteController()
+    user_vote_controller = UserVoteController()
 
     def set_json_headers(self, response_code: int = 200):
         self.send_response(response_code)
@@ -56,7 +66,6 @@ class BotRequestHandler(BaseHTTPRequestHandler):
                     "full_size_poster_url": movie.imdb_id.full_size_poster_url,
                 }
             )
-
         movie_genres = self.genre_controller.get_genres_by_movie_id(movie.id) or []
         genre_list = []
         for genre in movie_genres:
@@ -87,8 +96,27 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         suggested = {"watched": watched_list, "server_id": server_id}
         self.wfile.write(json.dumps(suggested).encode())
 
-    def serve_html_template(self):
-        static_path = Path(Path(__file__).parent, "webfiles", "template.html")
+    def get_vote_json(self, server_id: int):
+        movies_vote_data = self.movie_vote_controller.get_movies_for_server_vote(server_id) or []
+        movies_list = []
+        for movie_vote in movies_vote_data:
+            movie_info = self.build_movie_base_info(movie_vote.movie)
+            movie_info.update({"score": movie_vote.score})
+            movies_list.append(movie_info)
+
+        vote_info = {"movies": movies_list}
+        self.wfile.write(json.dumps(vote_info).encode())
+
+    def serve_html_movies(self):
+        static_path = Path(Path(__file__).parent, "webfiles", "movies.html")
+        with static_path.open("rb") as f:
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            self.wfile.write(f.read())
+
+    def serve_html_vote(self):
+        static_path = Path(Path(__file__).parent, "webfiles", "vote.html")
         with static_path.open("rb") as f:
             self.send_response(200)
             self.send_header("Content-type", "text/html")
@@ -125,10 +153,15 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         elif self.watched_json_regex.match(path):
             server_id = self.get_server_id(path)
             self.get_watched_json(server_id)
+        elif self.vote_json_regex.match(path):
+            server_id = self.get_server_id(path)
+            self.get_vote_json(server_id)
         elif self.suggested_regex.match(path):
-            self.serve_html_template()
+            self.serve_html_movies()
         elif self.watched_regex.match(path):
-            self.serve_html_template()
+            self.serve_html_movies()
+        elif self.vote_regex.match(path):
+            self.serve_html_vote()
         elif path == self.favicon_url:
             self.serve_static("/static/favicon.ico")
         else:
