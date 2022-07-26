@@ -68,3 +68,5 @@ docs/_build/
 target/
 __pypackages__/
 
+#log files
+*.log
