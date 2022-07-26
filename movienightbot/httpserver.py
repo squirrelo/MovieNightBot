@@ -2,7 +2,7 @@ import pathlib
 from typing import Dict, Any
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 import logging
 import json
 import re
@@ -23,14 +23,9 @@ logger = logging.getLogger("movienightbot")
 
 
 class BotRequestHandler(BaseHTTPRequestHandler):
-    suggested_json_regex = re.compile(r"^/json/suggested/[0-9]+$")
-    watched_json_regex = re.compile(r"^/json/watched/[0-9]+$")
-    vote_json_regex = re.compile(r"^/json/vote/[0-9]+$")
-    suggested_regex = re.compile(r"^/suggested/[0-9]+$")
-    watched_regex = re.compile(r"^/watched/[0-9]+$")
-    vote_regex = re.compile(r"^/vote/[0-9]+$")
-    static_regex = re.compile(r"^/static/.+$")
-    favicon_url = "/favicon.ico"
+    suggested_json_regex = re.compile(r"^/json/suggested+$")
+    watched_json_regex = re.compile(r"^/json/watched+$")
+    vote_json_regex = re.compile(r"^/json/vote+$")
     movies_controller = MoviesController()
     genre_controller = GenreController()
     vote_controller = VoteController()
@@ -53,6 +48,8 @@ class BotRequestHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", "application/javascript")
         elif extension == ".ico":
             self.send_header("Content-type", "image/vnd.microsoft.icon")
+        elif extension == ".html":
+            self.send_header("Content-type", "text/html")
 
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
@@ -123,65 +120,46 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         vote_info = {"movies": movies_list}
         self.wfile.write(json.dumps(vote_info).encode())
 
-    def serve_html_movies(self):
-        static_path = Path(Path(__file__).parent, "webfiles", "movies.html")
-        with static_path.open("rb") as f:
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.end_headers()
-            self.wfile.write(f.read())
-
-    def serve_html_vote(self):
-        static_path = Path(Path(__file__).parent, "webfiles", "vote.html")
-        with static_path.open("rb") as f:
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.end_headers()
-            self.wfile.write(f.read())
-
+    # http://localhost/movies.html?server=536019646554439689&view=watched
     def serve_static(self, path: str):
-        static_parts = path.split("/")[2:]
+        print("looking for: " + path)
+        static_parts = path.split("/")
         static_path = Path(Path(__file__).parent, "webfiles", *static_parts)
-        # logger.debug("static_parts: {}".format(static_parts))
-        # logger.debug("static_path: {}".format(static_path))
+        # file_path = path[1:]
+        # static_path = Path(Path(__file__).parent, "webfiles", file_path)
         if not static_path.exists():
             self.send_response(404)
             self.end_headers()
             self.wfile.write(b"")
             return
 
+        print("serving file found: " + path)
+
         with static_path.open("rb") as f:
             self.set_headers_by_extension(pathlib.Path(path).suffix)
             self.wfile.write(f.read())
 
-    def get_server_id(self, path: str):
-        return int(path.split("/")[-1])
+    def get_server_id(self, query: str):
+        queries = parse_qs(query)
+        return queries.get("server")
 
     def do_GET(self):
         parsed_path = urlparse(self.path)
         path = parsed_path.path
-        if self.static_regex.match(path):
-            self.serve_static(path)
-        elif self.suggested_json_regex.match(path):
-            server_id = self.get_server_id(path)
+        query = parsed_path.query
+        print(path + " " + parsed_path.query)
+        if self.suggested_json_regex.match(path):
+            server_id = self.get_server_id(query)
             self.get_suggested_json(server_id)
         elif self.watched_json_regex.match(path):
-            server_id = self.get_server_id(path)
+            server_id = self.get_server_id(query)
             self.get_watched_json(server_id)
         elif self.vote_json_regex.match(path):
-            server_id = self.get_server_id(path)
+            server_id = self.get_server_id(query)
             self.get_vote_json(server_id)
-        elif self.suggested_regex.match(path):
-            self.serve_html_movies()
-        elif self.watched_regex.match(path):
-            self.serve_html_movies()
-        elif self.vote_regex.match(path):
-            self.serve_html_vote()
-        elif path == self.favicon_url:
-            self.serve_static("/static/favicon.ico")
         else:
-            self.set_json_headers(404)
-            self.wfile.write(b"")
+            print("Serving static item")
+            self.serve_static(path)
 
     def do_HEAD(self):
         self.set_json_headers()

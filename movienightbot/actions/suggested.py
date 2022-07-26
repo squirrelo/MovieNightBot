@@ -10,7 +10,7 @@ class SuggestedAction(BaseAction):
         from ..application import client
 
         await msg.channel.send(
-            f"Suggestions can be found at {client.config.base_url}/suggested/{msg.guild.id}"
+            f"Suggestions can be found at {client.config.base_url}/movies.html?server={msg.guild.id}&view=suggested"
         )
 
     @property
