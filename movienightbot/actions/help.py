@@ -15,41 +15,58 @@ class HelpAction(BaseAction):
     guild_only = False
     controller = ServerController()
 
-    def _build_help_embed(self) -> discord.Embed:
+    def _build_help_embed_general(self, is_admin: bool) -> discord.Embed:
         from . import KNOWN_ACTIONS
         from ..application import client
 
         embed = discord.Embed(
-            title="Help Commands",
-            description="I heard you asked for some help. We all need some from time to time, so here it is.",
+            title="Help & Commands",
+            description="Here is a list of commands available to you.",
         )
+        embed.add_field(
+            name="Command usage:",
+            value=f"`{client.config.message_identifier}{self.action_name} {' '.join(self.help_options)}`",
+            inline=False,
+        )
+        cmd_list = []
+        adm_list = []
         for action in sorted(KNOWN_ACTIONS):
             cls = KNOWN_ACTIONS[action]
             if cls.admin:
-                continue
+                adm_list.append(action)
+            else:
+                cmd_list.append(action)
+        
+        embed.add_field(
+            name="General Commands: ",
+            value=f"```{', '.join(cmd_list)}```",
+            inline=False,
+        )
+        
+        if is_admin:
+            logger.debug(f"user is an admin, showing admin help")
             embed.add_field(
-                name=f"{client.config.message_identifier}{action} {' '.join(cls.help_options)}",
-                value=cls.help_text,
+                name="Admin Commands: ",
+                value=f"```{', '.join(adm_list)}```",
                 inline=False,
             )
+        
         return embed
 
-    def _build_admin_help_embed(self) -> discord.Embed:
+    def _build_help_embed_arg(self, action: str) -> discord.Embed:
         from . import KNOWN_ACTIONS
         from ..application import client
-
-        embed = discord.Embed(
-            title="Admin Help Commands",
-            description="Oh look, you're a super special admin. That means you can do this stuff too.",
-        )
-        for action in sorted(KNOWN_ACTIONS):
+        
+        if action not in KNOWN_ACTIONS:
+            embed = discord.Embed(
+                title=f"Unknown Command:  {action}",
+                description="These are not the commands you are looking for. :wave:",
+            )
+        else:
             cls = KNOWN_ACTIONS[action]
-            if not cls.admin:
-                continue
-            embed.add_field(
-                name=f"{client.config.message_identifier}{action} {' '.join(cls.help_options)}",
-                value=cls.help_text,
-                inline=False,
+            embed = discord.Embed(
+                title=f"{client.config.message_identifier}{action} {' '.join(cls.help_options)}",
+                description=cls.help_text,
             )
         return embed
 
@@ -71,18 +88,24 @@ class HelpAction(BaseAction):
                 raise
 
     async def action(self, msg: discord.Message):
-        embed_data = self._build_help_embed()
-        await self._safe_private_message(msg, None, embed_data)
+        action_name = self.get_message_data(msg)
         server_role = self.controller.get_by_id(msg.guild.id).admin_role
         user_roles = {r.name for r in msg.author.roles}
         logger.debug(
-            f"Checking user {msg.author.nick} with roles {user_roles} against {server_role}"
+            f"Helping user {msg.author.nick} with roles {user_roles} against {server_role}"
         )
-        if server_role in user_roles:
-            logger.debug(f"user {msg.author.nick} is an admin, showing admin help")
-            admin_embed_data = self._build_admin_help_embed()
-            await self._safe_private_message(msg, None, admin_embed_data)
+        
+        if not action_name:
+            embed_data = self._build_help_embed_general(server_role in user_roles)
+        else:
+            embed_data = self._build_help_embed_arg(action_name)
+        await self._safe_private_message(msg, None, embed_data)
+
 
     @property
     def help_text(self):
         return "DMs the sender of the command this exact message. Now that's meta!"
+
+    @property
+    def help_options(self):
+        return ["[command_name]"]

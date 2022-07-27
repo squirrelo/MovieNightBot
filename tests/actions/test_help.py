@@ -13,8 +13,8 @@ from movienightbot.actions.help import HelpAction
 async def test_help(client):
     await test.empty_queue()
     ha = HelpAction()
-    test_embed = ha._build_help_embed()
-    test_admin_embed = ha._build_admin_help_embed()
+    test_embed = ha._build_help_embed_general(False)
+    test_admin_embed = ha._build_help_embed_general(True)
 
     await test.message("m!help")
     assert test.verify().message().embed(test_embed)
@@ -24,6 +24,5 @@ async def test_help(client):
     test.get_message()
 
     await test.message("m!help")
-    assert test.verify().message().embed(test_embed)
     assert test.verify().message().embed(test_admin_embed)
     await _clear_test_role(client, test_role)
