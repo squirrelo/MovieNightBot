@@ -1,8 +1,12 @@
-
 .section.content {
 	background-color: #263D59;
 	min-height: 75%;
 	color: #D9E9FC;
+	padding-left: 15%;
+	padding-right: 15%;
+	padding-top: 15px;
+	padding-bottom: 15px;
+	display: block;
 }
 
 .section.content .sorting {
@@ -70,14 +74,6 @@
 .section.content .letterNav .Active:hover {
 	transition: 0.2s;
 	color: #5385C2;
-}
-
-.section.content {
-	padding-left: 15%;
-	padding-right: 15%;
-	padding-top: 15px;
-	padding-bottom: 15px;
-	display: block;
 }
 
 .section.content .controls {

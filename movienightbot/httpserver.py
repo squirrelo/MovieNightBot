@@ -7,17 +7,17 @@ import logging
 import json
 import re
 
-from movienightbot.db.controllers import (
-    MoviesController,
-    Movie,
-    GenreController,
-    VoteController,
-    Vote,
-    MovieVoteController,
-    MovieVote,
-    UserVoteController,
-    UserVote,
-)
+from movienightbot.db.controllers import *  # (
+#     MoviesController,
+#     Movie,
+#     GenreController,
+#     VoteController,
+#     Vote,
+#     MovieVoteController,
+#     MovieVote,
+#     UserVoteController,
+#     UserVote,
+# )
 
 logger = logging.getLogger("movienightbot")
 
@@ -120,22 +120,16 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         vote_info = {"movies": movies_list}
         self.wfile.write(json.dumps(vote_info).encode())
 
-    # http://localhost/movies.html?server=536019646554439689&view=watched
     def serve_static(self, path: str):
-        print("looking for: " + path)
         static_parts = path.split("/")
         static_path = Path(Path(__file__).parent, "webfiles", *static_parts)
-        # file_path = path[1:]
-        # static_path = Path(Path(__file__).parent, "webfiles", file_path)
-        if not static_path.exists():
+        if not static_path.exists():  # Any non-found items should be treated as 404s
             self.serve_404()
             return
 
-        if not static_path.is_file():
+        if not static_path.is_file():  # Any folders should be treated as 404s
             self.serve_404()
             return
-
-        print("serving file found: " + path)
 
         with static_path.open("rb") as f:
             self.set_headers_by_extension(pathlib.Path(path).suffix)
@@ -153,19 +147,16 @@ class BotRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed_path = urlparse(self.path)
         path = parsed_path.path
-        query = parsed_path.query
-        print(path + " " + parsed_path.query)
         if self.suggested_json_regex.match(path):
-            server_id = self.get_server_id(query)
+            server_id = self.get_server_id(parsed_path.query)
             self.get_suggested_json(server_id)
         elif self.watched_json_regex.match(path):
-            server_id = self.get_server_id(query)
+            server_id = self.get_server_id(parsed_path.query)
             self.get_watched_json(server_id)
         elif self.vote_json_regex.match(path):
-            server_id = self.get_server_id(query)
+            server_id = self.get_server_id(parsed_path.query)
             self.get_vote_json(server_id)
-        else:
-            print("Serving static item")
+        else:  # Rather than piecemealing out each html doc, all not filtered commands get treated as file requests
             self.serve_static(path)
 
     def do_HEAD(self):

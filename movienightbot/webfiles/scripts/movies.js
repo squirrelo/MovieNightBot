@@ -59,7 +59,7 @@ function MovieNightBotConstructor() {
 		// else
 		// 	request += "/json" + window.location.pathname;
 		let viewOption = Utility.GetQueryValue('view');
-		request = "/json/" + viewOption + "?server=" + Utility.GetQueryValue('server');
+		let request = "/json/" + viewOption + "?server=" + Utility.GetQueryValue('server');
 		console.log(request);
 		
 		xhttp.open("GET", request, true);
