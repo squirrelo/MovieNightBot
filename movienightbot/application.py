@@ -22,14 +22,15 @@ logger = logging.getLogger("movienightbot")
 
 client._cached_app_info = None
 
-
-async def generate_invite_link(permissions=discord.Permissions(388160), guild=None):
+async def generate_invite_link(permissions=discord.Permissions(403727019072), guild=None):
     if client._cached_app_info is None:
         logger.info("Caching App Info...")
         client._cached_app_info = await client.application_info()
-    return discord.utils.oauth_url(
-        client._cached_app_info.id, permissions=permissions, guild=guild
-    )
+    args = dict(client_id=client._cached_app_info.id, permissions=permissions)
+    # Need to do it this way so we don't send guild property at all if it's None. Yay py-cord limitations.
+    if guild is not None:
+        args["guild"] = guild
+    return discord.utils.oauth_url(**args)
 
 
 @client.event
