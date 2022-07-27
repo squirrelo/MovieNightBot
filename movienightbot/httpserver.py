@@ -128,9 +128,11 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         # file_path = path[1:]
         # static_path = Path(Path(__file__).parent, "webfiles", file_path)
         if not static_path.exists():
-            self.send_response(404)
-            self.end_headers()
-            self.wfile.write(b"")
+            self.serve_404()
+            return
+
+        if not static_path.is_file():
+            self.serve_404()
             return
 
         print("serving file found: " + path)
@@ -138,6 +140,11 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         with static_path.open("rb") as f:
             self.set_headers_by_extension(pathlib.Path(path).suffix)
             self.wfile.write(f.read())
+
+    def serve_404(self):
+        self.send_response(404)
+        self.end_headers()
+        self.wfile.write(b"Unknown request")
 
     def get_server_id(self, query: str):
         queries = parse_qs(query)

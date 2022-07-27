@@ -18,13 +18,7 @@ function MovieNightBotConstructor() {
 	this.maxAverageVotePower = 0;
 	this.maxAveragePopularity = 0;
 
-	this.healthRed = new Vector3();
-	this.healthGreen = new Vector3();
-
 	this.Init = function() {
-
-		this.healthRed.Set(0.7, 0.0, 0.1);
-		this.healthGreen.Set(0.0, 0.5, 0.2);
 
 		this.items = document.querySelector("#Items");
 		this.txtPositionP = document.querySelector("#PageControls > #Position > p");
@@ -57,13 +51,16 @@ function MovieNightBotConstructor() {
 			}
 		}
 
-		let arr = window.location.href.split("/");
-		let request = arr[0] + "//" + arr[2];
+		// let arr = window.location.href.split("/");
+		// let request = arr[0] + "//" + arr[2];
 
-		if (this.bGetSuggested)
-			request += "/json" + window.location.pathname;
-		else
-			request += "/json" + window.location.pathname;
+		// if (this.bGetSuggested)
+		// 	request += "/json" + window.location.pathname;
+		// else
+		// 	request += "/json" + window.location.pathname;
+		let viewOption = Utility.GetQueryValue('view');
+		request = "/json/" + viewOption + "?server=" + Utility.GetQueryValue('server');
+		console.log(request);
 		
 		xhttp.open("GET", request, true);
 		xhttp.send();
@@ -345,7 +342,7 @@ function SuggestedMovie(suggestionJSON) {
 
 	this.Init = function() {
 		this.domObject = document.createElement('div');
-		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>';
+		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="/content/images/loading.gif" /></div>';
 		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
 		if (this.suggestionJSON.genre && this.suggestionJSON.genre.length > 0)
 			htmlText += '<div id="genres" class="genres"><ul></ul></h2></div>';
@@ -364,7 +361,7 @@ function SuggestedMovie(suggestionJSON) {
 		if (this.suggestionJSON.full_size_poster_url != null)
 			imgCover.setAttribute("data-src", this.suggestionJSON.full_size_poster_url);
 		else
-			imgCover.setAttribute("data-src", "../static/content/images/movienotfound.png");
+			imgCover.setAttribute("data-src", "/content/images/movienotfound.png");
 
 		this.domObject.querySelector("#txtTitle").innerHTML = this.suggestionJSON.title;
 		this.domObject.querySelector("#txtYear").innerHTML = this.suggestionJSON.year;
@@ -407,7 +404,7 @@ function WatchedMovie(watchedJSON) {
 
 	this.Init = function() {
 		this.domObject = document.createElement('div');
-		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="../static/content/images/loading.gif" /></div>';
+		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="/content/images/loading.gif" /></div>';
 		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a><h2 id="txtYear"></h2></div>';
 		if (this.watchedJSON.genre && this.watchedJSON.genre.length > 0)
 			htmlText += '<div id="genres" class="genres"><ul></ul></h2></div>';
@@ -425,7 +422,7 @@ function WatchedMovie(watchedJSON) {
 		if (this.watchedJSON.full_size_poster_url != null)
 			imgCover.setAttribute("data-src", this.watchedJSON.full_size_poster_url);
 		else
-			imgCover.setAttribute("data-src", "../static/content/images/movienotfound.png");
+			imgCover.setAttribute("data-src", "/content/images/movienotfound.png");
 
 		this.domObject.querySelector("#txtTitle").innerHTML = this.watchedJSON.title;
 		this.domObject.querySelector("#txtYear").innerHTML = this.watchedJSON.year;
