@@ -28,6 +28,7 @@ class BaseController(ABC):
     def get_by_id(self, id: Any, primary_key: str = "id") -> BaseModel:
         field = getattr(self.model, primary_key)
         query = self.model.select().where(field == id)
+        print(query)
         return query.get()
 
     def update(self, row: BaseModel) -> BaseModel:

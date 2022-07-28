@@ -57,6 +57,24 @@ Vote.DrawChart = function(p) {
 	p.background('#263D59');
 	p.noStroke();
 
+	if (this.lastData == null) {
+		p.fill('#fff');
+		p.textSize(p.width * 0.03);
+		p.textAlign(p.CENTER);
+		p.text("No Data Yet", p.width * 0.5, p.width * 0.5);
+		return
+	}
+
+	if (this.lastData.movies.length == 0) {
+		p.fill('#555');
+		p.circle(p.width*0.5, p.height*0.5, p.width);
+		p.fill('#fff');
+		p.textSize(p.width * 0.03);
+		p.textAlign(p.CENTER);
+		p.text("No Ongoing Vote", p.width * 0.5, p.width * 0.5);
+		return;		
+	}
+
 	if (this.totalScore <= 0) {
 		p.fill('#555');
 		p.circle(p.width*0.5, p.height*0.5, p.width);
@@ -64,38 +82,39 @@ Vote.DrawChart = function(p) {
 		p.textSize(p.width * 0.03);
 		p.textAlign(p.CENTER);
 		p.text("No Votes Yet", p.width * 0.5, p.width * 0.5);
-	} else {
-		//Render the movies with specified colors.
-		let lastAngle = 0;
-		for (let i = 0; i < this.lastData.movies.length; i++) {
-			let movie = this.lastData.movies[i];
-			if (movie.score == 0)
-				continue;
+		return;
+	}
+	
+	//Render the movies with specified colors.
+	let lastAngle = 0;
+	for (let i = 0; i < this.lastData.movies.length; i++) {
+		let movie = this.lastData.movies[i];
+		if (movie.score == 0)
+			continue;
 
-			let arcLength = (movie.score / this.totalScore) * p.TWO_PI;
-			let col = p.color(p.random(255), p.random(255), p.random(255));
-			if (i < this.segmentColors.length)
-				col = p.color(this.segmentColors[i]);
+		let arcLength = (movie.score / this.totalScore) * p.TWO_PI;
+		let col = p.color(p.random(255), p.random(255), p.random(255));
+		if (i < this.segmentColors.length)
+			col = p.color(this.segmentColors[i]);
 
-			p.fill(col);
-			p.arc(p.width * 0.5, p.width * 0.5, p.width, p.width, lastAngle, lastAngle + arcLength);
-			lastAngle += arcLength;
-		}
+		p.fill(col);
+		p.arc(p.width * 0.5, p.width * 0.5, p.width, p.width, lastAngle, lastAngle + arcLength);
+		lastAngle += arcLength;
+	}
 
-		lastAngle = 0;
-		let radiusPercent = 0.35;
-		for (let i = 0; i < this.lastData.movies.length; i++) {
-			let movie = this.lastData.movies[i];
-			if (movie.score == 0)
-				continue;
-			let arcLength = (movie.score / this.totalScore) * p.TWO_PI;
-			let textAngle = ((lastAngle + arcLength) - lastAngle) * 0.5 + lastAngle;
-			p.fill('#000')
-			p.textSize(p.width * 0.03);
-			p.textAlign(p.CENTER);
-			p.text(movie.title, p.width * 0.5 + p.cos(textAngle) * p.width * radiusPercent, p.width * 0.5 + p.sin(textAngle) * p.width * radiusPercent);
-			lastAngle += arcLength;
-		}
+	lastAngle = 0;
+	let radiusPercent = 0.35;
+	for (let i = 0; i < this.lastData.movies.length; i++) {
+		let movie = this.lastData.movies[i];
+		if (movie.score == 0)
+			continue;
+		let arcLength = (movie.score / this.totalScore) * p.TWO_PI;
+		let textAngle = ((lastAngle + arcLength) - lastAngle) * 0.5 + lastAngle;
+		p.fill('#000')
+		p.textSize(p.width * 0.03);
+		p.textAlign(p.CENTER);
+		p.text(movie.title, p.width * 0.5 + p.cos(textAngle) * p.width * radiusPercent, p.width * 0.5 + p.sin(textAngle) * p.width * radiusPercent);
+		lastAngle += arcLength;
 	}
 }
 
@@ -105,6 +124,7 @@ const p5Setup = ( p ) => {
 
 	p.setup = function() {
 		this.canvas = p.createCanvas(window.innerWidth * 0.5, window.innerWidth * 0.5);
+		p.windowResized();
 	}
 
 	p.draw = function() {
@@ -114,7 +134,13 @@ const p5Setup = ( p ) => {
 	}
 
 	p.windowResized = function() {
-		p.resizeCanvas(window.innerWidth * 0.5, window.innerWidth * 0.5);
+		let size = window.innerWidth;
+		if (window.innerHeight < window.innerWidth)
+			size = window.innerHeight;
+		
+		size *= 0.5;
+
+		p.resizeCanvas(size, size);
 		Vote.shouldRedraw = true;
 	}
 }
