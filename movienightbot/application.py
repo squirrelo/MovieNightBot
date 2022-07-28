@@ -22,7 +22,10 @@ logger = logging.getLogger("movienightbot")
 
 client._cached_app_info = None
 
-async def generate_invite_link(permissions=discord.Permissions(403727019072), guild=None):
+
+async def generate_invite_link(
+    permissions=discord.Permissions(403727019072), guild=None
+):
     if client._cached_app_info is None:
         logger.info("Caching App Info...")
         client._cached_app_info = await client.application_info()
