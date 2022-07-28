@@ -358,16 +358,23 @@ class UserVoteController(BaseController):
 
     def get_usernames_voted(self, server_id: int) -> List[str]:
         with self.transaction():
-            vote_row = VoteController().get_by_id(server_id)
+            try:
+                vote_row = VoteController().get_by_id(server_id)
+            except pw.DoesNotExist:
+                vote_row = None
             if vote_row:
-                users = (
-                    UserVote.select(pw.fn.Distinct(UserVote.user_name))
-                    .join(MovieVote)
-                    .join(Vote)
-                    .where((Vote.server_id == server_id))
-                )
-                # Lazy eval so force it to eval before return
-                voters = [u for u in users]
+                try:
+                    users = (
+                        UserVote.select(pw.fn.Distinct(UserVote.user_name))
+                        .join(MovieVote)
+                        .join(Vote)
+                        .where((Vote.server_id == server_id))
+                    )
+                    # Lazy eval so force it to eval before return
+                    voters = [u for u in users]
+                except pw.DoesNotExist:
+                    # Vote exists but nobody voted yet
+                    voters = []
             else:
                 voters = []
         return voters
