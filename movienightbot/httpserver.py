@@ -110,8 +110,13 @@ class BotRequestHandler(BaseHTTPRequestHandler):
             movie_info.update({"score": movie_vote.score})
             movies_list.append(movie_info)
 
+        usernames = self.user_vote_controller.get_usernames_voted(server_id)
+
         self.set_json_headers()
-        vote_info = {"movies": movies_list}
+        vote_info = {
+            "movies": movies_list,
+            "voter_count": len(usernames)
+        }
         self.wfile.write(json.dumps(vote_info).encode())
 
     def serve_static(self, path: str):

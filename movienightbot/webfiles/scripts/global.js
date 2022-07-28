@@ -80,11 +80,9 @@ function SuggestedMovie(suggestionJSON) {
 		this.domObject = document.createElement('div');
 		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="/content/images/loading.gif" /><h2 id="txtYear"></h2></div>';
 		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a></div>';
-		// if (this.suggestionJSON.genre && this.suggestionJSON.genre.length > 0)
-			htmlText += '<div id="genres" class="genres"><ul></ul></h2></div>';
+		htmlText += '<div id="genres" class="genres"><ul></ul></h2></div>';
 		htmlText += '<div id="data1"><p id="txtSuggestor"></p><p id="txtSuggestDate"></p></div>';
 		htmlText += '<div id="data2" class="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p></p><p id="txtVoteEvents"></div>';
-//		htmlText += '<div id="health"><div id="background"><div id="bar">100%</div></div></div>'
 		this.domObject.innerHTML = htmlText;
 
 		this.domObject.classList.add("item");
@@ -107,17 +105,7 @@ function SuggestedMovie(suggestionJSON) {
 		this.domObject.querySelector("#txtTotalVotes").innerHTML = "Total Votes: " + this.suggestionJSON.total_votes;
 		this.domObject.querySelector("#txtTotalScore").innerHTML = "Total Score: " + this.suggestionJSON.total_score;
 		this.domObject.querySelector("#txtVoteEvents").innerHTML = "Vote Events Entered: " + this.suggestionJSON.num_votes_entered;
-//		let bar = this.domObject.querySelector("#bar");
 
-		// let healthPercentOfMaximum = 0;
-		// if (MovieNightBot.maxAveragePopularity != 0 && !isNaN(MovieNightBot.maxAveragePopularity))
-		// 	healthPercentOfMaximum = Math.round((this.suggestionJSON.popularity / MovieNightBot.maxAveragePopularity) * 100);
-
-//		bar.innerHTML = healthPercentOfMaximum + "%";
-//		bar.style.width = healthPercentOfMaximum + "%";
-//		let color = sVector3.Lerp(MovieNightBot.healthRed, MovieNightBot.healthGreen, healthPercentOfMaximum / 100.0);
-//		color.Scale(256);
-//		bar.style.backgroundColor = color.RGB();
 		if (this.suggestionJSON.imdb_id != null)
 			this.domObject.querySelector("#imdbLink").href = "https://www.imdb.com/title/tt" + this.suggestionJSON.imdb_id;
 		else
@@ -142,7 +130,6 @@ function WatchedMovie(watchedJSON) {
 		this.domObject = document.createElement('div');
 		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="/content/images/loading.gif" /><h2 id="txtYear"></h2></div>';
 		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a></div>';
-		// if (this.watchedJSON.genre && this.watchedJSON.genre.length > 0)
 		htmlText += '<div id="genres" class="genres"><ul></ul></h2></div>';
 		htmlText += '<div id="data1"><p id="txtSuggestor"><p id="txtSuggestDate"></p></p><p id="txtWatchDate"></p></div>';
 		htmlText += '<div id="data2" class="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p><p id="txtVoteEvents"></p></div>';

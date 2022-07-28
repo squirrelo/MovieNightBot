@@ -4,9 +4,9 @@ Vote.shouldRedraw = false;
 Vote.totalScore = 0;
 Vote.lastData = null;
 Vote.segmentColors = [ 
-	"#FF5E71","#A95EFF","#5EA6FF","#5EFFB6","#DEFF5E",
-	"#5E6BFF","#EEFF5E","#8D963C","#3B7493","#608E3A",
-	"#8E3A3A","#793B91"
+	"#FF5E71","#A95EFF","#5EA6FF","#5EFFB6","#8E3A3A",
+	"#5E6BFF","#EEFF5E","#608E3A","#3B7493","#8D963C",
+	"#DEFF5E","#793B91"
 ];
 Vote.refreshCount = 0;
 Vote.maxRefreshCount = 30;
@@ -53,10 +53,20 @@ Vote.RequestFulfilled = function(responseText) {
 
 	for (let i = 0; i < this.lastData.movies.length; i++) {
 		let movie = this.lastData.movies[i];
-		let item = new SuggestedMovie(movie);
+		let color = "#fff";
+		if (i < this.segmentColors.length)
+			color = this.segmentColors[i];
+
+		let item = new MovieVote(movie, color);
 		item.Init();
 		moviesList.appendChild(item.domObject);
 	}
+
+	if (this.lastData.voter_count < 1)
+		document.querySelector("#voteCount").innerHTML = "Participants: None";
+	else
+		document.querySelector("#voteCount").innerHTML = "Participants: " + this.lastData.voter_count
+
 
 	if (this.refreshCount < this.maxRefreshCount) {
 		setTimeout(function() {Vote.RequestData()}, Vote.timeoutms);
@@ -177,6 +187,24 @@ const p5Setup = ( p ) => {
 }
 
 canvasEnvironment = new p5(p5Setup, 'piechart');
+
+function MovieVote(movieJSON, legendColor) {
+	this.suggestionJSON = movieJSON;
+	this.domObject = null;
+	this.baseObj = null;
+
+	this.Init = function() {
+		this.baseObj = new SuggestedMovie(this.suggestionJSON);
+		this.baseObj.Init(movieJSON);
+		this.domObject = this.baseObj.domObject;
+		console.log(this.domObject);
+
+		//Modify the base object to show the legend color
+		let data2 = this.domObject.querySelector("#data2");
+		data2.innerHTML = "<h3>Chart Color</h3>";
+		data2.style.backgroundColor = legendColor;
+	}
+}
 
 
 Vote.Init();
