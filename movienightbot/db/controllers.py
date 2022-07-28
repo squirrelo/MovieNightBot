@@ -363,7 +363,8 @@ class UserVoteController(BaseController):
                 users = (
                     UserVote.select(pw.fn.Distinct(UserVote.user_name))
                     .join(MovieVote)
-                    .where((MovieVote.vote == server_id))
+                    .join(Vote)
+                    .where((Vote.server_id == server_id))
                 )
                 # Lazy eval so force it to eval before return
                 voters = [u for u in users]
