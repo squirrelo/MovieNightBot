@@ -16,15 +16,18 @@
 	<body>
 		<div class="section header">
 			<a class="logo" href="#">
-				<h1 class="title" id="TxtPageTitle">Movie Night Bot Suggestions</h1>
+				<h1 class="title" id="TxtPageTitle">Movie Night Bot Vote</h1>
 			</a>
 			<div class="navigation">
-				<a class="link" id="BtnSetting" onclick="javascript: MovieNightBot.OnClickBtnSetting()"><h2>Show Watched</h2></a>
+				<a class="link" id="BtnSetting" onclick="javascript: Vote.ShowSuggested()"><h2>Show Suggested</h2></a>
+				<a class="link" id="BtnSetting" onclick="javascript: Vote.ShowWatched()"><h2>Show Watched</h2></a>
 			</div>
 		</div>
 		<div class="section content">
-			<p>See the ongoing vote!</p>
+			<p id="warning"></p>
 			<div class="piechart" id="piechart"></div>
+			<div class="listHeader"><h3>What's up for vote?</h3></div>
+			<div class="movieList"><p>Server did not send any further data. Please wait a moment then refresh the page.</p></div>
 		</div>
 		<div class="section footer">
 			<div class="content">

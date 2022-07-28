@@ -7,17 +7,7 @@ import logging
 import json
 import re
 
-from movienightbot.db.controllers import *  # (
-#     MoviesController,
-#     Movie,
-#     GenreController,
-#     VoteController,
-#     Vote,
-#     MovieVoteController,
-#     MovieVote,
-#     UserVoteController,
-#     UserVote,
-# )
+from movienightbot.db.controllers import *
 
 logger = logging.getLogger("movienightbot")
 
@@ -40,7 +30,7 @@ class BotRequestHandler(BaseHTTPRequestHandler):
 
     def set_headers_by_extension(self, extension: str, response_code: int = 200):
         # Ensures that browsers won't block content if the content type isn't specified
-        # Only bothering to add the types that get served
+        # Only bothering to add the types that we specifically need served
         self.send_response(response_code)
         if extension == ".css":
             self.send_header("Content-type", "text/css")
@@ -109,8 +99,6 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(suggested).encode())
 
     def get_vote_json(self, server_id: int):
-        # self.movie_vote_controller.get_by_id("not a valid option")
-        # self.movie_vote_controller.get_by_id(server_id)
         try:
             movies_vote_data = self.movie_vote_controller.get_movies_for_server_vote(server_id)
         except Vote.DoesNotExist:
@@ -162,7 +150,7 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         elif self.vote_json_regex.match(path):
             server_id = self.get_server_id(parsed_path.query)
             self.get_vote_json(server_id)
-        else:  # Rather than piecemealing out each html doc, all not filtered commands get treated as file requests
+        else:  # Rather than peicemealing out each html doc, all non-commands get treated as file requests
             self.serve_static(path)
 
     def do_HEAD(self):

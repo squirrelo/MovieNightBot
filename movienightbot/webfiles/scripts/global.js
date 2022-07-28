@@ -70,3 +70,118 @@ function Vector3(x, y, z) {
 		return "(" + this.x + "," + this.y + "," + this.z + ")";
 	}
 }
+
+function SuggestedMovie(suggestionJSON) {
+
+	this.suggestionJSON = suggestionJSON;
+	this.domObject = null;
+
+	this.Init = function() {
+		this.domObject = document.createElement('div');
+		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="/content/images/loading.gif" /><h2 id="txtYear"></h2></div>';
+		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a></div>';
+		// if (this.suggestionJSON.genre && this.suggestionJSON.genre.length > 0)
+			htmlText += '<div id="genres" class="genres"><ul></ul></h2></div>';
+		htmlText += '<div id="data1"><p id="txtSuggestor"></p><p id="txtSuggestDate"></p></div>';
+		htmlText += '<div id="data2" class="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p></p><p id="txtVoteEvents"></div>';
+//		htmlText += '<div id="health"><div id="background"><div id="bar">100%</div></div></div>'
+		this.domObject.innerHTML = htmlText;
+
+		this.domObject.classList.add("item");
+
+		let imgCover = this.domObject.querySelector("#imgCover");
+		imgCover.onload = function() {
+			if (this.src !== this.getAttribute("data-src"))
+				this.src = this.getAttribute("data-src");
+		}
+		if (this.suggestionJSON.full_size_poster_url != null)
+			imgCover.setAttribute("data-src", this.suggestionJSON.full_size_poster_url);
+		else
+			imgCover.setAttribute("data-src", "/content/images/movienotfound.png");
+
+		this.domObject.querySelector("#txtTitle").innerHTML = this.suggestionJSON.title;
+		this.domObject.querySelector("#txtYear").innerHTML = this.suggestionJSON.year;
+		this.domObject.querySelector("#txtSuggestor").innerHTML = "Suggested by: " + this.suggestionJSON.suggestor;
+		let suggestDate = new Date(this.suggestionJSON.date_suggested);
+		this.domObject.querySelector("#txtSuggestDate").innerHTML = "Suggested On: " + suggestDate.toLocaleDateString();
+		this.domObject.querySelector("#txtTotalVotes").innerHTML = "Total Votes: " + this.suggestionJSON.total_votes;
+		this.domObject.querySelector("#txtTotalScore").innerHTML = "Total Score: " + this.suggestionJSON.total_score;
+		this.domObject.querySelector("#txtVoteEvents").innerHTML = "Vote Events Entered: " + this.suggestionJSON.num_votes_entered;
+//		let bar = this.domObject.querySelector("#bar");
+
+		// let healthPercentOfMaximum = 0;
+		// if (MovieNightBot.maxAveragePopularity != 0 && !isNaN(MovieNightBot.maxAveragePopularity))
+		// 	healthPercentOfMaximum = Math.round((this.suggestionJSON.popularity / MovieNightBot.maxAveragePopularity) * 100);
+
+//		bar.innerHTML = healthPercentOfMaximum + "%";
+//		bar.style.width = healthPercentOfMaximum + "%";
+//		let color = sVector3.Lerp(MovieNightBot.healthRed, MovieNightBot.healthGreen, healthPercentOfMaximum / 100.0);
+//		color.Scale(256);
+//		bar.style.backgroundColor = color.RGB();
+		if (this.suggestionJSON.imdb_id != null)
+			this.domObject.querySelector("#imdbLink").href = "https://www.imdb.com/title/tt" + this.suggestionJSON.imdb_id;
+		else
+			this.domObject.querySelector("#imdbLink").href = "#";
+
+		if (this.suggestionJSON.genre && this.suggestionJSON.genre.length > 0) {
+			let ul = this.domObject.querySelector("#genres ul");
+			for (let i = 0; i < this.suggestionJSON.genre.length; i++) {
+				let element = document.createElement("li");
+				element.innerHTML = this.suggestionJSON.genre[i];
+				ul.appendChild(element);
+			}
+		}
+	}
+}
+
+function WatchedMovie(watchedJSON) {
+	this.watchedJSON = watchedJSON;
+	this.domObject = null;
+
+	this.Init = function() {
+		this.domObject = document.createElement('div');
+		let htmlText = '<div id="image"><img id="imgCover" class="coverImage" src="/content/images/loading.gif" /><h2 id="txtYear"></h2></div>';
+		htmlText += '<div id="imdbData" class="imdbData"><a id="imdbLink" href="" target="#"><h2 id="txtTitle"></h2></a></div>';
+		// if (this.watchedJSON.genre && this.watchedJSON.genre.length > 0)
+		htmlText += '<div id="genres" class="genres"><ul></ul></h2></div>';
+		htmlText += '<div id="data1"><p id="txtSuggestor"><p id="txtSuggestDate"></p></p><p id="txtWatchDate"></p></div>';
+		htmlText += '<div id="data2" class="data2"><p id="txtTotalVotes"></p><p id="txtTotalScore"></p><p id="txtVoteEvents"></p></div>';
+		this.domObject.innerHTML = htmlText;
+
+		this.domObject.classList.add("item");
+
+		let imgCover = this.domObject.querySelector("#imgCover");
+		imgCover.onload = function() {
+			if (this.src !== this.getAttribute("data-src"))
+				this.src = this.getAttribute("data-src");
+		}
+		if (this.watchedJSON.full_size_poster_url != null)
+			imgCover.setAttribute("data-src", this.watchedJSON.full_size_poster_url);
+		else
+			imgCover.setAttribute("data-src", "/content/images/movienotfound.png");
+
+		this.domObject.querySelector("#txtTitle").innerHTML = this.watchedJSON.title;
+		this.domObject.querySelector("#txtYear").innerHTML = this.watchedJSON.year;
+		this.domObject.querySelector("#txtSuggestor").innerHTML = "Suggested by: " + this.watchedJSON.suggestor;
+		let suggestDate = new Date(this.watchedJSON.date_suggested);
+		let watchDate = new Date(this.watchedJSON.date_watched);
+		this.domObject.querySelector("#txtSuggestDate").innerHTML = "Suggested On: " + suggestDate.toLocaleDateString();
+		this.domObject.querySelector("#txtWatchDate").innerHTML = "Watched On: " + watchDate.toLocaleDateString();
+		this.domObject.querySelector("#txtTotalVotes").innerHTML = "Total Votes: " + this.watchedJSON.total_votes;
+		this.domObject.querySelector("#txtTotalScore").innerHTML = "Total Score: " + this.watchedJSON.total_score;
+		this.domObject.querySelector("#txtVoteEvents").innerHTML = "Vote Events Entered: " + this.watchedJSON.num_votes_entered;
+		if (this.watchedJSON.imdb_id != null)
+			this.domObject.querySelector("#imdbLink").href = "https://www.imdb.com/title/tt" + this.watchedJSON.imdb_id;
+		else
+			this.domObject.querySelector("#imdbLink").href = "#";
+
+		if (this.watchedJSON.genre && this.watchedJSON.genre.length > 0) {
+			let ul = this.domObject.querySelector("#genres ul");
+			for (let i = 0; i < this.watchedJSON.genre.length; i++) {
+				let element = document.createElement("li");
+				element.innerHTML = this.watchedJSON.genre[i];
+				ul.appendChild(element);
+			}
+		}
+	}
+} 

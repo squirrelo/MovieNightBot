@@ -8,6 +8,9 @@ Vote.segmentColors = [
 	"#5E6BFF","#EEFF5E","#8D963C","#3B7493","#608E3A",
 	"#8E3A3A","#793B91"
 ];
+Vote.refreshCount = 0;
+Vote.maxRefreshCount = 30;
+Vote.timeoutms = 1000 * 30;
 
 Vote.Init = function() {
 	//Get initial vote data, then do something with it!
@@ -34,14 +37,33 @@ Vote.RequestFulfilled = function(responseText) {
 	try {
 		parsed = JSON.parse(responseText)
 	} catch {
-		//No data loaded, show some kind of error.
-		console.log("Json not sent.");
-		console.log(responseText);
 		return;
 	}
 
 	this.lastData = parsed;
 	this.RenderVoteData()
+
+	let moviesList = document.querySelector(".movieList");
+	moviesList.innerHTML = "";
+
+	if (this.lastData == null || this.lastData.movies.length == 0) {
+		moviesList.innerHTML = "Nothing right now.";
+		return;
+	}
+
+	for (let i = 0; i < this.lastData.movies.length; i++) {
+		let movie = this.lastData.movies[i];
+		let item = new SuggestedMovie(movie);
+		item.Init();
+		moviesList.appendChild(item.domObject);
+	}
+
+	if (this.refreshCount < this.maxRefreshCount) {
+		setTimeout(function() {Vote.RequestData()}, Vote.timeoutms);
+		this.refreshCount ++;
+	} else {
+		document.querySelector("#warning").innerHTML = "Automatic refresh timed out, please refresh page.";
+	}
 }
 
 Vote.RenderVoteData = function() {
@@ -114,8 +136,17 @@ Vote.DrawChart = function(p) {
 		p.textSize(p.width * 0.03);
 		p.textAlign(p.CENTER);
 		p.text(movie.title, p.width * 0.5 + p.cos(textAngle) * p.width * radiusPercent, p.width * 0.5 + p.sin(textAngle) * p.width * radiusPercent);
+		p.text(movie.score, p.width * 0.5 + p.cos(textAngle) * p.width * radiusPercent * 0.5, p.width * 0.5 + p.sin(textAngle) * p.width * radiusPercent * 0.5);
 		lastAngle += arcLength;
 	}
+}
+
+Vote.ShowSuggested = function() {
+	window.location.href = "/movies.html?server=" + Utility.GetQueryValue('server') + "&view=suggested";
+}
+
+Vote.ShowWatched = function() {
+	window.location.href = "/movies.html?server=" + Utility.GetQueryValue('server') + "&view=watched";
 }
 
 const p5Setup = ( p ) => {
