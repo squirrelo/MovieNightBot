@@ -356,6 +356,22 @@ class UserVoteController(BaseController):
             .where((Vote.server_id == server_id) & (UserVote.user_id == user_id))
         ]
 
+    def get_usernames_voted(self, server_id: int) -> List[str]:
+        with self.transaction():
+            vote_row = VoteController().get_by_id(server_id)
+            if vote_row:
+                users = (
+                    UserVote.select(pw.fn.Distinct(UserVote.user_name))
+                    .join(MovieVote)
+                    .join(Vote)
+                    .where((Vote.server_id == server_id))
+                )
+                # Lazy eval so force it to eval before return
+                voters = [u for u in users]
+            else:
+                voters = []
+        return voters
+
     def get_next_rank(self, server_id: int, user_id: int) -> int:
         max_rank = (
             UserVote.select(pw.fn.MAX(UserVote.vote_rank))
