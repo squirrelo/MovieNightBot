@@ -2,17 +2,17 @@ from . import BaseAction
 from ..db.controllers import MoviesController
 
 
-class SuggestedAction(BaseAction):
-    action_name = "suggested"
+class VotesPageAction(BaseAction):
+    action_name = "votes_page"
     controller = MoviesController()
 
     async def action(self, msg):
         from ..application import client
 
         await msg.channel.send(
-            f"Suggestions can be found at {client.config.base_url}/movies.html?server={msg.guild.id}&view=suggested"
+            f"The active vote can be found at {client.config.base_url}/vote.html?server={msg.guild.id}"
         )
 
     @property
     def help_text(self):
-        return "Lists all movies that have been suggested."
+        return "Posts a link to the server's vote page."

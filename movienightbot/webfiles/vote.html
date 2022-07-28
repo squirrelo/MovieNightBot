@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Movie Night Bot Vote</title>
+		<meta charset="UTF-8">
+		<link rel="stylesheet" href="/content/styles/normalize.css">
+		<link rel="stylesheet" href="/content/styles/global.css">
+		<link rel="stylesheet" href="/content/styles/vote.css">
+
+		<link rel="shortcut icon" href="/content/images/favicon.png" />
+
+		<script src="https://cdn.jsdelivr.net/npm/p5@1.4.2/lib/p5.js"></script>
+		<script src="/scripts/global.js"></script>
+	</head>
+	<body>
+		<div class="section header">
+			<a class="logo" href="#">
+				<h1 class="title" id="TxtPageTitle">Movie Night Bot Vote</h1>
+			</a>
+			<div class="navigation">
+				<a class="link" id="BtnSetting" onclick="javascript: Vote.ShowSuggested()"><h2>Show Suggested</h2></a>
+				<a class="link" id="BtnSetting" onclick="javascript: Vote.ShowWatched()"><h2>Show Watched</h2></a>
+			</div>
+		</div>
+		<div class="section content">
+			<p id="warning"></p>
+			<div class="piechart" id="piechart"></div>
+			<div class="voteCount"><h2 id="voteCount">Participants: 0</h2></div>
+			<div class="listHeader"><h1>What's up for vote?</h1><p>Want to vote? You'll have to go back to the discord channel where this link was posted.</p></div>
+			<div class="movieList"><p>Server did not send any further data. Please wait a moment then refresh the page.</p></div>
+		</div>
+		<div class="section footer">
+			<div class="content">
+				<p class="copyright">All trademarks, and logos are property of their respective owners. Movie artwork is retrieved from directly IMDB.</p>
+				<p>This site does not make use of cookies or collect any data from users.</p>
+			</div>
+		</div>
+		<script src="/scripts/vote.js"></script>
+	</body>
+</html>

@@ -1,34 +1,46 @@
+import pathlib
 from typing import Dict, Any
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 import logging
 import json
 import re
 
-from movienightbot.db.controllers import (
-    MoviesController,
-    Movie,
-    GenreController,
-)
-
+from movienightbot.db.controllers import *
 
 logger = logging.getLogger("movienightbot")
 
 
 class BotRequestHandler(BaseHTTPRequestHandler):
-    suggested_json_regex = re.compile(r"^/json/suggested/[0-9]+$")
-    watched_json_regex = re.compile(r"^/json/watched/[0-9]+$")
-    suggested_regex = re.compile(r"^/suggested/[0-9]+$")
-    watched_regex = re.compile(r"^/watched/[0-9]+$")
-    static_regex = re.compile(r"^/static/.+$")
-    favicon_url = "/favicon.ico"
+    suggested_json_regex = re.compile(r"^/json/suggested+$")
+    watched_json_regex = re.compile(r"^/json/watched+$")
+    vote_json_regex = re.compile(r"^/json/vote+$")
     movies_controller = MoviesController()
     genre_controller = GenreController()
+    vote_controller = VoteController()
+    movie_vote_controller = MovieVoteController()
+    user_vote_controller = UserVoteController()
 
     def set_json_headers(self, response_code: int = 200):
         self.send_response(response_code)
         self.send_header("Content-type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+
+    def set_headers_by_extension(self, extension: str, response_code: int = 200):
+        # Ensures that browsers won't block content if the content type isn't specified
+        # Only bothering to add the types that we specifically need served
+        self.send_response(response_code)
+        if extension == ".css":
+            self.send_header("Content-type", "text/css")
+        elif extension == ".js":
+            self.send_header("Content-type", "application/javascript")
+        elif extension == ".ico":
+            self.send_header("Content-type", "image/vnd.microsoft.icon")
+        elif extension == ".html":
+            self.send_header("Content-type", "text/html")
+
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
@@ -56,7 +68,6 @@ class BotRequestHandler(BaseHTTPRequestHandler):
                     "full_size_poster_url": movie.imdb_id.full_size_poster_url,
                 }
             )
-
         movie_genres = self.genre_controller.get_genres_by_movie_id(movie.id) or []
         genre_list = []
         for genre in movie_genres:
@@ -87,53 +98,65 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         suggested = {"watched": watched_list, "server_id": server_id}
         self.wfile.write(json.dumps(suggested).encode())
 
-    def serve_html_template(self):
-        static_path = Path(Path(__file__).parent, "webfiles", "template.html")
-        with static_path.open("rb") as f:
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.end_headers()
-            self.wfile.write(f.read())
+    def get_vote_json(self, server_id: int):
+        try:
+            movies_vote_data = self.movie_vote_controller.get_movies_for_server_vote(server_id)
+        except Vote.DoesNotExist:
+            movies_vote_data = []
+
+        movies_list = []
+        for movie_vote in movies_vote_data:
+            movie_info = self.build_movie_base_info(movie_vote.movie)
+            movie_info.update({"score": movie_vote.score})
+            movies_list.append(movie_info)
+
+        usernames = self.user_vote_controller.get_usernames_voted(server_id)
+
+        self.set_json_headers()
+        vote_info = {
+            "movies": movies_list,
+            "voter_count": len(usernames)
+        }
+        self.wfile.write(json.dumps(vote_info).encode())
 
     def serve_static(self, path: str):
-        static_parts = path.split("/")[2:]
+        static_parts = path.split("/")
         static_path = Path(Path(__file__).parent, "webfiles", *static_parts)
-        logger.debug("static_parts: {}".format(static_parts))
-        logger.debug("static_path: {}".format(static_path))
-        if not static_path.exists():
-            self.send_response(404)
-            self.end_headers()
-            self.wfile.write(b"")
+        if not static_path.exists():  # Any non-found items should be treated as 404s
+            self.serve_404()
+            return
+
+        if not static_path.is_file():  # Any folders should be treated as 404s
+            self.serve_404()
             return
 
         with static_path.open("rb") as f:
-            self.send_response(200)
-            self.end_headers()
+            self.set_headers_by_extension(pathlib.Path(path).suffix)
             self.wfile.write(f.read())
 
-    def get_server_id(self, path: str):
-        return int(path.split("/")[-1])
+    def serve_404(self):
+        self.send_response(404)
+        self.end_headers()
+        self.wfile.write(b"Unknown request")
+
+    def get_server_id(self, query: str):
+        queries = parse_qs(query)
+        return queries.get("server")
 
     def do_GET(self):
         parsed_path = urlparse(self.path)
         path = parsed_path.path
-        if self.static_regex.match(path):
-            self.serve_static(path)
-        elif self.suggested_json_regex.match(path):
-            server_id = self.get_server_id(path)
+        if self.suggested_json_regex.match(path):
+            server_id = self.get_server_id(parsed_path.query)
             self.get_suggested_json(server_id)
         elif self.watched_json_regex.match(path):
-            server_id = self.get_server_id(path)
+            server_id = self.get_server_id(parsed_path.query)
             self.get_watched_json(server_id)
-        elif self.suggested_regex.match(path):
-            self.serve_html_template()
-        elif self.watched_regex.match(path):
-            self.serve_html_template()
-        elif path == self.favicon_url:
-            self.serve_static("/static/favicon.ico")
-        else:
-            self.set_json_headers(404)
-            self.wfile.write(b"")
+        elif self.vote_json_regex.match(path):
+            server_id = self.get_server_id(parsed_path.query)
+            self.get_vote_json(server_id)
+        else:  # Rather than peicemealing out each html doc, all non-commands get treated as file requests
+            self.serve_static(path)
 
     def do_HEAD(self):
         self.set_json_headers()
