@@ -297,7 +297,10 @@ class MovieVoteController(BaseController):
 
     def get_movies_for_server_vote(self, server_id: int) -> List[MovieVote]:
         with self.transaction():
-            vote_row = VoteController().get_by_id(server_id)
+            try:
+                vote_row = VoteController().get_by_id(server_id)
+            except pw.DoesNotExist:
+                vote_row = None
             if vote_row:
                 # Lazy eval, so force it to eval into a list
                 movies = [x for x in vote_row.movie_votes]

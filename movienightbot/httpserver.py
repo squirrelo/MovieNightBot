@@ -100,7 +100,9 @@ class BotRequestHandler(BaseHTTPRequestHandler):
 
     def get_vote_json(self, server_id: int):
         try:
-            movies_vote_data = self.movie_vote_controller.get_movies_for_server_vote(server_id)
+            movies_vote_data = self.movie_vote_controller.get_movies_for_server_vote(
+                server_id
+            )
         except Vote.DoesNotExist:
             movies_vote_data = []
 
@@ -113,10 +115,7 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         usernames = self.user_vote_controller.get_usernames_voted(server_id)
 
         self.set_json_headers()
-        vote_info = {
-            "movies": movies_list,
-            "voter_count": len(usernames)
-        }
+        vote_info = {"movies": movies_list, "voter_count": len(usernames)}
         self.wfile.write(json.dumps(vote_info).encode())
 
     def serve_static(self, path: str):

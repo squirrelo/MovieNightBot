@@ -50,6 +50,7 @@ async def delete_thread(thread: discord.Thread, sec_delay: int = 10) -> None:
 
 def build_vote_embed(server_id: int):
     from movienightbot.application import client
+
     server_row = ServerController().get_by_id(server_id)
     try:
         movie_rows = MovieVoteController().get_movies_for_server_vote(server_id)
