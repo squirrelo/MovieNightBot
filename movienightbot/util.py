@@ -33,9 +33,8 @@ async def cleanup_messages(
         # Need sleep here so don't overwhelm API
         await asyncio.sleep(0.2)
 
-async def delete_thread(
-    thread: discord.Thread, sec_delay: int = 10
-) -> None:
+
+async def delete_thread(thread: discord.Thread, sec_delay: int = 10) -> None:
     """Deletes a list of messages off a server
 
     Parameters

@@ -37,27 +37,27 @@ class HelpAction(BaseAction):
                 adm_list.append(action)
             else:
                 cmd_list.append(action)
-        
+
         embed.add_field(
             name="General Commands: ",
             value=f"```{', '.join(cmd_list)}```",
             inline=False,
         )
-        
+
         if is_admin:
-            logger.debug(f"user is an admin, showing admin help")
+            logger.debug("user is an admin, showing admin help")
             embed.add_field(
                 name="Admin Commands: ",
                 value=f"```{', '.join(adm_list)}```",
                 inline=False,
             )
-        
+
         return embed
 
     def _build_help_embed_arg(self, action: str) -> discord.Embed:
         from . import KNOWN_ACTIONS
         from ..application import client
-        
+
         if action not in KNOWN_ACTIONS:
             embed = discord.Embed(
                 title=f"Unknown Command:  {action}",
@@ -95,13 +95,12 @@ class HelpAction(BaseAction):
         logger.debug(
             f"Helping user {msg.author.nick} with roles {user_roles} against {server_role}"
         )
-        
+
         if not action_name:
             embed_data = self._build_help_embed_general(server_role in user_roles)
         else:
             embed_data = self._build_help_embed_arg(action_name)
         await self._safe_private_message(msg, None, embed_data)
-
 
     @property
     def help_text(self):
