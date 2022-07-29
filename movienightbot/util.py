@@ -27,11 +27,14 @@ async def cleanup_messages(
     sec_delay : int
         The number of seconds to wait before deleting the message. Default 10
     """
-    loop = asyncio.get_event_loop()
     for message in messages:
-        loop.create_task(message.delete(delay=sec_delay))
-        # Need sleep here so don't overwhelm API
-        await asyncio.sleep(0.2)
+        # Adding `delay` kwarg spawns a task, so wrapping that task in a task is redundant...
+        # These tasks cause dpytest to break, and py-cord supposedly has "sane rate-limiting"
+        # So tasks here are being removed all together.
+        # Another mention, we could/should leverage channel.delete_messages() for bulk cleanup, however
+        #  dpytest doesn't support it yet either lol.
+        await asyncio.sleep(sec_delay)
+        await message.delete()
 
 
 async def delete_thread(thread: discord.Thread, sec_delay: int = 10) -> None:

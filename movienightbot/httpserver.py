@@ -7,7 +7,15 @@ import logging
 import json
 import re
 
-from movienightbot.db.controllers import *
+from movienightbot.db.controllers import (
+    MoviesController,
+    GenreController,
+    VoteController,
+    MovieVoteController,
+    UserVoteController,
+    Movie,
+    Vote,
+)
 
 logger = logging.getLogger("movienightbot")
 

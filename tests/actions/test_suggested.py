@@ -12,5 +12,7 @@ async def test_suggested(client):
     assert (
         test.verify()
         .message()
-        .content(f"Suggestions can be found at {base_url}/suggested/{guild_id}")
+        .content(
+            f"Suggestions can be found at {base_url}/movies.html?server={guild_id}&view=suggested"
+        )
     )
