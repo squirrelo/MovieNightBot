@@ -9,12 +9,12 @@ import re
 
 from movienightbot.db.controllers import (
     MoviesController,
-	GenreController,
-	VoteController,
-	MovieVoteController,
-	UserVoteController,
-	Movie,
-	Vote,
+    GenreController,
+    VoteController,
+    MovieVoteController,
+    UserVoteController,
+    Movie,
+    Vote,
 )
 
 logger = logging.getLogger("movienightbot")
