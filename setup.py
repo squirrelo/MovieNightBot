@@ -7,7 +7,7 @@ requirements = [
     "peewee",
     "marshmallow",
     "pyyaml",
-    "imdbpy",
+    "cinemagoer",
 ]
 
 test_requirements = [
