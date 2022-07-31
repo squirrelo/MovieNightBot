@@ -4,13 +4,14 @@
 	<head>
 		<title>Movie Night Bot Suggestions</title>
 		<meta charset="UTF-8">
-		<link rel="stylesheet" href="../static/content/styles/normalize.css">
-		<link rel="stylesheet" href="../static/content/styles/page.css">
+		<link rel="stylesheet" href="/content/styles/normalize.css">
+		<link rel="stylesheet" href="/content/styles/global.css">
+		<link rel="stylesheet" href="/content/styles/movies.css">
 
-		<link rel="shortcut icon" href="../static/content/images/favicon.png" />
+		<link rel="shortcut icon" href="/content/images/favicon.png" />
 
-		<script src="../static/scripts/chop.js"></script>
-		<script src="../static/scripts/app.js"></script>
+		<script src="/scripts/global.js"></script>
+		<script src="/scripts/movies.js"></script>
 	</head>
 	<body>
 		<div class="section header">
@@ -18,6 +19,7 @@
 				<h1 class="title" id="TxtPageTitle">Movie Night Bot Suggestions</h1>
 			</a>
 			<div class="navigation">
+				<a class="link" id="BtnVote" onclick="javascript: MovieNightBot.OnClickBtnVote()"><h2>Show Vote</h2></a>
 				<a class="link" id="BtnSetting" onclick="javascript: MovieNightBot.OnClickBtnSetting()"><h2>Show Watched</h2></a>
 			</div>
 		</div>

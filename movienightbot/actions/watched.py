@@ -8,7 +8,7 @@ class WatchedAction(BaseAction):
         from ..application import client
 
         await msg.channel.send(
-            f"Watched movies can be found at {client.config.base_url}/watched/{msg.guild.id}"
+            f"Watched movies can be found at {client.config.base_url}/movies.html?server={msg.guild.id}&view=watched"
         )
 
     @property

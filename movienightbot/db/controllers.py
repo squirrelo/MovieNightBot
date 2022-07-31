@@ -297,7 +297,10 @@ class MovieVoteController(BaseController):
 
     def get_movies_for_server_vote(self, server_id: int) -> List[MovieVote]:
         with self.transaction():
-            vote_row = VoteController().get_by_id(server_id)
+            try:
+                vote_row = VoteController().get_by_id(server_id)
+            except pw.DoesNotExist:
+                vote_row = None
             if vote_row:
                 # Lazy eval, so force it to eval into a list
                 movies = [x for x in vote_row.movie_votes]
@@ -355,6 +358,29 @@ class UserVoteController(BaseController):
             .join(Vote)
             .where((Vote.server_id == server_id) & (UserVote.user_id == user_id))
         ]
+
+    def get_usernames_voted(self, server_id: int) -> List[str]:
+        with self.transaction():
+            try:
+                vote_row = VoteController().get_by_id(server_id)
+            except pw.DoesNotExist:
+                vote_row = None
+            if vote_row:
+                try:
+                    users = (
+                        UserVote.select(pw.fn.Distinct(UserVote.user_name))
+                        .join(MovieVote)
+                        .join(Vote)
+                        .where((Vote.server_id == server_id))
+                    )
+                    # Lazy eval so force it to eval before return
+                    voters = [u for u in users]
+                except pw.DoesNotExist:
+                    # Vote exists but nobody voted yet
+                    voters = []
+            else:
+                voters = []
+        return voters
 
     def get_next_rank(self, server_id: int, user_id: int) -> int:
         max_rank = (

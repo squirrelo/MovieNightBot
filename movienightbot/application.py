@@ -163,7 +163,7 @@ async def on_raw_reaction_add(payload):
 
     # Update the vote message
     embed = build_vote_embed(server_id)
-    await message.edit(content=None, embed=embed, supress=False)
+    await message.edit(content=None, embed=embed, suppress=False)
 
 
 @client.event
