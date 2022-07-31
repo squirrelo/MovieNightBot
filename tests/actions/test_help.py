@@ -15,6 +15,8 @@ async def test_help(client):
     ha = HelpAction()
     test_embed = ha._build_help_embed_general(False)
     test_admin_embed = ha._build_help_embed_general(True)
+    test_verbose_embed = ha._build_verbose_help_embed()
+    test_verbose_admin_embed = ha._build_verbose_admin_help_embed()
 
     await test.message("m!help")
     assert test.verify().message().embed(test_embed)
@@ -25,4 +27,13 @@ async def test_help(client):
 
     await test.message("m!help")
     assert test.verify().message().embed(test_admin_embed)
+
+    await test.message("m!help verbose")
+    m = test.get_message()
+    assert (
+        m.embeds[0].to_dict() == test_verbose_embed.to_dict()
+    ), "First Embed should be verbose Help."
+    assert (
+        m.embeds[1].to_dict() == test_verbose_admin_embed.to_dict()
+    ), "Second Embed should be verbose admin Help."
     await _clear_test_role(client, test_role)

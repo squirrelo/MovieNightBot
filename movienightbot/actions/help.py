@@ -71,19 +71,57 @@ class HelpAction(BaseAction):
             )
         return embed
 
+    def _build_verbose_help_embed(self) -> discord.Embed:
+        from . import KNOWN_ACTIONS
+        from ..application import client
+
+        embed = discord.Embed(
+            title="Help Commands",
+            description="I heard you asked for some help. We all need some from time to time, so here it is.",
+        )
+        for action in sorted(KNOWN_ACTIONS):
+            cls = KNOWN_ACTIONS[action]
+            if cls.admin:
+                continue
+            embed.add_field(
+                name=f"{client.config.message_identifier}{action} {' '.join(cls.help_options)}",
+                value=cls.help_text,
+                inline=False,
+            )
+        return embed
+
+    def _build_verbose_admin_help_embed(self) -> discord.Embed:
+        from . import KNOWN_ACTIONS
+        from ..application import client
+
+        embed = discord.Embed(
+            title="Admin Help Commands",
+            description="Oh look, you're a super special admin. That means you can do this stuff too.",
+        )
+        for action in sorted(KNOWN_ACTIONS):
+            cls = KNOWN_ACTIONS[action]
+            if not cls.admin:
+                continue
+            embed.add_field(
+                name=f"{client.config.message_identifier}{action} {' '.join(cls.help_options)}",
+                value=cls.help_text,
+                inline=False,
+            )
+        return embed
+
     async def _safe_private_message(
         self,
         msg: discord.Message,
         content_data: Optional[str],
-        embed_data: discord.Embed,
+        embeds_data: list[discord.Embed],
     ) -> None:
         try:
-            await msg.author.send(content=content_data, embed=embed_data)
+            await msg.author.send(content=content_data, embeds=embeds_data)
         except discord.Forbidden as ex:
             # For error/exception codes see: https://discord.com/developers/docs/topics/opcodes-and-status-codes#json
             if ex.code == 50007:  # Cannot Send messages to this user
                 thread = await msg.create_thread(name="Help thread")
-                await thread.send(content=content_data, embed=embed_data)
+                await thread.send(content=content_data, embeds=embeds_data)
                 await delete_thread(thread, sec_delay=120)
             else:
                 raise
@@ -92,15 +130,23 @@ class HelpAction(BaseAction):
         action_name = self.get_message_data(msg)
         server_role = self.controller.get_by_id(msg.guild.id).admin_role
         user_roles = {r.name for r in msg.author.roles}
+        admin = ""
+        if server_role in user_roles:
+            admin = "(is admin)"
         logger.debug(
-            f"Helping user {msg.author.nick} with roles {user_roles} against {server_role}"
+            f"Helping user {msg.author.nick}{admin} with roles {user_roles} against {server_role}"
         )
 
+        embeds_data = []
         if not action_name:
-            embed_data = self._build_help_embed_general(server_role in user_roles)
+            embeds_data += [self._build_help_embed_general(server_role in user_roles)]
+        elif action_name in ["all", "verbose"]:
+            embeds_data += [self._build_verbose_help_embed()]
+            if server_role in user_roles:
+                embeds_data += [self._build_verbose_admin_help_embed()]
         else:
-            embed_data = self._build_help_embed_arg(action_name)
-        await self._safe_private_message(msg, None, embed_data)
+            embeds_data += [self._build_help_embed_arg(action_name)]
+        await self._safe_private_message(msg, None, embeds_data)
 
     @property
     def help_text(self):
