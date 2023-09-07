@@ -27,6 +27,8 @@ async def cleanup_messages(
     sec_delay : int
         The number of seconds to wait before deleting the message. Default 10
     """
+    if sec_delay <= 0:
+        return
     for message in messages:
         # Adding `delay` kwarg spawns a task, so wrapping that task in a task is redundant...
         # These tasks cause dpytest to break, and py-cord supposedly has "sane rate-limiting"
