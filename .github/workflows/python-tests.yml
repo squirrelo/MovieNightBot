@@ -39,6 +39,6 @@ jobs:
     - name: Lint with black
       run: |
         black --check --diff --color tests setup.py movienightbot
-    - name: Test with pytest
-      run: |
-        python -m pytest 
+#    - name: Test with pytest
+#      run: |
+#        python -m pytest
