@@ -21,20 +21,16 @@ class SetIMDBId(BaseAction):
             server_msg = await msg.channel.send(
                 f"Movie {movie_name} has been updated to imdb ID {imdb_id}"
             )
-            if message_timeout > 0:
-                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+
         elif updated_rows == 0:
             server_msg = await msg.channel.send(
                 f"Unable to update IMDB id for {movie_name}"
             )
-            if message_timeout > 0:
-                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
         else:
             server_msg = await msg.channel.send(
                 f"Movie {movie_name} updated multiple entries to IMDB id {imdb_id}"
             )
-            if message_timeout > 0:
-                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+        await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
 
     @property
     def help_text(self):

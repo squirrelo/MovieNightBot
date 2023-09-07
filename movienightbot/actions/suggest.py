@@ -67,8 +67,7 @@ class SuggestAction(BaseAction):
             server_msg = await msg.channel.send(
                 "Suggestions are currently disabled on the server"
             )
-            if message_timeout > 0:
-                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+            await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
             return
 
         if server_row.check_movie_names:
@@ -84,8 +83,7 @@ class SuggestAction(BaseAction):
                 server_msg = await msg.channel.send(
                     "Could not find the movie title you suggested in IMDb."
                 )
-                if message_timeout > 0:
-                    await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
                 return
         else:
             imdb_row, imdb_info = None, None
@@ -97,10 +95,13 @@ class SuggestAction(BaseAction):
             "suggested_by": msg.author.name,
             "imdb_id": imdb_row,
         }
+        movie_row = None
         try:
             if imdb_row is None:
                 try:
-                    self.controller.get_by_server_and_id(server_id, suggestion)
+                    movie_row = self.controller.get_by_server_and_id(
+                        server_id, suggestion
+                    )
                 except pw.DoesNotExist:
                     # Movie not found, and no IMDB info to go by, so keep going
                     pass
@@ -109,32 +110,32 @@ class SuggestAction(BaseAction):
             self.controller.create(movie_data)
         except pw.IntegrityError as e:
             logger.debug("Movie insert error: {}\n{}".format(movie_data, str(e)))
-            server_msg = await msg.channel.send(
-                f"{suggestion} has already been suggested in this server."
+            movie_status = (
+                "watched" if movie_row and movie_row.watched_on else "suggested"
             )
-            if message_timeout > 0:
-                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+            server_msg = await msg.channel.send(
+                f"{suggestion} has already been {movie_status} in this server."
+            )
+            await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
             return
 
         if imdb_info:
             try:
                 self.add_genre_info(server_id, suggestion, imdb_info["genres"])
             except pw.IntegrityError as e:
-                logger.debug(
-                    f"Genre insert error: {imdb_info['genres']} {suggestion}\n{e}"
+                logger.error(
+                    f"Genre insert error: {server_id} {imdb_info['genres']} {suggestion}\n{e}"
                 )
                 server_msg = await msg.channel.send(
                     f"Error adding suggestion {suggestion}"
                 )
-                if message_timeout > 0:
-                    await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+                await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
                 return
 
         server_msg = await msg.channel.send(
             f"Your suggestion of {suggestion} ({imdb_row.year if imdb_row else ''}) has been added to the list."
         )
-        if message_timeout > 0:
-            await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+        await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
 
     @property
     def help_text(self):
