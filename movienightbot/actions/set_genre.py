@@ -22,8 +22,7 @@ class SetGenre(BaseAction):
         server_msg = await msg.channel.send(
             f"Movie {movie_name} has been updated with genre {genre}"
         )
-        if message_timeout > 0:
-            await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+        await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
 
     @property
     def help_text(self):
