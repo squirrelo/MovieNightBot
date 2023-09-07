@@ -99,7 +99,9 @@ class SuggestAction(BaseAction):
         try:
             if imdb_row is None:
                 try:
-                    movie_row = self.controller.get_by_server_and_id(server_id, suggestion)
+                    movie_row = self.controller.get_by_server_and_id(
+                        server_id, suggestion
+                    )
                 except pw.DoesNotExist:
                     # Movie not found, and no IMDB info to go by, so keep going
                     pass
@@ -108,7 +110,9 @@ class SuggestAction(BaseAction):
             self.controller.create(movie_data)
         except pw.IntegrityError as e:
             logger.debug("Movie insert error: {}\n{}".format(movie_data, str(e)))
-            movie_status = "watched" if movie_row and movie_row.watched_on else "suggested"
+            movie_status = (
+                "watched" if movie_row and movie_row.watched_on else "suggested"
+            )
             server_msg = await msg.channel.send(
                 f"{suggestion} has already been {movie_status} in this server."
             )

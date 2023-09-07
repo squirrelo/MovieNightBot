@@ -28,6 +28,7 @@ async def cleanup_messages(
         The number of seconds to wait before deleting the message. Default 10
     """
     if sec_delay <= 0:
+        # want messages to stay indefinitely so do nothing
         return
     for message in messages:
         # Adding `delay` kwarg spawns a task, so wrapping that task in a task is redundant...
