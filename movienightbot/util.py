@@ -50,6 +50,9 @@ async def delete_thread(thread: discord.Thread, sec_delay: int = 10) -> None:
     sec_delay : int
         The number of seconds to wait before deleting the message. Default 10
     """
+    if sec_delay <= 0:
+        # want messages to stay indefinitely so do nothing
+        return
     await asyncio.sleep(sec_delay)
     await thread.delete()
 

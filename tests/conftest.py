@@ -9,7 +9,6 @@ from movienightbot.db import initialize_db
 
 @pytest.fixture
 def client(event_loop):
-
     bconfig = Config("unused_token", "sqlite:///:memory:")
     bconfig.message_identifier = "m!"
     bconfig.port = 8000
