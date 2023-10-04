@@ -37,7 +37,7 @@ def imdb_data(movie: str, kind: str) -> Tuple[Union[None, IMDBInfo], Union[None,
         return imdb_row, imdb_info
 
     # row doesn't exist, so add it
-    imdb_data = {
+    imdb_row_data = {
         "imdb_id": imdb_info.movieID,
         "title": imdb_info["title"],
         "canonical_title": imdb_info["canonical title"],
@@ -46,7 +46,7 @@ def imdb_data(movie: str, kind: str) -> Tuple[Union[None, IMDBInfo], Union[None,
         "full_size_poster_url": imdb_info["full-size cover url"],
     }
     try:
-        imdb_row = imdb_controller.create(imdb_data)
+        imdb_row = imdb_controller.create(imdb_row_data)
     except IntegrityError as e:
         logger.error("IMDB entry insert error: {}\n{}".format(imdb_data, str(e)))
         return None, None
@@ -62,11 +62,12 @@ def add_genre_info(server_id: int, movie_name: str, genres: List[str]) -> None:
 @app_commands.command(description="Adds the movie to the suggestions list for future votes.")
 @app_commands.check(is_channel)
 async def suggest(interaction: discord.Interaction, movie: str):
+    await interaction.response.defer()
     server_id = interaction.guild.id
     server_row = server_controller.get_by_id(server_id)
     message_timeout = None if server_row.message_timeout == 0 else server_row.message_timeout
     if server_row.block_suggestions:
-        server_msg = await interaction.response.send_message(
+        server_msg = await interaction.followup.send(
             "Suggestions are currently disabled on the server", ephemeral=True
         )
         return
@@ -74,10 +75,10 @@ async def suggest(interaction: discord.Interaction, movie: str):
     if server_row.check_movie_names:
         allow_tv_shows = server_row.allow_tv_shows
         kind = None if allow_tv_shows else "movie"
-        imdb_row, imdb_info = imdb_data(interaction, kind=kind)
+        imdb_row, imdb_info = imdb_data(movie=movie, kind=kind)
         suggestion = capitalize_movie_name(imdb_row.title) if imdb_row else capitalize_movie_name(movie)
         if imdb_row is None:
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 "Could not find the movie title you suggested in IMDb.", ephemeral=True
             )
             return
@@ -105,8 +106,8 @@ async def suggest(interaction: discord.Interaction, movie: str):
     except IntegrityError as e:
         logger.debug("Movie insert error: {}\n{}".format(movie_data, str(e)))
         movie_status = "watched" if movie_row and movie_row.watched_on else "suggested"
-        await interaction.response.send_message(
-            f"{suggestion} has already been {movie_status} in this server.", delete_after=message_timeout
+        await interaction.followup.send(
+            f"{suggestion} has already been {movie_status} in this server."
         )
         return
 
@@ -115,20 +116,19 @@ async def suggest(interaction: discord.Interaction, movie: str):
             add_genre_info(server_id, suggestion, imdb_info["genres"])
         except IntegrityError as e:
             logger.error(f"Genre insert error: {server_id} {imdb_info['genres']} {suggestion}\n{e}")
-            await interaction.response.send_message(
-                f"Error adding suggestion {suggestion}", delete_after=message_timeout
+            await interaction.followup.send(
+                f"Error adding suggestion {suggestion}"
             )
             return
 
-    await interaction.response.send_message(
+    await interaction.followup.send(
         f"Your suggestion of {suggestion} ({imdb_row.year if imdb_row else ''}) has been added to the list.",
-        delete_after=message_timeout,
     )
 
 
 @suggest.error
 async def suggest_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
-    await interaction.response.send_message(
+    await interaction.followup.send(
         f"Wrong channel used for messages. Please use the correct channel.",
         ephemeral=True,
     )
