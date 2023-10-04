@@ -42,9 +42,7 @@ class Movie(BaseModel):
     num_votes_entered = pw.IntegerField(null=False, default=0)
     total_score = pw.FloatField(null=False, default=0.0)
     total_votes = pw.IntegerField(null=False, default=0)
-    suggested_on = pw.TimestampField(
-        utc=True, null=False, default=datetime.datetime.utcnow
-    )
+    suggested_on = pw.TimestampField(utc=True, null=False, default=datetime.datetime.utcnow)
     watched_on = pw.TimestampField(utc=True, null=True, default=None)
     imdb_id = pw.ForeignKeyField(IMDBInfo, backref="movie_suggestions", null=True)
 
@@ -74,12 +72,8 @@ class Vote(BaseModel):
     """Tracks the actual vote going on in a server"""
 
     server_id = pw.ForeignKeyField(Server, backref="vote", primary_key=True)
-    message_id = pw.IntegerField(
-        null=True, help_text="The message ID holding the vote message on the server"
-    )
-    channel_id = pw.IntegerField(
-        null=True, help_text="The channel ID holding the vote channel on the server"
-    )
+    message_id = pw.IntegerField(null=True, help_text="The message ID holding the vote message on the server")
+    channel_id = pw.IntegerField(null=True, help_text="The channel ID holding the vote channel on the server")
 
     class Meta:
         table_name = "votes"

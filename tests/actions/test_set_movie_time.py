@@ -18,11 +18,7 @@ async def test_set_movie_time(client):
 
     test_role = await _set_test_role(client)
     await test.message(f"m!set_movie_time {time_str}PM")
-    assert (
-        test.verify()
-        .message()
-        .content("Movie time given in invalid format. Must be `HH:MM`")
-    )
+    assert test.verify().message().content("Movie time given in invalid format. Must be `HH:MM`")
 
     await test.message(f"m!set_movie_time {time_str}")
     assert test.verify().message().content(f"Movie time updated to {time_str} UTC")

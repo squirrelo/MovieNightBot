@@ -2,7 +2,7 @@ import pytest
 import discord.ext.test as test
 
 
-from movienightbot.application import client as BotClient, _server_controller
+from movienightbot.application import bot as BotClient, _server_controller
 from movienightbot.config import Config
 from movienightbot.db import initialize_db
 

@@ -18,21 +18,11 @@ async def test_unwatch(client):
 
     test_role = await _set_test_role(client)
     await test.message(f"m!unwatch {test_title}")
-    assert (
-        test.verify()
-        .message()
-        .content(f"No movie titled {test_title} has been watched")
-    )
+    assert test.verify().message().content(f"No movie titled {test_title} has been watched")
 
     await test.message(f"m!suggest {test_title}")
     test.get_message()
 
     await test.message(f"m!unwatch {test_title}")
-    assert (
-        test.verify()
-        .message()
-        .content(
-            f"{test_title} has been set as unwatched and will show up in future votes."
-        )
-    )
+    assert test.verify().message().content(f"{test_title} has been set as unwatched and will show up in future votes.")
     await _clear_test_role(client, test_role)

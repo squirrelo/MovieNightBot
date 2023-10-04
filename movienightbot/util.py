@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import List, Optional, Union
+from typing import Optional, Union
 import asyncio
 import logging
 
@@ -15,29 +15,38 @@ from .db.controllers import ServerController, MovieVoteController, MovieVote
 logger = logging.getLogger("movienightbot")
 
 
-async def cleanup_messages(
-    messages: List[discord.Message], sec_delay: int = 10
-) -> None:
-    """Deletes a list of messages off a server
+def is_admin(interaction: discord.Interaction) -> bool:
+    if interaction.user.id == interaction.guild.owner_id:
+        return True
+    server_settings = ServerController().get_by_id(interaction.guild.id)
+    if server_settings.admin_role in interaction.user.roles:
+        return True
 
-    Parameters
-    ----------
-    messages : List of doscord.Message objects
-        The messages to delete
-    sec_delay : int
-        The number of seconds to wait before deleting the message. Default 10
-    """
-    if sec_delay <= 0:
-        # want messages to stay indefinitely so do nothing
-        return
-    for message in messages:
-        # Adding `delay` kwarg spawns a task, so wrapping that task in a task is redundant...
-        # These tasks cause dpytest to break, and py-cord supposedly has "sane rate-limiting"
-        # So tasks here are being removed all together.
-        # Another mention, we could/should leverage channel.delete_messages() for bulk cleanup, however
-        #  dpytest doesn't support it yet either lol.
-        await asyncio.sleep(sec_delay)
-        await message.delete()
+    logging.debug(f"User {interaction.user.name} is not part of group {server_settings.admin_role}")
+    return False
+
+
+def is_channel(interaction: discord.Interaction) -> bool:
+    server_settings = ServerController().get_by_id(interaction.guild.id)
+    if interaction.channel.id != server_settings.channel:
+        logging.debug(
+            f"User {interaction.user.name} using non-permitted channel {interaction.channel.name} "
+            f"instead of {server_settings.channel}"
+        )
+        return False
+    return True
+
+
+async def get_message(channel: discord.TextChannel, msg_id: int) -> Union[None, discord.Message]:
+    """Retrives a message, or returns None if cannot retrieve the message"""
+    try:
+        return await channel.fetch_message(msg_id)
+    except (
+        discord.errors.NotFound,
+        discord.errors.HTTPException,
+        discord.errors.Forbidden,
+    ):
+        return None
 
 
 async def delete_thread(thread: discord.Thread, sec_delay: int = 10) -> None:
@@ -58,7 +67,7 @@ async def delete_thread(thread: discord.Thread, sec_delay: int = 10) -> None:
 
 
 def build_vote_embed(server_id: int):
-    from movienightbot.application import client
+    from movienightbot.application import bot
 
     server_row = ServerController().get_by_id(server_id)
     try:
@@ -79,9 +88,7 @@ End the vote with the :octagonal_sign: emoji.""",
         score = f"Score: {movie_vote.score:.2f}"
         if imdb_info:
             movie_info += f" ({imdb_info.year})"
-            score += (
-                f" - [IMDb Page](https://www.imdb.com/title/tt{imdb_info.imdb_id}/)"
-            )
+            score += f" - [IMDb Page](https://www.imdb.com/title/tt{imdb_info.imdb_id}/)"
 
         embed.add_field(
             name=movie_info,
@@ -91,7 +98,7 @@ End the vote with the :octagonal_sign: emoji.""",
 
     embed.add_field(
         name="View more details here:",
-        value=f"{client.config.base_url}/vote.html?server={server_id}",
+        value=f"{bot.config.base_url}/vote.html?server={server_id}",
         inline=False,
     )
     embed.set_footer(text="Movie time is")
@@ -153,9 +160,7 @@ async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
     await vote_msg.add_reaction(emojis_text[":arrows_counterclockwise:"])
 
 
-def get_imdb_info(
-    movie_name: str, kind: Optional[str] = None
-) -> Union[None, imdb.Movie.Movie]:
+def get_imdb_info(movie_name: str, kind: Optional[str] = None) -> Union[None, imdb.Movie.Movie]:
     if not movie_name:
         return None
 
