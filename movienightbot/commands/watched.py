@@ -19,8 +19,8 @@ async def watched(interaction: discord.Interaction):
     )
 
 
-@votes_page.error
-async def votes_page_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
+@watched.error
+async def watched_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
         f"Wrong channel used for messages. Please use the correct channel",
         ephemeral=True,
