@@ -40,7 +40,7 @@ async def cancel_vote(interaction: discord.Interaction):
 @cancel_vote.error
 async def cancel_vote_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
-        f"Wrong channel used for messages or not admin. Please use the correct channel",
+        f"Wrong channel used for messages or not an admin. Please use the correct channel.",
         ephemeral=True,
     )
     logger.debug(str(error))

@@ -23,7 +23,7 @@ async def start_vote(interaction: discord.Interaction, genre: Optional[str] = No
         try:
             vote_row = vote_controller.start_vote(server_id, genre=genre)
         except IntegrityError:
-            await interaction.response.send_message("Vote already started!")
+            await interaction.response.send_message("Vote already started!", ephemeral=True)
             return
         except VoteError:
             err_msg = "No movies found"
@@ -41,9 +41,9 @@ async def start_vote(interaction: discord.Interaction, genre: Optional[str] = No
 
 
 @start_vote.error
-async def end_vote_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
+async def start_vote_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
-        f"Wrong channel used for messages or not admin. Please use the correct channel",
+        f"Wrong channel used for messages or not an admin. Please use the correct channel.",
         ephemeral=True,
     )
     logger.debug(str(error))

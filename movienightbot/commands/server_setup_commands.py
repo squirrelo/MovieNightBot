@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from peewee import DoesNotExist
 
-from movienightbot.util import capitalize_movie_name, is_admin, is_channel
+from movienightbot.util import capitalize_movie_name
 from movienightbot.db.controllers import ServerController, MoviesController
 
 logger = logging.getLogger("movienightbot")

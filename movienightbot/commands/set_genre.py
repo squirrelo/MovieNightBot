@@ -1,39 +1,50 @@
-import peewee as pw
+import logging
 
-from . import BaseAction, logger
-from ..db.controllers import MoviesController, ServerController, GenreController
-from ..util import cleanup_messages, capitalize_movie_name
+import discord
+from discord import app_commands
+from peewee import IntegrityError
+
+from movienightbot.util import (
+    capitalize_movie_name,
+    is_channel,
+)
+from movienightbot.db.controllers import GenreController, ServerController
+
+genre_controller = GenreController()
+server_controller = ServerController()
+
+logger = logging.getLogger("movienightbot")
 
 
-class SetGenre(BaseAction):
-    action_name = "set_genre"
-    admin = False
-    controller = MoviesController()
-    server_controller = ServerController()
-    genre_controller = GenreController()
+@app_commands.command(description="Adds a genre to a movie manually.")
+@app_commands.check(is_channel)
+async def set_genre(interaction: discord.Interaction, genre: str, movie_name: str):
+    server_id = interaction.guild.id
+    server_row = server_controller.get_by_id(server_id)
+    message_timeout = None if server_row.message_timeout == 0 else server_row.message_timeout
+    genre = genre.lower()
+    movie_name = capitalize_movie_name(movie_name)
+    try:
+        genre_controller.add_genre_to_movie(server_id, movie_name, genre)
+    except IntegrityError as e:
+        logger.debug(f"Genre add error: {server_id} {movie_name} {genre}\n{e}")
+        await interaction.channel.send_message(f"{movie_name} already has genre {genre}", ephemeral=True)
+        return
+    message_timeout = None if message_timeout == 0 else message_timeout
+    await interaction.response.send_message(
+        f"Movie {movie_name} has been updated with genre {genre}", delete_after=message_timeout
+    )
 
-    async def action(self, msg):
-        server_id = msg.guild.id
-        server_row = self.server_controller.get_by_id(server_id)
-        message_timeout = server_row.message_timeout
-        genre, movie_name = self.get_message_data(msg, data_parts=2)
-        genre = genre.lower()
-        movie_name = capitalize_movie_name(movie_name)
-        try:
-            self.genre_controller.add_genre_to_movie(server_id, movie_name, genre)
-        except pw.IntegrityError as e:
-            logger.debug(f"Genre add error: {server_id} {movie_name} {genre}\n{e}")
-            server_msg = await msg.channel.send(f"{movie_name} already has genre {genre}")
-            await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
-            return
 
-        server_msg = await msg.channel.send(f"Movie {movie_name} has been updated with genre {genre}")
-        await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
+@set_genre.error
+async def set_genre_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
+    await interaction.response.send_message(
+        f"Wrong channel used for messages. Please use the correct channel.",
+        ephemeral=True,
+    )
+    logger.debug(str(error))
 
-    @property
-    def help_text(self):
-        return "Adds a genre to a movie manually. Genre must be a single word or contiguous block, like `Sci-Fi`"
 
-    @property
-    def help_options(self):
-        return ["[genre]", "[movie_name]"]
+async def setup(bot):
+    bot.tree.add_command(set_genre)
+    logger.info("Loaded set_genre command")

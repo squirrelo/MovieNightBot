@@ -49,29 +49,6 @@ async def get_message(channel: discord.TextChannel, msg_id: int) -> Union[None, 
         return None
 
 
-async def cleanup_messages(messages: List[discord.Message], sec_delay: int = 10) -> None:
-    """Deletes a list of messages off a server
-
-    Parameters
-    ----------
-    messages : List of doscord.Message objects
-        The messages to delete
-    sec_delay : int
-        The number of seconds to wait before deleting the message. Default 10
-    """
-    if sec_delay <= 0:
-        # want messages to stay indefinitely so do nothing
-        return
-    for message in messages:
-        # Adding `delay` kwarg spawns a task, so wrapping that task in a task is redundant...
-        # These tasks cause dpytest to break, and py-cord supposedly has "sane rate-limiting"
-        # So tasks here are being removed all together.
-        # Another mention, we could/should leverage channel.delete_messages() for bulk cleanup, however
-        #  dpytest doesn't support it yet either lol.
-        await asyncio.sleep(sec_delay)
-        await message.delete()
-
-
 async def delete_thread(thread: discord.Thread, sec_delay: int = 10) -> None:
     """Deletes a list of messages off a server
 

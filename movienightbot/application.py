@@ -47,13 +47,7 @@ async def on_ready():
     logger.info(f"Bot Invite URL:  {auth_url}")
 
     commands_dir = Path(__file__).parent.joinpath("commands")
-    # for file in commands_dir.iterdir():
-    for file in [
-        commands_dir.joinpath("cancel_vote.py"),
-        commands_dir.joinpath("end_vote.py"),
-        commands_dir.joinpath("server_setup_commands.py"),
-        commands_dir.joinpath("start_vote.py"),
-    ]:
+    for file in commands_dir.iterdir():
         if file.is_dir() or file.name.startswith("__") or not file.name.endswith(".py"):
             continue
         await bot.load_extension(f"movienightbot.commands.{file.stem}")
