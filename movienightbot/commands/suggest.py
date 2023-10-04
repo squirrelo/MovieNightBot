@@ -67,9 +67,7 @@ async def suggest(interaction: discord.Interaction, movie: str):
     server_row = server_controller.get_by_id(server_id)
     message_timeout = None if server_row.message_timeout == 0 else server_row.message_timeout
     if server_row.block_suggestions:
-        server_msg = await interaction.followup.send(
-            "Suggestions are currently disabled on the server", ephemeral=True
-        )
+        server_msg = await interaction.followup.send("Suggestions are currently disabled on the server", ephemeral=True)
         return
 
     if server_row.check_movie_names:
@@ -78,9 +76,7 @@ async def suggest(interaction: discord.Interaction, movie: str):
         imdb_row, imdb_info = imdb_data(movie=movie, kind=kind)
         suggestion = capitalize_movie_name(imdb_row.title) if imdb_row else capitalize_movie_name(movie)
         if imdb_row is None:
-            await interaction.followup.send(
-                "Could not find the movie title you suggested in IMDb.", ephemeral=True
-            )
+            await interaction.followup.send("Could not find the movie title you suggested in IMDb.", ephemeral=True)
             return
     else:
         imdb_row, imdb_info = None, None
@@ -106,9 +102,7 @@ async def suggest(interaction: discord.Interaction, movie: str):
     except IntegrityError as e:
         logger.debug("Movie insert error: {}\n{}".format(movie_data, str(e)))
         movie_status = "watched" if movie_row and movie_row.watched_on else "suggested"
-        await interaction.followup.send(
-            f"{suggestion} has already been {movie_status} in this server."
-        )
+        await interaction.followup.send(f"{suggestion} has already been {movie_status} in this server.")
         return
 
     if imdb_info:
@@ -116,9 +110,7 @@ async def suggest(interaction: discord.Interaction, movie: str):
             add_genre_info(server_id, suggestion, imdb_info["genres"])
         except IntegrityError as e:
             logger.error(f"Genre insert error: {server_id} {imdb_info['genres']} {suggestion}\n{e}")
-            await interaction.followup.send(
-                f"Error adding suggestion {suggestion}"
-            )
+            await interaction.followup.send(f"Error adding suggestion {suggestion}")
             return
 
     await interaction.followup.send(

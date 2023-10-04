@@ -31,7 +31,8 @@ async def unwatch(interaction: discord.Interaction, movie: str):
     server_row = server_controller.get_by_id(server_id)
     message_timeout = None if server_row.message_timeout == 0 else server_row.message_timeout
     await interaction.response.send_message(
-        f"{unwatch} has been set as unwatched and will show up in future votes.", delete_after=message_timeout
+        f"{unwatch} has been set as unwatched and will show up in future votes.",
+        delete_after=message_timeout,
     )
 
 

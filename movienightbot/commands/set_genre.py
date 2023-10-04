@@ -32,7 +32,8 @@ async def set_genre(interaction: discord.Interaction, genre: str, movie_name: st
         return
     message_timeout = None if message_timeout == 0 else message_timeout
     await interaction.response.send_message(
-        f"Movie {movie_name} has been updated with genre {genre}", delete_after=message_timeout
+        f"Movie {movie_name} has been updated with genre {genre}",
+        delete_after=message_timeout,
     )
 
 
