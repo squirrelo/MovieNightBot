@@ -1,3 +1,4 @@
+import logging
 import re
 
 import discord
@@ -7,8 +8,10 @@ from peewee import DoesNotExist
 from movienightbot.util import capitalize_movie_name, is_admin, is_channel
 from movienightbot.db.controllers import ServerController, MoviesController
 
+logger = logging.getLogger("movienightbot")
 
-class Admin(app_commands.Group):
+
+class ServerAdmin(app_commands.Group):
     server_controller = ServerController()
     movies_controller = MoviesController()
     time_regex = re.compile(r"^\d{1,2}:\d{2}$")
@@ -165,6 +168,8 @@ class Admin(app_commands.Group):
         await interaction.response.send_message(f"Tiebreaker updated to {tie_option}")
 
     @app_commands.command(description="Number of movies a user can vote for.")
+    @app_commands.check(is_channel)
+    @app_commands.check(is_admin)
     async def user_vote_count(
         self, interaction: discord.Interaction, num_votes_per_user: app_commands.Range[int, 1, 25]
     ):
@@ -181,4 +186,5 @@ class Admin(app_commands.Group):
 
 
 async def setup(bot):
-    bot.tree.add_command(Admin(name="admin", description="Admin commands for MovieNightBot"))
+    bot.tree.add_command(ServerAdmin(name="server", description="Admin commands for MovieNightBot server setup"))
+    logger.info("Loaded server commands")
