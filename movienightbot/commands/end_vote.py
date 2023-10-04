@@ -69,9 +69,15 @@ async def end_vote_task(interaction: discord.Interaction):
 @app_commands.command(description="Ends the currently running vote and displays the winning vote.")
 @app_commands.check(is_channel)
 async def end_vote(interaction: discord.Interaction):
-    end_vote_task(interaction)
+    await end_vote_task(interaction)
 
 
-def setup(bot):
+@end_vote.error
+async def end_vote_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
+    await interaction.response.send_message(f"Wrong channel used for messages. Please use the correct channel", ephemeral=True)
+    logger.debug(str(error))
+
+
+async def setup(bot):
     bot.tree.add_command(end_vote)
     logger.info("Loaded end_vote command")

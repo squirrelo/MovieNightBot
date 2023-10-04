@@ -31,7 +31,7 @@ async def generate_invite_link(permissions=discord.Permissions(403727019072), gu
     if bot._cached_app_info is None:
         logger.info("Caching App Info...")
         bot._cached_app_info = await bot.application_info()
-    args = dict(bot_id=bot._cached_app_info.id, permissions=permissions)
+    args = dict(client_id=bot._cached_app_info.id, permissions=permissions)
     # Need to do it this way so we don't send guild property at all if it's None. Yay py-cord limitations.
     if guild is not None:
         args["guild"] = guild
@@ -46,10 +46,17 @@ async def on_ready():
     auth_url = await generate_invite_link()
     logger.info(f"Bot Invite URL:  {auth_url}")
 
-    for file in Path("commands").iterdir():
+    commands_dir = Path(__file__).parent.joinpath("commands")
+    # for file in commands_dir.iterdir():
+    for file in [
+        commands_dir.joinpath("cancel_vote.py"),
+        commands_dir.joinpath("end_vote.py"),
+        commands_dir.joinpath("server_setup_commands.py"),
+        commands_dir.joinpath("start_vote.py"),
+    ]:
         if file.is_dir() or file.name.startswith("__") or not file.name.endswith(".py"):
             continue
-        await bot.load_extension(f"commands.{file.stem}")
+        await bot.load_extension(f"movienightbot.commands.{file.stem}")
 
     synced = await bot.tree.sync()
     print(f"Synced {len(synced)} commands")

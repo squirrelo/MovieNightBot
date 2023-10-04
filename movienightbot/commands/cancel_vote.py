@@ -21,7 +21,7 @@ async def cancel_vote(interaction: discord.Interaction):
         try:
             vote_msg_id = vote_controller.get_by_id(server_id).message_id
         except DoesNotExist:
-            await interaction.response.send_message("No vote started!", ephemerial=True)
+            await interaction.response.send_message("No vote started!", ephemeral=True)
             return
 
     vote_controller.cancel_vote(server_id)
@@ -36,7 +36,12 @@ async def cancel_vote(interaction: discord.Interaction):
         await vote_msg.unpin()
     await interaction.response.send_message("Vote cancelled")
 
+@cancel_vote.error
+async def cancel_vote_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
+    await interaction.response.send_message(f"Wrong channel used for messages or not admin. Please use the correct channel", ephemeral=True)
+    logger.debug(str(error))
 
-def setup(bot):
+
+async def setup(bot):
     bot.tree.add_command(cancel_vote)
     logger.info("Loaded cancel_vote command")
