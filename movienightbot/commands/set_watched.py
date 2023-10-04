@@ -38,3 +38,20 @@ async def set_watched(interaction: discord.Interaction, movie: str):
         f"{watched} has been set as watched and will no longer show up in future votes.",
         delete_after=message_timeout,
     )
+
+
+@set_watched.error
+async def start_vote_error(
+    interaction: discord.Interaction,
+    error: discord.app_commands.errors.DiscordException,
+):
+    await interaction.response.send_message(
+        "Wrong channel used for messages. Please use the correct channel.",
+        ephemeral=True,
+    )
+    logger.debug(str(error))
+
+
+async def setup(bot):
+    bot.tree.add_command(set_watched)
+    logger.info("Loaded set_watched command")
