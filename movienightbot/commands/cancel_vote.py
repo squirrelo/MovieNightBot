@@ -12,7 +12,7 @@ vote_controller = VoteController()
 logger = logging.getLogger("movienightbot")
 
 
-@app_commands.command(description="Cancels the currently running vote.")
+@app_commands.command(description="[ADMIN COMMAND] Cancels the currently running vote.")
 @app_commands.check(is_channel)
 @app_commands.check(is_admin)
 async def cancel_vote(interaction: discord.Interaction):
