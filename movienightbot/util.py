@@ -15,6 +15,42 @@ from .db.controllers import ServerController, MovieVoteController, MovieVote
 logger = logging.getLogger("movienightbot")
 
 
+def is_admin(interaction: discord.Interaction) -> bool:
+    if interaction.user.id == interaction.guild.owner_id:
+        return True
+    server_settings = ServerController().get_by_id(interaction.guild.id)
+    if server_settings.admin_role in interaction.user.roles:
+        return True
+
+    logging.debug(f"User {interaction.user.name} is not part of group {server_settings.admin_role}")
+    return False
+
+
+def is_channel(interaction: discord.Interaction) -> bool:
+    server_settings = ServerController().get_by_id(interaction.guild.id)
+    if interaction.channel.id != server_settings.channel:
+        logging.debug(
+            f"User {interaction.user.name} using non-permitted channel {interaction.channel.name} "
+            f"instead of {server_settings.channel}"
+        )
+        return False
+    return True
+
+
+async def get_message(
+    channel: discord.TextChannel, msg_id: int
+) -> Union[None, discord.Message]:
+    """Retrives a message, or returns None if cannot retrieve the message"""
+    try:
+        return await channel.fetch_message(msg_id)
+    except (
+        discord.errors.NotFound,
+        discord.errors.HTTPException,
+        discord.errors.Forbidden,
+    ):
+        return None
+
+
 async def cleanup_messages(
     messages: List[discord.Message], sec_delay: int = 10
 ) -> None:

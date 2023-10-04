@@ -1,9 +1,9 @@
 import logging
 
 import discord
+from discord.ext import commands
 import peewee as pw
 
-from .actions import KNOWN_ACTIONS, unknown_default_action
 from .util import build_vote_embed, emojis_unicode, emojis_text
 from .db.controllers import (
     ServerController,
@@ -12,7 +12,9 @@ from .db.controllers import (
     MovieVoteController,
 )
 
-client = discord.Client(intents=discord.Intents.all())
+
+intents = discord.Intents.default()
+bot = commands.Bot(command_prefix="m!", intents=intents)
 _server_controller = ServerController()
 _vote_controller = VoteController()
 _movie_vote_controller = MovieVoteController()
@@ -20,31 +22,31 @@ _user_vote_controller = UserVoteController()
 
 logger = logging.getLogger("movienightbot")
 
-client._cached_app_info = None
+bot._cached_app_info = None
 
 
 async def generate_invite_link(
     permissions=discord.Permissions(403727019072), guild=None
 ):
-    if client._cached_app_info is None:
+    if bot._cached_app_info is None:
         logger.info("Caching App Info...")
-        client._cached_app_info = await client.application_info()
-    args = dict(client_id=client._cached_app_info.id, permissions=permissions)
+        bot._cached_app_info = await bot.application_info()
+    args = dict(bot_id=bot._cached_app_info.id, permissions=permissions)
     # Need to do it this way so we don't send guild property at all if it's None. Yay py-cord limitations.
     if guild is not None:
         args["guild"] = guild
     return discord.utils.oauth_url(**args)
 
 
-@client.event
+@bot.event
 async def on_ready():
-    print(f"Logged in as user {client.user}")
-    logger.info(f"Logged in as user {client.user}")
+    print(f"Logged in as user {bot.user}")
+    logger.info(f"Logged in as user {bot.user}")
 
     auth_url = await generate_invite_link()
     logger.info(f"Bot Invite URL:  {auth_url}")
 
-    await client.change_presence(
+    await bot.change_presence(
         status=discord.Status.idle,
         activity=discord.Game(name="Tracking your shitty movie taste"),
     )
@@ -56,43 +58,17 @@ def register_guild(guild: discord.Guild):
     logger.info(f"Registered on new server {guild.name}")
 
 
-@client.event
+@bot.event
 async def on_guild_join(guild: discord.Guild):
     register_guild(guild)
 
 
-@client.event
+@bot.event
 async def on_guild_remove(guild: discord.Guild):
     with _server_controller.transaction():
         server_row = _server_controller.get_by_id(guild.id)
         _server_controller.delete(server_row, recursive=True)
     logger.info(f"Removed from server {guild.name}")
-
-
-@client.event
-async def on_message(message: discord.message):
-    message_identifier = client.config.message_identifier
-    if not message.content.startswith(message_identifier):
-        # Ignore anything that doesnt start with our expected command identifier
-        return
-
-    message_info = message.content.rstrip().split(" ")
-    # Strip off the message identifier to find what our action should be
-    command = message_info[0][len(message_identifier) :]
-
-    try:
-        action = KNOWN_ACTIONS[command]
-    except KeyError:
-        await unknown_default_action(message, command)
-        return
-
-    # Make sure server is registered, and register if not (#55)
-    try:
-        _server_controller.get_by_id(message.guild.id)
-    except pw.DoesNotExist:
-        register_guild(message.guild)
-
-    await action(message)
 
 
 def is_vote_message(server_id: int, channel_id: int, message_id: int) -> bool:
@@ -118,9 +94,9 @@ def is_vote_message(server_id: int, channel_id: int, message_id: int) -> bool:
 
 
 async def parse_reaction(payload):
-    channel = await client.fetch_channel(payload.channel_id)
+    channel = await bot.fetch_channel(payload.channel_id)
     message = await channel.fetch_message(payload.message_id)
-    user = await client.fetch_user(payload.user_id)
+    user = await bot.fetch_user(payload.user_id)
     emoji = emojis_unicode.get(payload.emoji.name, None)
     logger.debug(
         "raw emoji sent: {} {}  >> {}".format(
@@ -128,13 +104,13 @@ async def parse_reaction(payload):
         )
     )
     # Ignore if emojis coming from this bot
-    if user.id == client.user.id:
+    if user.id == bot.user.id:
         logger.debug("emoji coming from self")
         emoji = None
     return message, user, channel.guild.id, emoji
 
 
-@client.event
+@bot.event
 async def on_raw_reaction_add(payload):
     message, user, server_id, emoji = await parse_reaction(payload)
     logger.debug("Reaction {} added to server {}".format(emoji, server_id))
@@ -166,7 +142,7 @@ async def on_raw_reaction_add(payload):
     await message.edit(content=None, embed=embed, suppress=False)
 
 
-@client.event
+@bot.event
 async def on_raw_reaction_remove(payload):
     message, user, server_id, emoji = await parse_reaction(payload)
     if emoji is None or not is_vote_message(server_id, message.channel.id, message.id):
