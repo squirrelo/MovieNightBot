@@ -85,6 +85,8 @@ class ServerAdmin(app_commands.Group):
         for attr, value in server_row.__data__.items():
             if attr in ignore_attrs:
                 continue
+            if "time" in attr.lower():
+                value = str(value) + " UTC"
             embed.add_field(name=attr, value=value, inline=False)
         return embed
 

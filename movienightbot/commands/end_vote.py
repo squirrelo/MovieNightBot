@@ -47,11 +47,11 @@ async def end_vote_task(interaction: discord.Interaction):
 
         embed = discord.Embed(
             title=f"Wining movie: {winning_movie} {imdb_year}",
-            description=f"{imdb_markup_link} Use `m!set_watched {winning_movie}` to set the movie as watched",
+            description=f"{imdb_markup_link} Use `/set_watched {winning_movie}` to set the movie as watched",
         )
         await interaction.response.send_message(
             f"The winning vote was `{winning_movie}`! "
-            f"To set the movie as watched use the command `m!set_watched {winning_movie}`"
+            f"To set the movie as watched use the command `/set_watched {winning_movie}`"
         )
         await vote_msg.unpin()
     else:
