@@ -7,7 +7,7 @@ from tests.utils import (
     _do_admin_test,
     _set_test_role,
 )
-from movienightbot.actions.server_settings import ServerSettingsAction
+from movienightbot.commands.server_settings import ServerSettingsAction
 
 
 @pytest.mark.asyncio

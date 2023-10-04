@@ -19,8 +19,7 @@ class ServerAdmin(app_commands.Group):
     @app_commands.command(
         description="Toggles whether to allow tv shows in the IMDB search results (True) or not (False)."
     )
-    @app_commands.check(is_channel)
-    @app_commands.check(is_admin)
+    @app_commands.default_permissions(administrator=True)
     async def imdb_tv_shows(self, interaction: discord.Interaction, allow_tv_shows: bool):
         with self.server_controller.transaction():
             server_row = self.server_controller.get_by_id(interaction.guild.id)
@@ -29,8 +28,7 @@ class ServerAdmin(app_commands.Group):
         await interaction.response.send_message(f"Allow IMDB tv show search {allow_tv_shows}")
 
     @app_commands.command(description="Toggles allowing suggestions.")
-    @app_commands.check(is_channel)
-    @app_commands.check(is_admin)
+    @app_commands.default_permissions(administrator=True)
     async def block_suggestions(self, interaction: discord.Interaction, block: bool):
         server_row = self.controller.get_by_id(interaction.guild.id)
         server_row.block_suggestions = block
@@ -39,8 +37,7 @@ class ServerAdmin(app_commands.Group):
         await interaction.response.send_message(f"Server suggestions are now {suggestions_text}")
 
     @app_commands.command(description="Toggles checking suggestions against IMDB database before adding.")
-    @app_commands.check(is_channel)
-    @app_commands.check(is_admin)
+    @app_commands.default_permissions(administrator=True)
     async def check_movie_names(self, interaction: discord.Interaction, check_names: bool):
         server_row = self.controller.get_by_id(interaction.guild.id)
         server_row.check_movie_names = check_names
@@ -49,8 +46,7 @@ class ServerAdmin(app_commands.Group):
         await interaction.response.send_message(f"IMDB movie name checks are now {option}")
 
     @app_commands.command(description="Sets the number of movies that will show up on a vote.")
-    @app_commands.check(is_channel)
-    @app_commands.check(is_admin)
+    @app_commands.default_permissions(administrator=True)
     async def movie_option_count(self, interaction: discord.Interaction, num_movies: app_commands.Range[int, 2, 25]):
         with self.server_controller.transaction():
             server_row = self.server_controller.get_by_id(interaction.guild.id)
@@ -59,8 +55,7 @@ class ServerAdmin(app_commands.Group):
         await interaction.response.send_message(f"Number of movies per vote updated to {num_movies}")
 
     @app_commands.command(description="Removes the specified movie from the suggestions list.")
-    @app_commands.check(is_channel)
-    @app_commands.check(is_admin)
+    @app_commands.default_permissions(administrator=True)
     async def remove(self, interaction: discord.Interaction, movie: str):
         movie = capitalize_movie_name(movie)
         with self.movies_controller.transaction():
@@ -90,8 +85,7 @@ class ServerAdmin(app_commands.Group):
         return embed
 
     @app_commands.command(description="View the current server settings")
-    @app_commands.check(is_channel)
-    @app_commands.check(is_admin)
+    @app_commands.default_permissions(administrator=True)
     async def server_settings(self, interaction: discord.Interaction):
         embed_data = self._format_server_embed(interaction.client, interaction.guild.id)
         await interaction.response.send_message(content=None, embed=embed_data)
@@ -99,8 +93,7 @@ class ServerAdmin(app_commands.Group):
     @app_commands.command(
         description="Sets the role allowed to run admin commands. Server administrators have admin by default"
     )
-    @app_commands.check(is_channel)
-    @app_commands.check(is_admin)
+    @app_commands.default_permissions(administrator=True)
     async def set_admin_role(self, interaction: discord.Interaction, role: str):
         server_roles = [r.name for r in interaction.guild.roles]
         if role not in server_roles:
@@ -115,8 +108,7 @@ class ServerAdmin(app_commands.Group):
     @app_commands.command(
         description="How long before suggestion messages are deleted, in seconds. Set to 0 to disable."
     )
-    @app_commands.check(is_channel)
-    @app_commands.check(is_admin)
+    @app_commands.default_permissions(administrator=True)
     async def set_message_timeout(self, interaction: discord.Interaction, timeout: app_commands.Range[int, 0, None]):
         with self.server_controller.transaction():
             server_row = self.server_controller.get_by_id(interaction.guild.id)
@@ -125,8 +117,7 @@ class ServerAdmin(app_commands.Group):
         await interaction.response.send_message(f"Message timeout updated to {timeout} seconds")
 
     @app_commands.command(description="Sets the channel the bot wil listen in.")
-    @app_commands.check(is_channel)
-    @app_commands.check(is_admin)
+    @app_commands.default_permissions(administrator=True)
     async def set_channel(self, interaction: discord.Interaction, channel: str):
         with self.server_controller.transaction():
             server_row = self.controller.get_by_id(interaction.guild.id)
@@ -139,8 +130,7 @@ class ServerAdmin(app_commands.Group):
         await interaction.response.send_message(f"Bot channel updated to {channel}")
 
     @app_commands.command(description="Sets the time when the movie will be watched in 24 hour UTC time.")
-    @app_commands.check(is_channel)
-    @app_commands.check(is_admin)
+    @app_commands.default_permissions(administrator=True)
     async def set_movie_time(self, interaction: discord.Interaction, movie_time: str):
         if not self.time_regex.search(movie_time):
             await interaction.response.send_message("Movie time given in invalid format. Must be `HH:MM`")
@@ -154,8 +144,7 @@ class ServerAdmin(app_commands.Group):
     @app_commands.command(
         description="Sets how the bot handles tied votes. `breaker` will revote with the tied movies (default). `random` will make a new vote."
     )
-    @app_commands.check(is_channel)
-    @app_commands.check(is_admin)
+    @app_commands.default_permissions(administrator=True)
     async def tie_option(self, interaction: discord.Interaction, tie_option: str):
         tie_options = {"breaker", "random"}
         if tie_option not in tie_options:
@@ -168,8 +157,7 @@ class ServerAdmin(app_commands.Group):
         await interaction.response.send_message(f"Tiebreaker updated to {tie_option}")
 
     @app_commands.command(description="Number of movies a user can vote for.")
-    @app_commands.check(is_channel)
-    @app_commands.check(is_admin)
+    @app_commands.default_permissions(administrator=True)
     async def user_vote_count(
         self, interaction: discord.Interaction, num_votes_per_user: app_commands.Range[int, 1, 25]
     ):

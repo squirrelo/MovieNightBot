@@ -6,7 +6,7 @@ from tests.utils import (
     _clear_test_role,
     _set_test_role,
 )
-from movienightbot.actions.help import HelpAction
+from movienightbot.commands.help import HelpAction
 
 
 @pytest.mark.asyncio

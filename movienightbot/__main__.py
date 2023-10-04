@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 import logging
 from threading import Thread
 
-from .application import client
+from .application import bot
 from .config import Config
 from .db import initialize_db
 from .httpserver import run_webserver
@@ -41,8 +41,8 @@ logging.basicConfig(
 )
 
 config = Config.from_yaml(Path(args.configfile))
-client.config = config
+bot.config = config
 initialize_db(config.db_url)
 thread = Thread(target=run_webserver, args=(config.port,), daemon=True)
 thread.start()
-client.run(config.token)
+bot.run(config.token)

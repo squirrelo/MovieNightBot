@@ -1,9 +1,11 @@
 import logging
+from pathlib import Path
 
 import discord
 from discord.ext import commands
 import peewee as pw
 
+from .commands.end_vote import end_vote_task
 from .util import build_vote_embed, emojis_unicode, emojis_text
 from .db.controllers import (
     ServerController,
@@ -45,6 +47,14 @@ async def on_ready():
 
     auth_url = await generate_invite_link()
     logger.info(f"Bot Invite URL:  {auth_url}")
+
+    for file in Path("commands").iterdir():
+        if file.is_dir() or file.name.startswith("__") or not file.name.endswith(".py"):
+            continue
+        await bot.load_extension(f"commands.{file.stem}")
+
+    synced = await bot.tree.sync()
+    print(f"Synced {len(synced)} commands")
 
     await bot.change_presence(
         status=discord.Status.idle,
@@ -127,7 +137,7 @@ async def on_raw_reaction_add(payload):
         return
     # Check if user requested end of voting, and do that if so
     elif emoji == ":octagonal_sign:":
-        await KNOWN_ACTIONS["end_vote"](message)
+        await end_vote_task(message)
         return
     with _movie_vote_controller.transaction():
         logger.info(
