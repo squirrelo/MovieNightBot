@@ -28,7 +28,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install flake8 black
-#        pip install https://github.com/itsTheFae/dpytest/archive/refs/heads/py-cord-v2.zip
         pip install .[test]
     - name: Lint with flake8
       run: |
