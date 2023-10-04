@@ -39,12 +39,16 @@ async def start_vote(interaction: discord.Interaction, genre: Optional[str] = No
         await add_vote_emojis(vote_msg, vote_row.movie_votes)
         await vote_msg.pin()
 
+
 @start_vote.error
 async def end_vote_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
-    await interaction.response.send_message(f"Wrong channel used for messages or not admin. Please use the correct channel", ephemeral=True)
+    await interaction.response.send_message(
+        f"Wrong channel used for messages or not admin. Please use the correct channel",
+        ephemeral=True,
+    )
     logger.debug(str(error))
+
 
 async def setup(bot):
     bot.tree.add_command(start_vote)
     logger.info("Loaded start_vote command")
-

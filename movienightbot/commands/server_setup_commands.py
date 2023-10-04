@@ -47,7 +47,11 @@ class ServerAdmin(app_commands.Group):
 
     @app_commands.command(description="Sets the number of movies that will show up on a vote.")
     @app_commands.default_permissions(administrator=True)
-    async def movie_option_count(self, interaction: discord.Interaction, num_movies: app_commands.Range[int, 2, 25]):
+    async def movie_option_count(
+        self,
+        interaction: discord.Interaction,
+        num_movies: app_commands.Range[int, 2, 25],
+    ):
         with self.server_controller.transaction():
             server_row = self.server_controller.get_by_id(interaction.guild.id)
             server_row.num_movies_per_vote = int(num_movies)
@@ -109,7 +113,11 @@ class ServerAdmin(app_commands.Group):
         description="How long before suggestion messages are deleted, in seconds. Set to 0 to disable."
     )
     @app_commands.default_permissions(administrator=True)
-    async def set_message_timeout(self, interaction: discord.Interaction, timeout: app_commands.Range[int, 0, None]):
+    async def set_message_timeout(
+        self,
+        interaction: discord.Interaction,
+        timeout: app_commands.Range[int, 0, None],
+    ):
         with self.server_controller.transaction():
             server_row = self.server_controller.get_by_id(interaction.guild.id)
             server_row.message_timeout = timeout
@@ -154,7 +162,8 @@ class ServerAdmin(app_commands.Group):
         tie_options = {"breaker", "random"}
         if tie_option not in tie_options:
             await interaction.response.send_message(
-                f"Unknown tiebreaker option given: {tie_option}. Must be one of {''.join(tie_options)}", ephemeral=True
+                f"Unknown tiebreaker option given: {tie_option}. Must be one of {''.join(tie_options)}",
+                ephemeral=True,
             )
             return
         with self.server_controller.transaction():
@@ -166,13 +175,15 @@ class ServerAdmin(app_commands.Group):
     @app_commands.command(description="Number of movies a user can vote for.")
     @app_commands.default_permissions(administrator=True)
     async def user_vote_count(
-        self, interaction: discord.Interaction, num_votes_per_user: app_commands.Range[int, 1, 25]
+        self,
+        interaction: discord.Interaction,
+        num_votes_per_user: app_commands.Range[int, 1, 25],
     ):
         with self.server_controller.transaction():
             server_row = self.server_controller.get_by_id(interaction.guild.id)
             if num_votes_per_user > server_row.num_movies_per_vote:
                 await interaction.response.send_message(
-                    f"Failed to update: Number of votes per user must be < {server_row.num_movies_per_vote}",
+                    f"Failed to update: Number of votes per user must be <= {server_row.num_movies_per_vote}",
                     ephemeral=True,
                 )
                 return
