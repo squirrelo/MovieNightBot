@@ -18,11 +18,7 @@ async def test_movie_option_count(client):
 
     test_role = await _set_test_role(client)
     await test.message(f"m!movie_option_count {test_number}")
-    assert (
-        test.verify()
-        .message()
-        .content(f"Number of movies per vote updated to {test_number}")
-    )
+    assert test.verify().message().content(f"Number of movies per vote updated to {test_number}")
 
     tests = [0, 1, 26, 27]
     for test_number in tests:
@@ -30,8 +26,6 @@ async def test_movie_option_count(client):
         assert (
             test.verify()
             .message()
-            .content(
-                "Failed to update: Number of movies per vote must be between 2 and 25, inclusive"
-            )
+            .content("Failed to update: Number of movies per vote must be between 2 and 25, inclusive")
         )
     await _clear_test_role(client, test_role)

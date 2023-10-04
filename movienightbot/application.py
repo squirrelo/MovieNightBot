@@ -27,9 +27,7 @@ logger = logging.getLogger("movienightbot")
 bot._cached_app_info = None
 
 
-async def generate_invite_link(
-    permissions=discord.Permissions(403727019072), guild=None
-):
+async def generate_invite_link(permissions=discord.Permissions(403727019072), guild=None):
     if bot._cached_app_info is None:
         logger.info("Caching App Info...")
         bot._cached_app_info = await bot.application_info()
@@ -92,9 +90,7 @@ def is_vote_message(server_id: int, channel_id: int, message_id: int) -> bool:
         # no vote going on so can never be the vote row
         logger.debug("Empty vote found for server {}".format(server_id))
         return False
-    is_message = (vote_row.message_id == message_id) and (
-        vote_row.channel_id == channel_id
-    )
+    is_message = (vote_row.message_id == message_id) and (vote_row.channel_id == channel_id)
     logger.debug(
         "Vote DB channel and message: {} {} >> Sent channel and message: {} {} >> {}".format(
             vote_row.channel_id, vote_row.message_id, channel_id, message_id, is_message
@@ -108,11 +104,7 @@ async def parse_reaction(payload):
     message = await channel.fetch_message(payload.message_id)
     user = await bot.fetch_user(payload.user_id)
     emoji = emojis_unicode.get(payload.emoji.name, None)
-    logger.debug(
-        "raw emoji sent: {} {}  >> {}".format(
-            type(payload.emoji.name), type(payload.emoji), emoji
-        )
-    )
+    logger.debug("raw emoji sent: {} {}  >> {}".format(type(payload.emoji.name), type(payload.emoji), emoji))
     # Ignore if emojis coming from this bot
     if user.id == bot.user.id:
         logger.debug("emoji coming from self")
@@ -140,9 +132,7 @@ async def on_raw_reaction_add(payload):
         await end_vote_task(message)
         return
     with _movie_vote_controller.transaction():
-        logger.info(
-            f"Registering emoji vote {emoji} for {user.id} on {message.guild.name}"
-        )
+        logger.info(f"Registering emoji vote {emoji} for {user.id} on {message.guild.name}")
         movie_vote = _movie_vote_controller.convert_emoji(server_id, emoji)
         logger.debug(f"Got movie vote {movie_vote.id}")
         _user_vote_controller.register_vote(user.id, user.display_name, movie_vote)

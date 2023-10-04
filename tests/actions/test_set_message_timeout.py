@@ -27,7 +27,5 @@ async def test_set_message_timeout(client):
 
     timeout = 10
     await test.message(f"m!set_message_timeout {timeout}")
-    assert (
-        test.verify().message().content(f"Message timeout updated to {timeout} seconds")
-    )
+    assert test.verify().message().content(f"Message timeout updated to {timeout} seconds")
     await _clear_test_role(client, test_role)

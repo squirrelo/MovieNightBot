@@ -107,9 +107,7 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(json.dumps(suggested).encode())
 
     def get_vote_json(self, server_id: int):
-        movies_vote_data = self.movie_vote_controller.get_movies_for_server_vote(
-            server_id
-        )
+        movies_vote_data = self.movie_vote_controller.get_movies_for_server_vote(server_id)
 
         movies_list = []
         for movie_vote in movies_vote_data:

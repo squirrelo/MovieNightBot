@@ -23,15 +23,11 @@ class SetGenre(BaseAction):
             self.genre_controller.add_genre_to_movie(server_id, movie_name, genre)
         except pw.IntegrityError as e:
             logger.debug(f"Genre add error: {server_id} {movie_name} {genre}\n{e}")
-            server_msg = await msg.channel.send(
-                f"{movie_name} already has genre {genre}"
-            )
+            server_msg = await msg.channel.send(f"{movie_name} already has genre {genre}")
             await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
             return
 
-        server_msg = await msg.channel.send(
-            f"Movie {movie_name} has been updated with genre {genre}"
-        )
+        server_msg = await msg.channel.send(f"Movie {movie_name} has been updated with genre {genre}")
         await cleanup_messages([msg, server_msg], sec_delay=message_timeout)
 
     @property

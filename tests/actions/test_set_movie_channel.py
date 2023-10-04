@@ -18,11 +18,7 @@ async def test_set_movie_channel(client):
 
     test_role = await _set_test_role(client)
     await test.message(f"m!set_channel {channel}")
-    assert (
-        test.verify()
-        .message()
-        .content(f"Failed update: unknown channel {channel} given.")
-    )
+    assert test.verify().message().content(f"Failed update: unknown channel {channel} given.")
 
     channel = client.guilds[0].channels[0].name
     await test.message(f"m!set_channel {channel}")

@@ -30,7 +30,7 @@ class ServerAdmin(app_commands.Group):
     @app_commands.command(description="Toggles allowing suggestions.")
     @app_commands.default_permissions(administrator=True)
     async def block_suggestions(self, interaction: discord.Interaction, block: bool):
-        server_row = self.controller.get_by_id(interaction.guild.id)
+        server_row = self.server_controller.get_by_id(interaction.guild.id)
         server_row.block_suggestions = block
         self.server_controller.update(server_row)
         suggestions_text = "blocked" if block else "unblocked"
@@ -39,9 +39,9 @@ class ServerAdmin(app_commands.Group):
     @app_commands.command(description="Toggles checking suggestions against IMDB database before adding.")
     @app_commands.default_permissions(administrator=True)
     async def check_movie_names(self, interaction: discord.Interaction, check_names: bool):
-        server_row = self.controller.get_by_id(interaction.guild.id)
+        server_row = self.server_controller.get_by_id(interaction.guild.id)
         server_row.check_movie_names = check_names
-        self.controller.update(server_row)
+        self.server_controller.update(server_row)
         option = "on" if check_names else "off"
         await interaction.response.send_message(f"IMDB movie name checks are now {option}")
 
@@ -62,7 +62,7 @@ class ServerAdmin(app_commands.Group):
             try:
                 movie_row = self.movies_controller.get_by_server_and_id(server_id=interaction.guild.id, movie=movie)
             except DoesNotExist:
-                await interaction.response.send_message(f"Movie {movie} has not been suggested")
+                await interaction.response.send_message(f"Movie {movie} has not been suggested", ephemerial=True)
                 return
             self.movies_controller.delete(movie_row)
 
@@ -97,7 +97,7 @@ class ServerAdmin(app_commands.Group):
     async def set_admin_role(self, interaction: discord.Interaction, role: str):
         server_roles = [r.name for r in interaction.guild.roles]
         if role not in server_roles:
-            await interaction.response.send_message(f"Role not found: {role}.")
+            await interaction.response.send_message(f"Role not found: {role}.", ephemerial=True)
             return
         with self.server_controller.transaction():
             server_row = self.server_controller.get_by_id(interaction.guild.id)
@@ -120,11 +120,14 @@ class ServerAdmin(app_commands.Group):
     @app_commands.default_permissions(administrator=True)
     async def set_channel(self, interaction: discord.Interaction, channel: str):
         with self.server_controller.transaction():
-            server_row = self.controller.get_by_id(interaction.guild.id)
             channels = {c.name: c.id for c in interaction.guild.text_channels}
             if channel not in channels:
-                await interaction.response.send_message(f"Failed update: unknown channel {channel} given.")
+                await interaction.response.send_message(
+                    f"Failed update: unknown channel {channel} given.", ephemerial=True
+                )
                 return
+
+            server_row = self.server_controller.get_by_id(interaction.guild.id)
             server_row.channel = channels[channel]
             self.server_controller.update(server_row)
         await interaction.response.send_message(f"Bot channel updated to {channel}")
@@ -133,7 +136,9 @@ class ServerAdmin(app_commands.Group):
     @app_commands.default_permissions(administrator=True)
     async def set_movie_time(self, interaction: discord.Interaction, movie_time: str):
         if not self.time_regex.search(movie_time):
-            await interaction.response.send_message("Movie time given in invalid format. Must be `HH:MM`")
+            await interaction.response.send_message(
+                "Movie time given in invalid format. Must be `HH:MM`", ephemerial=True
+            )
             return
         with self.server_controller.transaction():
             server_row = self.server_controller.get_by_id(interaction.guild.id)
@@ -148,9 +153,9 @@ class ServerAdmin(app_commands.Group):
     async def tie_option(self, interaction: discord.Interaction, tie_option: str):
         tie_options = {"breaker", "random"}
         if tie_option not in tie_options:
-            await interaction.response.send_message(f"Unknown tiebreaker option given: {tie_option}")
+            await interaction.response.send_message(f"Unknown tiebreaker option given: {tie_option}", ephemerial=True)
             return
-        with self.controller.transaction():
+        with self.server_controller.transaction():
             server_row = self.server_controller.get_by_id(interaction.guild.id)
             server_row.tie_option = tie_option
             self.server_controller.update(server_row)
@@ -161,11 +166,12 @@ class ServerAdmin(app_commands.Group):
     async def user_vote_count(
         self, interaction: discord.Interaction, num_votes_per_user: app_commands.Range[int, 1, 25]
     ):
-        with self.controller.transaction():
+        with self.server_controller.transaction():
             server_row = self.server_controller.get_by_id(interaction.guild.id)
             if num_votes_per_user > server_row.num_movies_per_vote:
                 await interaction.response.send_message(
-                    f"Failed to update: Number of votes per user must be < {server_row.num_movies_per_vote}"
+                    f"Failed to update: Number of votes per user must be < {server_row.num_movies_per_vote}",
+                    ephemerial=True,
                 )
                 return
             server_row.num_votes_per_user = int(num_votes_per_user)

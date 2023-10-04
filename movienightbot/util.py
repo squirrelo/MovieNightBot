@@ -37,9 +37,7 @@ def is_channel(interaction: discord.Interaction) -> bool:
     return True
 
 
-async def get_message(
-    channel: discord.TextChannel, msg_id: int
-) -> Union[None, discord.Message]:
+async def get_message(channel: discord.TextChannel, msg_id: int) -> Union[None, discord.Message]:
     """Retrives a message, or returns None if cannot retrieve the message"""
     try:
         return await channel.fetch_message(msg_id)
@@ -51,9 +49,7 @@ async def get_message(
         return None
 
 
-async def cleanup_messages(
-    messages: List[discord.Message], sec_delay: int = 10
-) -> None:
+async def cleanup_messages(messages: List[discord.Message], sec_delay: int = 10) -> None:
     """Deletes a list of messages off a server
 
     Parameters
@@ -115,9 +111,7 @@ End the vote with the :octagonal_sign: emoji.""",
         score = f"Score: {movie_vote.score:.2f}"
         if imdb_info:
             movie_info += f" ({imdb_info.year})"
-            score += (
-                f" - [IMDb Page](https://www.imdb.com/title/tt{imdb_info.imdb_id}/)"
-            )
+            score += f" - [IMDb Page](https://www.imdb.com/title/tt{imdb_info.imdb_id}/)"
 
         embed.add_field(
             name=movie_info,
@@ -189,9 +183,7 @@ async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
     await vote_msg.add_reaction(emojis_text[":arrows_counterclockwise:"])
 
 
-def get_imdb_info(
-    movie_name: str, kind: Optional[str] = None
-) -> Union[None, imdb.Movie.Movie]:
+def get_imdb_info(movie_name: str, kind: Optional[str] = None) -> Union[None, imdb.Movie.Movie]:
     if not movie_name:
         return None
 

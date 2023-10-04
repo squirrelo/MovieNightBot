@@ -19,18 +19,10 @@ async def test_user_vote_count(client):
 
     test_role = await _set_test_role(client)
     await test.message("m!user_vote_count 0")
-    assert (
-        test.verify()
-        .message()
-        .content("Failed to update: Number of votes per user must be > 0")
-    )
+    assert test.verify().message().content("Failed to update: Number of votes per user must be > 0")
 
     await test.message("m!user_vote_count 1")
-    assert (
-        test.verify()
-        .message()
-        .content("Failed to update: Number of votes per user must be >= 4")
-    )
+    assert test.verify().message().content("Failed to update: Number of votes per user must be >= 4")
 
     await test.message("m!user_vote_count 6")
     assert test.verify().message().content("Number of votes per user updated to 6")

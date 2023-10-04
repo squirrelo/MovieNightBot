@@ -34,22 +34,14 @@ class IMDBInfoController(BaseController):
         return super().get_by_id(id=imdb_id, primary_key="imdb_id")
 
     def get_by_name(self, movie_name: str) -> Union[IMDBInfo, None]:
-        return (
-            IMDBInfo.select()
-            .where(movie_name.lower() == pw.fn.LOWER(IMDBInfo.title))
-            .get()
-        )
+        return IMDBInfo.select().where(movie_name.lower() == pw.fn.LOWER(IMDBInfo.title)).get()
 
 
 class MoviesController(BaseController):
     model = Movie
 
     def get_by_server_and_id(self, server_id: int, movie: str) -> Movie:
-        return (
-            Movie.select()
-            .where((Movie.server == server_id) & (Movie.movie_name == movie))
-            .get()
-        )
+        return Movie.select().where((Movie.server == server_id) & (Movie.movie_name == movie)).get()
 
     def get_watched_for_server(self, server_id: int) -> List[Movie]:
         obc = pw.Case(
@@ -71,10 +63,7 @@ class MoviesController(BaseController):
             Movie.movie_name,
         )
         return (
-            Movie.select()
-            .order_by(obc)
-            .where((Movie.server == server_id) & Movie.watched_on.is_null(False))
-            .execute()
+            Movie.select().order_by(obc).where((Movie.server == server_id) & Movie.watched_on.is_null(False)).execute()
         )
 
     def get_suggested_for_server(self, server_id: int) -> List[Movie]:
@@ -96,12 +85,7 @@ class MoviesController(BaseController):
             ),
             Movie.movie_name,
         )
-        return (
-            Movie.select()
-            .order_by(obc)
-            .where((Movie.server == server_id) & Movie.watched_on.is_null())
-            .execute()
-        )
+        return Movie.select().order_by(obc).where((Movie.server == server_id) & Movie.watched_on.is_null()).execute()
 
     def get_imdb_info_by_id(self, imdb_id: Union[int, str]):
         if not imdb_id:
@@ -136,9 +120,7 @@ class MoviesController(BaseController):
         try:
             imdb_row = imdb_controller.get_by_id(imdb_info.movieID)
         except Exception as e:
-            logger.debug(
-                "IMDB entry get error: {}\n{}".format(imdb_info.movieID, str(e))
-            )
+            logger.debug("IMDB entry get error: {}\n{}".format(imdb_info.movieID, str(e)))
             return 0
         logger.debug("IMDB row: " + str(imdb_row))
         return (
@@ -147,9 +129,7 @@ class MoviesController(BaseController):
             .execute()
         )
 
-    def get_random_movies(
-        self, server_id: int, num_movies: int, genre: Optional[str] = None
-    ) -> List[Movie]:
+    def get_random_movies(self, server_id: int, num_movies: int, genre: Optional[str] = None) -> List[Movie]:
         if genre is None:
             return (
                 Movie.select()
@@ -163,9 +143,7 @@ class MoviesController(BaseController):
                 .join(MovieGenre)
                 .order_by(pw.fn.Random())
                 .where(
-                    (Movie.server == server_id)
-                    & Movie.watched_on.is_null(True)
-                    & (MovieGenre.genre == genre.lower())
+                    (Movie.server == server_id) & Movie.watched_on.is_null(True) & (MovieGenre.genre == genre.lower())
                 )
                 .limit(num_movies)
             )
@@ -174,9 +152,7 @@ class MoviesController(BaseController):
 def movie_score_weightings(server_id: int) -> Dict[int, float]:
     num_votes_allowed = ServerController().get_by_id(server_id).num_votes_per_user
     scores_dict = defaultdict(float)
-    scores = [
-        round((1 / num_votes_allowed) * x, 2) for x in range(1, num_votes_allowed + 1)
-    ][::-1]
+    scores = [round((1 / num_votes_allowed) * x, 2) for x in range(1, num_votes_allowed + 1)][::-1]
     scores_dict.update({x + 1: s for x, s in enumerate(scores)})
     return scores_dict
 
@@ -213,9 +189,7 @@ class VoteController(BaseController):
         with self.transaction():
             server_row = ServerController().get_by_id(server_id)
             num_movies = server_row.num_movies_per_vote
-            movies_for_vote = MoviesController().get_random_movies(
-                server_id, num_movies, genre
-            )
+            movies_for_vote = MoviesController().get_random_movies(server_id, num_movies, genre)
             if len(movies_for_vote) == 0:
                 raise VoteError("No movies found")
             vote_row = self.create({"server_id": server_id})
@@ -230,9 +204,7 @@ class VoteController(BaseController):
                 )
         return vote_row
 
-    def start_runoff_vote(
-        self, server_id: int, vote_message: discord.Message, movies: List[Movie]
-    ) -> Vote:
+    def start_runoff_vote(self, server_id: int, vote_message: discord.Message, movies: List[Movie]) -> Vote:
         with self.transaction():
             vote_row = self.create(
                 {
@@ -288,12 +260,7 @@ class MovieVoteController(BaseController):
     model = MovieVote
 
     def convert_emoji(self, server_id: int, emoji: str) -> MovieVote:
-        return (
-            MovieVote.select()
-            .join(Vote)
-            .where((Vote.server_id == server_id) & (MovieVote.emoji == emoji))
-            .get()
-        )
+        return MovieVote.select().join(Vote).where((Vote.server_id == server_id) & (MovieVote.emoji == emoji)).get()
 
     def get_movies_for_server_vote(self, server_id: int) -> List[MovieVote]:
         with self.transaction():
@@ -392,9 +359,7 @@ class UserVoteController(BaseController):
         )
         return max_rank + 1 if max_rank else 1
 
-    def register_vote(
-        self, user_id: int, user_name: str, movie_vote: MovieVote
-    ) -> UserVote:
+    def register_vote(self, user_id: int, user_name: str, movie_vote: MovieVote) -> UserVote:
         with self.transaction():
             server_id = movie_vote.vote.server_id
             next_rank = self.get_next_rank(server_id, user_id)
@@ -431,11 +396,7 @@ class UserVoteController(BaseController):
                 if user_vote.vote_rank > removed_rank:
                     # Subtract original score and add new score to update the movie's total score
                     movie_vote = user_vote.movie_vote
-                    movie_vote.score = (
-                        movie_vote.score
-                        - scores[user_vote.vote_rank]
-                        + scores[user_vote.vote_rank - 1]
-                    )
+                    movie_vote.score = movie_vote.score - scores[user_vote.vote_rank] + scores[user_vote.vote_rank - 1]
                     user_vote.vote_rank -= 1
                     user_vote.save()
                     movie_vote.save()

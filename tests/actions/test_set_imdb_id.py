@@ -16,11 +16,7 @@ async def test_set_imdb_id(client):
     await test.message(f"m!suggest {test_title}")
     test.get_message()
     await test.message(f"m!set_imdb_id {test_id} {test_title}")
-    assert (
-        test.verify()
-        .message()
-        .content(f"Movie {test_title} has been updated to imdb ID {test_id}")
-    )
+    assert test.verify().message().content(f"Movie {test_title} has been updated to imdb ID {test_id}")
 
     # not sure how to reach this output...
     # test_title2 = test_title[:-4]

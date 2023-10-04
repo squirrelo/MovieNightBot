@@ -23,9 +23,5 @@ async def test_remove(client):
     await test.message(f"m!suggest {test_title}")
     test.get_message()
     await test.message(f"m!remove {test_title}")
-    assert (
-        test.verify()
-        .message()
-        .content(f"The movie {test_title} has been removed from the list.")
-    )
+    assert test.verify().message().content(f"The movie {test_title} has been removed from the list.")
     await _clear_test_role(client, test_role)

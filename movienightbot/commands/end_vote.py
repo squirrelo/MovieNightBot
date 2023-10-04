@@ -13,6 +13,7 @@ server_controller = ServerController()
 
 logger = logging.getLogger("movienightbot")
 
+
 async def end_vote_task(interaction: discord.Interaction):
     server_id = interaction.guild.id
     with vote_controller.transaction():
@@ -50,15 +51,11 @@ async def end_vote_task(interaction: discord.Interaction):
         )
         await vote_msg.unpin()
     else:
-        await interaction.response.send_message(
-            "There was a tie! Check the vote message for new vote options"
-        )
+        await interaction.response.send_message("There was a tie! Check the vote message for new vote options")
         with vote_controller.transaction():
             server_row = server_controller.get_by_id(server_id)
             if server_row.tie_option == "breaker":
-                vote_row = vote_controller.start_runoff_vote(
-                    server_id, vote_msg, winning_movies
-                )
+                vote_row = vote_controller.start_runoff_vote(server_id, vote_msg, winning_movies)
             elif server_row.tie_option == "random":
                 vote_row = vote_controller.start_vote(server_id)
                 vote_row.message_id = vote_msg.id

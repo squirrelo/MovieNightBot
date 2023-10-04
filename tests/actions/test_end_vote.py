@@ -44,32 +44,18 @@ async def test_end_vote_tiebreaker(client):
     assert test.verify().message().embed(test_embed).peek()
     await _clear_test_role(client, test_role)
 
-    await test.add_reaction(
-        message=vote_msg, user=tester1, emoji=emojis_text[":regional_indicator_a:"]
-    )
-    await test.add_reaction(
-        message=vote_msg, user=tester2, emoji=emojis_text[":regional_indicator_b:"]
-    )
+    await test.add_reaction(message=vote_msg, user=tester1, emoji=emojis_text[":regional_indicator_a:"])
+    await test.add_reaction(message=vote_msg, user=tester2, emoji=emojis_text[":regional_indicator_b:"])
 
     await test.message("m!end_vote")
     tie_vote_embed = build_vote_embed(m.channel.guild.id)
-    assert (
-        tie_vote_embed is not vote_msg.embeds[0]
-    ), "Vote embed was not updated with tie breaker embed."
+    assert tie_vote_embed is not vote_msg.embeds[0], "Vote embed was not updated with tie breaker embed."
 
-    await test.add_reaction(
-        message=vote_msg, user=tester1, emoji=emojis_text[":regional_indicator_a:"]
-    )
-    await test.add_reaction(
-        message=vote_msg, user=tester2, emoji=emojis_text[":regional_indicator_a:"]
-    )
+    await test.add_reaction(message=vote_msg, user=tester1, emoji=emojis_text[":regional_indicator_a:"])
+    await test.add_reaction(message=vote_msg, user=tester2, emoji=emojis_text[":regional_indicator_a:"])
 
     test.get_message()
-    assert (
-        test.verify()
-        .message()
-        .content("There was a tie! Check the vote message for new vote options")
-    )
+    assert test.verify().message().content("There was a tie! Check the vote message for new vote options")
 
     await test.message("m!end_vote")
     assert test.verify().message().contains().content("The winning vote was `")
@@ -110,12 +96,8 @@ async def test_end_vote_winner(client):
     vote_msg = test.get_message(peek=True)
     await _clear_test_role(client, test_role)
 
-    await test.add_reaction(
-        user=tester1, message=vote_msg, emoji=emojis_text[":regional_indicator_a:"]
-    )
-    await test.add_reaction(
-        user=tester2, message=vote_msg, emoji=emojis_text[":regional_indicator_a:"]
-    )
+    await test.add_reaction(user=tester1, message=vote_msg, emoji=emojis_text[":regional_indicator_a:"])
+    await test.add_reaction(user=tester2, message=vote_msg, emoji=emojis_text[":regional_indicator_a:"])
     test.get_message()
 
     await test.message("m!end_vote")

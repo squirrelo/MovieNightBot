@@ -17,11 +17,7 @@ async def test_tie_option(client):
 
     test_role = await _set_test_role(client)
     await test.message("m!tie_option silly-non-option")
-    assert (
-        test.verify()
-        .message()
-        .content("Unknown tiebreaker option given: silly-non-option")
-    )
+    assert test.verify().message().content("Unknown tiebreaker option given: silly-non-option")
 
     await test.message("m!tie_option random")
     assert test.verify().message().content("Tiebreaker updated to random")

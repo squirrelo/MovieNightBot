@@ -12,7 +12,5 @@ async def test_watched(client):
     assert (
         test.verify()
         .message()
-        .content(
-            f"Watched movies can be found at {base_url}/movies.html?server={guild_id}&view=watched"
-        )
+        .content(f"Watched movies can be found at {base_url}/movies.html?server={guild_id}&view=watched")
     )

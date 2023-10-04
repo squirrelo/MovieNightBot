@@ -26,8 +26,6 @@ async def test_cleanup(client):
     msgs = [m0, r0, m1, r1, m2, r2, m3]
     for msg in msgs:
         status = await _verify_deleted_message(client, msg.id)
-        assert (
-            status is True
-        ), "Expected message to be deleted, but message still exists."
+        assert status is True, "Expected message to be deleted, but message still exists."
 
     await _clear_test_role(client, test_role)
