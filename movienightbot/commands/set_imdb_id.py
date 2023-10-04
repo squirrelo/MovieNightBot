@@ -17,9 +17,9 @@ logger = logging.getLogger("movienightbot")
 
 @app_commands.command(description="Overrides the automatically found IMDB id for a movie with the given IMDB id")
 @app_commands.check(is_channel)
-async def set_imdb_id(self, interaction: discord.Interaction, imdb_id, movie):
+async def set_imdb_id(interaction: discord.Interaction, imdb_id: str, movie: str):
     server_id = interaction.guild.id
-    server_row = self.server_controller.get_by_id(server_id)
+    server_row = server_controller.get_by_id(server_id)
     message_timeout = None if server_row.message_timeout == 0 else server_row.message_timeout
     movie_name = capitalize_movie_name(movie)
     updated_rows = movies_controller.update_imdb_id(server_id, movie_name, imdb_id)

@@ -15,7 +15,7 @@ logger = logging.getLogger("movienightbot")
 
 @app_commands.command(description="Link to all movies that have been suggested.")
 @app_commands.check(is_channel)
-@app_commands.command(is_admin)
+@app_commands.check(is_admin)
 async def unwatch(interaction: discord.Interaction, movie: str):
     unwatch = capitalize_movie_name(movie)
     with movies_controller.transaction():
