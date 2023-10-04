@@ -40,7 +40,7 @@ async def set_genre(interaction: discord.Interaction, genre: str, movie_name: st
 @set_genre.error
 async def set_genre_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
-        f"Wrong channel used for messages. Please use the correct channel.",
+        "Wrong channel used for messages. Please use the correct channel.",
         ephemeral=True,
     )
     logger.debug(str(error))

@@ -37,7 +37,7 @@ async def set_imdb_id(interaction: discord.Interaction, imdb_id: str, movie: str
 @set_imdb_id.error
 async def set_imdb_id_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
-        f"Wrong channel used for messages. Please use the correct channel.",
+        "Wrong channel used for messages. Please use the correct channel.",
         ephemeral=True,
     )
     logger.debug(str(error))

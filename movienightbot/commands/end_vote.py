@@ -79,7 +79,7 @@ async def end_vote(interaction: discord.Interaction):
 @end_vote.error
 async def end_vote_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
-        f"Wrong channel used for messages. Please use the correct channel.",
+        "Wrong channel used for messages. Please use the correct channel.",
         ephemeral=True,
     )
     logger.debug(str(error))

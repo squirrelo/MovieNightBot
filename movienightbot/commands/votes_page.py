@@ -21,7 +21,7 @@ async def votes_page(interaction: discord.Interaction):
 @votes_page.error
 async def votes_page_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
-        f"Wrong channel used for messages. Please use the correct channel",
+        "Wrong channel used for messages. Please use the correct channel",
         ephemeral=True,
     )
     logger.debug(str(error))

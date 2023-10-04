@@ -65,9 +65,8 @@ async def suggest(interaction: discord.Interaction, movie: str):
     await interaction.response.defer()
     server_id = interaction.guild.id
     server_row = server_controller.get_by_id(server_id)
-    message_timeout = None if server_row.message_timeout == 0 else server_row.message_timeout
     if server_row.block_suggestions:
-        server_msg = await interaction.followup.send("Suggestions are currently disabled on the server", ephemeral=True)
+        await interaction.followup.send("Suggestions are currently disabled on the server", ephemeral=True)
         return
 
     if server_row.check_movie_names:
@@ -121,7 +120,7 @@ async def suggest(interaction: discord.Interaction, movie: str):
 @suggest.error
 async def suggest_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.followup.send(
-        f"Wrong channel used for messages. Please use the correct channel.",
+        "Wrong channel used for messages. Please use the correct channel.",
         ephemeral=True,
     )
     logger.debug(str(error))

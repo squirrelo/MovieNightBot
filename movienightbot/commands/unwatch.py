@@ -39,7 +39,7 @@ async def unwatch(interaction: discord.Interaction, movie: str):
 @unwatch.error
 async def suggest_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
-        f"Wrong channel used for messages or not an admin. Please use the correct channel.",
+        "Wrong channel used for messages or not an admin. Please use the correct channel.",
         ephemeral=True,
     )
     logger.debug(str(error))

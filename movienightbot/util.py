@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import List, Optional, Union
+from typing import Optional, Union
 import asyncio
 import logging
 

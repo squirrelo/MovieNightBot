@@ -14,7 +14,6 @@ from movienightbot.db.controllers import (
     MovieVoteController,
     UserVoteController,
     Movie,
-    Vote,
 )
 
 logger = logging.getLogger("movienightbot")
