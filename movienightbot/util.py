@@ -17,7 +17,7 @@ logger = logging.getLogger("movienightbot")
 
 def is_admin(interaction: discord.Interaction) -> bool:
     if interaction.user.id == interaction.guild.owner_id:
-        logging.debug(f"User {interaction.user.name} is guild owner")
+        logging.debug("User {} is guild owner", interaction.user.name)
         return True
     server_settings = ServerController().get_by_id(interaction.guild.id)
     for role in interaction.user.roles:
