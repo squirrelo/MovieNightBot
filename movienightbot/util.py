@@ -17,12 +17,20 @@ logger = logging.getLogger("movienightbot")
 
 def is_admin(interaction: discord.Interaction) -> bool:
     if interaction.user.id == interaction.guild.owner_id:
+        logging.debug(f"User {interaction.user.name} is guild owner")
         return True
     server_settings = ServerController().get_by_id(interaction.guild.id)
-    if server_settings.admin_role in interaction.user.roles:
-        return True
+    for role in interaction.user.roles:
+        if server_settings.admin_role == role.name:
+            logging.debug("User {} is in role {}.", interaction.user.name, server_settings.admin_role)
+            return True
 
-    logging.debug(f"User {interaction.user.name} is not part of group {server_settings.admin_role}")
+    logging.debug(
+        "User {} is not part of role {}. User has roles {}",
+        interaction.user.name,
+        server_settings.admin_role,
+        {[r.name for r in interaction.user.roles]},
+    )
     return False
 
 
