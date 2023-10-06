@@ -29,7 +29,7 @@ def is_admin(interaction: discord.Interaction) -> bool:
         "User {} is not part of role {}. User has roles {}",
         interaction.user.name,
         server_settings.admin_role,
-        {[r.name for r in interaction.user.roles]},
+        str([r.name for r in interaction.user.roles]),
     )
     return False
 
