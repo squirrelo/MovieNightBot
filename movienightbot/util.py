@@ -38,8 +38,10 @@ def is_channel(interaction: discord.Interaction) -> bool:
     server_settings = ServerController().get_by_id(interaction.guild.id)
     if interaction.channel.id != server_settings.channel:
         logging.debug(
-            f"User {interaction.user.name} using non-permitted channel {interaction.channel.name} "
-            f"instead of {server_settings.channel}"
+            "User {} using non-permitted channel {} instead of {}",
+            interaction.user.name,
+            interaction.channel.name,
+            server_settings.channel,
         )
         return False
     return True
