@@ -129,9 +129,14 @@ async def on_raw_reaction_add(payload):
         return
 
     with _movie_vote_controller.transaction():
-        logger.info(f"Registering emoji vote {emoji} for {user.id} on {message.guild.name}")
-        movie_vote = _movie_vote_controller.convert_emoji(server_id, emoji)
+        try:
+            movie_vote = _movie_vote_controller.convert_emoji(server_id, emoji)
+        except pw.DoesNotExist:
+            # Unknown emoji, so nothing to do
+            logger.debug(f"Add vote: Unknkown emoji {emoji} sent")
+            return
         logger.debug(f"Got movie vote {movie_vote.id}")
+        logger.info(f"Registering emoji vote {emoji} for {user.id} on {message.guild.name}")
         _user_vote_controller.register_vote(user.id, user.display_name, movie_vote)
 
     # Update the vote message
@@ -145,11 +150,17 @@ async def on_raw_reaction_remove(payload):
     if emoji is None or not is_vote_message(server_id, message.channel.id, message.id):
         logger.debug("emoji not vote message")
         return
-    logger.info(f"Removing emoji vote {emoji} for {user.id} on {message.guild.name}")
+
     with _movie_vote_controller.transaction():
-        movie_vote = _movie_vote_controller.convert_emoji(server_id, emoji)
+        try:
+            movie_vote = _movie_vote_controller.convert_emoji(server_id, emoji)
+        except pw.DoesNotExist:
+            # Unknown emoji, so nothing to do
+            logger.debug(f"Remove Vote: Unknkown emoji {emoji} sent")
+            return
         _user_vote_controller.remove_vote(user.id, movie_vote)
 
     # Update the vote message
+    logger.info(f"Removing emoji vote {emoji} for {user.id} on {message.guild.name}")
     embed = build_vote_embed(server_id)
     await message.edit(content=None, embed=embed, supress=False)
