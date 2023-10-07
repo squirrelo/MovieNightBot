@@ -88,8 +88,7 @@ def build_vote_embed(server_id: int):
         title="Movie Vote!",
         description=f"""Use the emojis to vote on your preferred movies, in the order you would prefer them.
 You may vote for up to {server_row.num_votes_per_user} movies.
-Reset your votes with the :arrows_counterclockwise: emoji.
-End the vote with the :octagonal_sign: emoji.""",
+Reset your votes with the :arrows_counterclockwise: emoji.""",
     )
     for movie_vote in movie_rows:
         movie = movie_vote.movie

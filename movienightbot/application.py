@@ -5,7 +5,6 @@ import discord
 from discord.ext import commands
 import peewee as pw
 
-from .commands.end_vote import end_vote_task
 from .util import build_vote_embed, emojis_unicode, emojis_text
 from .db.controllers import (
     ServerController,
@@ -128,10 +127,7 @@ async def on_raw_reaction_add(payload):
             await message.remove_reaction(emojis_text[movie.emoji], user)
         await message.remove_reaction(emojis_text[":arrows_counterclockwise:"], user)
         return
-    # Check if user requested end of voting, and do that if so
-    elif emoji == ":octagonal_sign:":
-        await end_vote_task(message)
-        return
+
     with _movie_vote_controller.transaction():
         logger.info(f"Registering emoji vote {emoji} for {user.id} on {message.guild.name}")
         movie_vote = _movie_vote_controller.convert_emoji(server_id, emoji)
