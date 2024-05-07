@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 import peewee as pw
 
-from .util import build_vote_embed, emojis_unicode, emojis_text
+from .util import build_vote_embed, emojis_unicode, emojis_text, is_admin
 from .db.controllers import (
     ServerController,
     VoteController,
@@ -26,33 +26,48 @@ logger = logging.getLogger("movienightbot")
 bot._cached_app_info = None
 
 
+# One built-in command to force commands sync, others must be extensions
+@bot.command(description="[ADMIN COMMAND] force resync of commands.")
+@discord.app_commands.check(is_admin)
+async def sync(interaction: discord.Interaction):
+    synced = await bot.tree.sync(guild=interaction.guild)
+    await interaction.response.send_message(f"Synced {len(synced)} commands", ephemeral=True)
+
+
 async def generate_invite_link(permissions=discord.Permissions(403727019072), guild=None):
     if bot._cached_app_info is None:
         logger.info("Caching App Info...")
         bot._cached_app_info = await bot.application_info()
     args = dict(client_id=bot._cached_app_info.id, permissions=permissions)
-    # Need to do it this way so we don't send guild property at all if it's None. Yay py-cord limitations.
+    # Need to do it this way so we don't send guild property at all if it's None. Yay discord.py limitations.
     if guild is not None:
         args["guild"] = guild
     return discord.utils.oauth_url(**args)
 
 
+async def movienightbot_setup_hook():
+    commands_dir = Path(__file__).parent.joinpath("commands")
+    commands = []
+    for file in commands_dir.iterdir():
+        if file.is_dir() or file.name.startswith("__") or not file.name.endswith(".py"):
+            continue
+        command = f"movienightbot.commands.{file.stem}"
+        await bot.load_extension(command)
+        commands.append(command)
+    logger.debug("loaded commands: %s", ", ".join(sorted(commands)))
+
+
+bot.setup_hook = movienightbot_setup_hook
+
 @bot.event
 async def on_ready():
-    print(f"Logged in as user {bot.user}")
     logger.info(f"Logged in as user {bot.user}")
 
     auth_url = await generate_invite_link()
     logger.info(f"Bot Invite URL:  {auth_url}")
 
-    commands_dir = Path(__file__).parent.joinpath("commands")
-    for file in commands_dir.iterdir():
-        if file.is_dir() or file.name.startswith("__") or not file.name.endswith(".py"):
-            continue
-        await bot.load_extension(f"movienightbot.commands.{file.stem}")
-
     synced = await bot.tree.sync()
-    print(f"Synced {len(synced)} commands")
+    logger.info(f"Synced {len(synced)} commands")
 
     await bot.change_presence(
         status=discord.Status.idle,
