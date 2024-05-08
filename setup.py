@@ -7,7 +7,7 @@ requirements = [
     "peewee",
     "marshmallow",
     "pyyaml",
-    "cinemagoer>=2022.12.27"
+    "cinemagoer>=2022.12.27",
 ]
 
 test_requirements = [
