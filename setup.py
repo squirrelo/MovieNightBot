@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 from movienightbot import __version__ as bot_version
 
 requirements = [
-    "py-cord[speed]>=2.0",
+    "discord-py @ git+https://github.com/Rapptz/discord.py.git",
     "peewee",
     "marshmallow",
     "pyyaml",
@@ -16,6 +16,8 @@ test_requirements = [
     "pytest-black",
     "pytest-flake8",
     "dpytest>=0.5.1",
+    "ruff",
+    "black",
 ]
 
 with open("README.rst") as f:
