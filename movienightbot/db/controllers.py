@@ -108,8 +108,8 @@ class MoviesController(BaseController):
             "title": imdb_info["title"],
             "canonical_title": imdb_info.get("canonical title", imdb_info["title"]),
             "year": imdb_info.get("year", 0),
-            "thumbnail_poster_url": imdb_info.get("cover url", imdb_info.get("full-size cover url", "")),
-            "full_size_poster_url": imdb_info.get("full-size cover url", imdb_info.get("cover url", "")),
+            "thumbnail_poster_url": imdb_info.get("cover url", ""),
+            "full_size_poster_url": imdb_info.get("full-size cover url", ""),
         }
         imdb_controller = IMDBInfoController()
         try:
