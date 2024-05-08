@@ -40,7 +40,7 @@ def imdb_data(movie: str, kind: str) -> Tuple[Union[None, IMDBInfo], Union[None,
     imdb_row_data = {
         "imdb_id": imdb_info.movieID,
         "title": imdb_info["title"],
-        "canonical_title": imdb_info.get("canonical title", "N/A"),
+        "canonical_title": imdb_info.get("canonical title", imdb_info["title"]),
         "year": imdb_info.get("year", 0),
         "thumbnail_poster_url": imdb_info.get("cover url", ""),
         "full_size_poster_url": imdb_info.get("full-size cover url", ""),
