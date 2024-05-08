@@ -102,13 +102,14 @@ class MoviesController(BaseController):
         imdb_info = self.get_imdb_info_by_id(imdb_id)
         if imdb_info is None:
             return 0
+
         imdb_data = {
             "imdb_id": imdb_info.movieID,
             "title": imdb_info["title"],
-            "canonical_title": imdb_info["canonical title"],
-            "year": imdb_info["year"],
-            "thumbnail_poster_url": imdb_info["cover url"],
-            "full_size_poster_url": imdb_info["full-size cover url"],
+            "canonical_title": imdb_info.get("canonical title", imdb_info["title"]),
+            "year": imdb_info.get("year", 0),
+            "thumbnail_poster_url": imdb_info.get("cover url", ""),
+            "full_size_poster_url": imdb_info.get("full-size cover url", ""),
         }
         imdb_controller = IMDBInfoController()
         try:

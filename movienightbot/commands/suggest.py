@@ -40,10 +40,10 @@ def imdb_data(movie: str, kind: str) -> Tuple[Union[None, IMDBInfo], Union[None,
     imdb_row_data = {
         "imdb_id": imdb_info.movieID,
         "title": imdb_info["title"],
-        "canonical_title": imdb_info["canonical title"],
-        "year": imdb_info["year"],
-        "thumbnail_poster_url": imdb_info["cover url"],
-        "full_size_poster_url": imdb_info["full-size cover url"],
+        "canonical_title": imdb_info.get("canonical title", imdb_info["title"]),
+        "year": imdb_info.get("year", 0),
+        "thumbnail_poster_url": imdb_info.get("cover url", ""),
+        "full_size_poster_url": imdb_info.get("full-size cover url", ""),
     }
     try:
         imdb_row = imdb_controller.create(imdb_row_data)
@@ -120,7 +120,7 @@ async def suggest(interaction: discord.Interaction, movie: str):
 @suggest.error
 async def suggest_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.followup.send(
-        "Wrong channel used for messages. Please use the correct channel.",
+        "Something went wrong during the execution of this command. I guess you should just go do something else.",
         ephemeral=True,
     )
     logger.debug(str(error))
