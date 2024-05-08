@@ -3,12 +3,12 @@ from setuptools import find_packages, setup
 from movienightbot import __version__ as bot_version
 
 requirements = [
-    "py-cord[speed]==2.4.0",
+    "py-cord[speed]>=2.0",
     "peewee",
     "marshmallow",
     "pyyaml",
     "cinemagoer>=2022.12.27",
-    "discord.py==2.3.2"
+    "discord.py>=2.3.2"
 ]
 
 test_requirements = [
