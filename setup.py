@@ -7,8 +7,7 @@ requirements = [
     "peewee",
     "marshmallow",
     "pyyaml",
-    "cinemagoer>=2022.12.27",
-    "discord.py>=2.3.2"
+    "cinemagoer>=2022.12.27"
 ]
 
 test_requirements = [
