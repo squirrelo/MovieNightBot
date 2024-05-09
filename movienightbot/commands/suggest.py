@@ -13,7 +13,7 @@ from movienightbot.db.controllers import (
     MoviesController,
     ServerController,
 )
-from movienightbot.util import capitalize_movie_name, get_imdb_info, is_channel
+from movienightbot.util import capitalize_movie_name, get_imdb_info
 
 logger = logging.getLogger("movienightbot")
 
@@ -60,7 +60,6 @@ def add_genre_info(server_id: int, movie_name: str, genres: List[str]) -> None:
 
 
 @app_commands.command(description="Adds the movie to the suggestions list for future votes.")
-@app_commands.check(is_channel)
 async def suggest(interaction: discord.Interaction, movie: str):
     await interaction.response.defer()
     server_id = interaction.guild.id

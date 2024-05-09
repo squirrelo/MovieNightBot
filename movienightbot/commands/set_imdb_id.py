@@ -4,10 +4,7 @@ import discord
 from discord import app_commands
 
 from movienightbot.db.controllers import MoviesController, ServerController
-from movienightbot.util import (
-    capitalize_movie_name,
-    is_channel,
-)
+from movienightbot.util import capitalize_movie_name
 
 movies_controller = MoviesController()
 server_controller = ServerController()
@@ -16,7 +13,6 @@ logger = logging.getLogger("movienightbot")
 
 
 @app_commands.command(description="Overrides the automatically found IMDB id for a movie with the given IMDB id")
-@app_commands.check(is_channel)
 async def set_imdb_id(interaction: discord.Interaction, imdb_id: str, movie: str):
     server_id = interaction.guild.id
     server_row = server_controller.get_by_id(server_id)
@@ -37,7 +33,7 @@ async def set_imdb_id(interaction: discord.Interaction, imdb_id: str, movie: str
 @set_imdb_id.error
 async def set_imdb_id_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
-        "Wrong channel used for messages. Please use the correct channel.",
+        "Something went wrong during the execution of this command. I guess you should just go do something else.",
         ephemeral=True,
     )
     logger.debug(str(error))

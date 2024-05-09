@@ -5,7 +5,7 @@ import peewee as pw
 from discord import app_commands
 
 from ..db.controllers import MoviesController, ServerController
-from ..util import capitalize_movie_name, is_admin, is_channel
+from ..util import capitalize_movie_name, is_admin
 
 server_controller = ServerController()
 movies_controller = MoviesController()
@@ -14,7 +14,6 @@ logger = logging.getLogger("movienightbot")
 
 
 @app_commands.command(description="[ADMIN COMMAND] Link to all movies that have been suggested.")
-@app_commands.check(is_channel)
 @app_commands.check(is_admin)
 async def unwatch(interaction: discord.Interaction, movie: str):
     unwatch = capitalize_movie_name(movie)
@@ -39,7 +38,7 @@ async def unwatch(interaction: discord.Interaction, movie: str):
 @unwatch.error
 async def suggest_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
-        "Wrong channel used for messages or not an admin. Please use the correct channel.",
+        "Something went wrong during the execution of this command. I guess you should just go do something else.",
         ephemeral=True,
     )
     logger.debug(str(error))

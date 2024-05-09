@@ -7,7 +7,6 @@ from . import BaseModel
 
 class Server(BaseModel):
     id = pw.IntegerField(primary_key=True)
-    channel = pw.IntegerField(null=False)
     movie_time = pw.TimeField(null=False, formats="%H:%M", default="12:00")
     admin_role = pw.TextField(null=False, default="Movie Master")
     tie_option = pw.TextField(null=False, default="breaker")

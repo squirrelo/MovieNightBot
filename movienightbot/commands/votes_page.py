@@ -3,13 +3,10 @@ import logging
 import discord
 from discord import app_commands
 
-from ..util import is_channel
-
 logger = logging.getLogger("movienightbot")
 
 
 @app_commands.command(description="Posts a link to the server's vote page.")
-@app_commands.check(is_channel)
 async def votes_page(interaction: discord.Interaction):
     from ..application import bot
 
@@ -21,7 +18,7 @@ async def votes_page(interaction: discord.Interaction):
 @votes_page.error
 async def votes_page_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
-        "Wrong channel used for messages. Please use the correct channel",
+        "Something went wrong during the execution of this command. I guess you should just go do something else.",
         ephemeral=True,
     )
     logger.debug(str(error))

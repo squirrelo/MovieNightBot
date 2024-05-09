@@ -6,10 +6,7 @@ from discord import app_commands
 from peewee import DoesNotExist
 
 from movienightbot.db.controllers import MoviesController, ServerController
-from movienightbot.util import (
-    capitalize_movie_name,
-    is_channel,
-)
+from movienightbot.util import capitalize_movie_name
 
 movies_controller = MoviesController()
 server_controller = ServerController()
@@ -18,7 +15,6 @@ logger = logging.getLogger("movienightbot")
 
 
 @app_commands.command(description="Sets the specified movie to watched. This movie will not show up on future votes.")
-@app_commands.check(is_channel)
 async def set_watched(interaction: discord.Interaction, movie: str):
     watched = capitalize_movie_name(movie)
 
@@ -46,7 +42,7 @@ async def start_vote_error(
     error: discord.app_commands.errors.DiscordException,
 ):
     await interaction.response.send_message(
-        "Wrong channel used for messages. Please use the correct channel.",
+        "Something went wrong during the execution of this command. I guess you should just go do something else.",
         ephemeral=True,
     )
     logger.debug(str(error))

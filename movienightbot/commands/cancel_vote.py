@@ -5,7 +5,7 @@ from discord import app_commands
 from peewee import DoesNotExist
 
 from ..db.controllers import VoteController
-from ..util import get_message, is_admin, is_channel
+from ..util import get_message, is_admin
 
 vote_controller = VoteController()
 
@@ -13,7 +13,6 @@ logger = logging.getLogger("movienightbot")
 
 
 @app_commands.command(description="[ADMIN COMMAND] Cancels the currently running vote.")
-@app_commands.check(is_channel)
 @app_commands.check(is_admin)
 async def cancel_vote(interaction: discord.Interaction):
     server_id = interaction.guild.id
@@ -40,7 +39,7 @@ async def cancel_vote(interaction: discord.Interaction):
 @cancel_vote.error
 async def cancel_vote_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
-        "Wrong channel used for messages or not an admin. Please use the correct channel.",
+        "Something went wrong during the execution of this command. I guess you should just go do something else.",
         ephemeral=True,
     )
     logger.debug(str(error))

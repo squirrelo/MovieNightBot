@@ -5,10 +5,7 @@ from discord import app_commands
 from peewee import IntegrityError
 
 from movienightbot.db.controllers import GenreController, ServerController
-from movienightbot.util import (
-    capitalize_movie_name,
-    is_channel,
-)
+from movienightbot.util import capitalize_movie_name
 
 genre_controller = GenreController()
 server_controller = ServerController()
@@ -17,7 +14,6 @@ logger = logging.getLogger("movienightbot")
 
 
 @app_commands.command(description="Adds a genre to a movie manually.")
-@app_commands.check(is_channel)
 async def set_genre(interaction: discord.Interaction, genre: str, movie_name: str):
     server_id = interaction.guild.id
     server_row = server_controller.get_by_id(server_id)
@@ -40,7 +36,7 @@ async def set_genre(interaction: discord.Interaction, genre: str, movie_name: st
 @set_genre.error
 async def set_genre_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
-        "Wrong channel used for messages. Please use the correct channel.",
+        "Something went wrong during the execution of this command. I guess you should just go do something else.",
         ephemeral=True,
     )
     logger.debug(str(error))

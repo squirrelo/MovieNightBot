@@ -7,15 +7,14 @@ from peewee import IntegrityError
 
 from movienightbot.db.controllers import VoteController
 from movienightbot.exc import VoteError
-from movienightbot.util import add_vote_emojis, build_vote_embed, is_admin, is_channel
+from movienightbot.util import add_vote_emojis, build_vote_embed, is_admin
 
 logger = logging.getLogger("movienightbot")
 
 vote_controller = VoteController()
 
 
-@app_commands.command(description="[ADMIN COMMAND] Starts the vote. Genres is an optional comma-separated list.")
-@app_commands.check(is_channel)
+@app_commands.command(description="[ADMIN COMMAND] Starts the vote. Filters to only genre, if given.")
 @app_commands.check(is_admin)
 async def start_vote(interaction: discord.Interaction, genres: Optional[str] = None):
     if genres:
@@ -46,7 +45,7 @@ async def start_vote(interaction: discord.Interaction, genres: Optional[str] = N
 @start_vote.error
 async def start_vote_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
-        "Wrong channel used for messages or not an admin. Please use the correct channel.",
+        "Something went wrong during the execution of this command. I guess you should just go do something else.",
         ephemeral=True,
     )
     logger.debug(str(error))
