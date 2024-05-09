@@ -1,7 +1,6 @@
-from typing import Union, List, Any, Dict
-from contextlib import contextmanager
 import inspect
-from abc import ABC
+from contextlib import contextmanager
+from typing import Any, Dict, List, Union
 
 import peewee as pw
 from playhouse import db_url
@@ -14,7 +13,7 @@ class BaseModel(pw.Model):
         database = DATABASE
 
 
-class BaseController(ABC):
+class BaseController:
     model = None
     database = DATABASE
 
@@ -40,7 +39,7 @@ class BaseController(ABC):
 
 def _get_models() -> List[BaseModel]:
     """Gets a list of all model classes for tables in the DB"""
-    import movienightbot.db.models as models
+    from movienightbot.db import models
 
     return [model for _, model in inspect.getmembers(models, inspect.isclass)]
 
@@ -57,6 +56,7 @@ def initialize_db(url: str) -> pw.Database:
     -------
     pw.Database
         The instantiated database object
+
     """
     db = db_url.connect(url)
     DATABASE.initialize(db)

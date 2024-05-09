@@ -2,16 +2,17 @@ import logging
 from pathlib import Path
 
 import discord
-from discord.ext import commands
 import peewee as pw
+from discord.ext import commands
 
-from .util import build_vote_embed, emojis_text, emojis_unicode, is_admin, generate_invite_link
 from .db.controllers import (
-    ServerController,
-    VoteController,
-    UserVoteController,
     MovieVoteController,
+    ServerController,
+    UserVoteController,
+    VoteController,
 )
+from .util import build_vote_embed, emojis_text, emojis_unicode, generate_invite_link, is_admin
+
 
 class MovieNightBot(commands.Bot):
     _server_controller = ServerController()
@@ -26,19 +27,18 @@ class MovieNightBot(commands.Bot):
     def _is_vote_message(self, server_id: int, channel_id: int, message_id: int) -> bool:
         try:
             vote_row = self._vote_controller.get_by_id(server_id)
-            self.logger.debug("vote_row: {}".format(vote_row))
+            self.logger.debug(f"vote_row: {vote_row}")
         except pw.DoesNotExist:
-            self.logger.debug("No vote found for server {}".format(server_id))
+            self.logger.debug(f"No vote found for server {server_id}")
             return False
         if not vote_row:
             # no vote going on so can never be the vote row
-            self.logger.debug("Empty vote found for server {}".format(server_id))
+            self.logger.debug(f"Empty vote found for server {server_id}")
             return False
         is_message = (vote_row.message_id == message_id) and (vote_row.channel_id == channel_id)
         self.logger.debug(
-            "Vote DB channel and message: {} {} >> Sent channel and message: {} {} >> {}".format(
-                vote_row.channel_id, vote_row.message_id, channel_id, message_id, is_message
-            )
+            f"Vote DB channel and message: {vote_row.channel_id} {vote_row.message_id} >> "
+            f"Sent channel and message: {channel_id} {message_id} >> {is_message}",
         )
         return is_message
 
@@ -47,7 +47,7 @@ class MovieNightBot(commands.Bot):
         message = await channel.fetch_message(payload.message_id)
         user = await bot.fetch_user(payload.user_id)
         emoji = emojis_unicode.get(payload.emoji.name, None)
-        self.logger.debug("raw emoji sent: {} {}  >> {}".format(type(payload.emoji.name), type(payload.emoji), emoji))
+        self.logger.debug(f"raw emoji sent: {type(payload.emoji.name)} {type(payload.emoji)}  >> {emoji}")
         # Ignore if emojis coming from this bot
         if user.id == bot.user.id:
             self.logger.debug("emoji coming from self")

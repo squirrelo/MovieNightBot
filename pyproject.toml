@@ -1,0 +1,22 @@
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+
+[tool.ruff]
+line-length = 120
+lint.preview = true
+lint.ignore = ["E402", "E722", "SIM108"]
+lint.select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]

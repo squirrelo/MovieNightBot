@@ -1,20 +1,19 @@
-import pytest
 import discord.ext.test as test
+import pytest
 
-
+from movienightbot.commands.server_setup_commands import ServerAdmin
 from tests.utils import (
     _clear_test_role,
     _do_admin_test,
     _set_test_role,
 )
-from movienightbot.commands.server_settings import ServerSettingsAction
 
 
 @pytest.mark.asyncio
 async def test_server_settings(client):
     await test.empty_queue()
-    ssa = ServerSettingsAction()
-    test_embed = ssa.format_embed(client.guilds[0].id)
+    ssa = ServerAdmin()
+    test_embed = ssa._format_server_embed(client.guilds[0].id)
 
     await _do_admin_test("m!server_settings")
 
