@@ -19,8 +19,7 @@ vote_controller = VoteController()
 @app_commands.check(is_admin)
 async def start_vote(interaction: discord.Interaction, genres: Optional[str] = None):
     if genres:
-        genres = genres.lower().split(' ')  # split by space since user can have spaces in command arguments
-    # await interaction.response.send_message(f"{len(genre)} generes included {', '.join(genre)}", ephemeral=True)
+        genres = [g.strip() for g in genres.lower().split(",")]
 
     server_id = interaction.guild.id
     with vote_controller.transaction():
