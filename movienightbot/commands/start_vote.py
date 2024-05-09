@@ -17,18 +17,22 @@ vote_controller = VoteController()
 @app_commands.command(description="[ADMIN COMMAND] Starts the vote. Filters to only genre, if given.")
 @app_commands.check(is_channel)
 @app_commands.check(is_admin)
-async def start_vote(interaction: discord.Interaction, genre: Optional[str] = None):
+async def start_vote(interaction: discord.Interaction, genres: Optional[str] = None):
+    if genres:
+        genres = genres.lower().split(' ')  # split by space since user can have spaces in command arguments
+    # await interaction.response.send_message(f"{len(genre)} generes included {', '.join(genre)}", ephemeral=True)
+
     server_id = interaction.guild.id
     with vote_controller.transaction():
         try:
-            vote_row = vote_controller.start_vote(server_id, genre=genre)
+            vote_row = vote_controller.start_vote(server_id, genres=genres)
         except IntegrityError:
             await interaction.response.send_message("Vote already started!", ephemeral=True)
             return
         except VoteError:
             err_msg = "No movies found"
-            if genre:
-                err_msg += f" for genre {genre}"
+            if genres:
+                err_msg += f" for genre(s) {', '.join(genres)}"
             await interaction.response.send_message(err_msg)
             return
         embed = build_vote_embed(server_id)

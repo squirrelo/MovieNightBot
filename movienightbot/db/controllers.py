@@ -130,8 +130,8 @@ class MoviesController(BaseController):
             .execute()
         )
 
-    def get_random_movies(self, server_id: int, num_movies: int, genre: Optional[str] = None) -> List[Movie]:
-        if genre is None:
+    def get_random_movies(self, server_id: int, num_movies: int, genres: Optional[str] = None) -> List[Movie]:
+        if genres is None:
             return (
                 Movie.select()
                 .order_by(pw.fn.Random())
@@ -144,7 +144,7 @@ class MoviesController(BaseController):
                 .join(MovieGenre)
                 .order_by(pw.fn.Random())
                 .where(
-                    (Movie.server == server_id) & Movie.watched_on.is_null(True) & (MovieGenre.genre == genre.lower())
+                    (Movie.server == server_id) & Movie.watched_on.is_null(True) & (MovieGenre.genre in genres)
                 )
                 .limit(num_movies)
             )
@@ -186,11 +186,11 @@ class VoteController(BaseController):
     def get_by_id(self, server_id: int) -> Union[Vote, None]:
         return super().get_by_id(id=server_id, primary_key="server_id")
 
-    def start_vote(self, server_id: int, genre: Optional[str] = None) -> Vote:
+    def start_vote(self, server_id: int, genres: Optional[list] = None) -> Vote:
         with self.transaction():
             server_row = ServerController().get_by_id(server_id)
             num_movies = server_row.num_movies_per_vote
-            movies_for_vote = MoviesController().get_random_movies(server_id, num_movies, genre)
+            movies_for_vote = MoviesController().get_random_movies(server_id, num_movies, genres)
             if len(movies_for_vote) == 0:
                 raise VoteError("No movies found")
             vote_row = self.create({"server_id": server_id})
