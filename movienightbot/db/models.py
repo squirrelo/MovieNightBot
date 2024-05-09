@@ -1,6 +1,7 @@
 import datetime
 
 import peewee as pw
+
 from . import BaseModel
 
 

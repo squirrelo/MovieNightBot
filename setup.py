@@ -13,11 +13,8 @@ requirements = [
 test_requirements = [
     "pytest",
     "pytest-asyncio",
-    "pytest-black",
-    "pytest-flake8",
-    "dpytest>=0.5.1",
+    "dpytest>=0.6",
     "ruff",
-    "black",
 ]
 
 with open("README.rst") as f:
@@ -39,7 +36,7 @@ setup(
             "webfiles/**/*.png",
             "webfiles/**/*.css",
             "webfiles/**/*.js",
-        ]
+        ],
     },
     install_requires=requirements,
     tests_require=test_requirements,

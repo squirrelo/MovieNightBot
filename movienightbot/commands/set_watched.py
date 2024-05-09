@@ -1,12 +1,13 @@
-import logging
 import datetime
+import logging
 
 import discord
 from discord import app_commands
 from peewee import DoesNotExist
 
-from movienightbot.util import capitalize_movie_name
 from movienightbot.db.controllers import ServerController, MoviesController
+from movienightbot.util import capitalize_movie_name
+
 
 movies_controller = MoviesController()
 server_controller = ServerController()

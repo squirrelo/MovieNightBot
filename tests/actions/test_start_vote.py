@@ -1,13 +1,12 @@
-import pytest
 import discord.ext.test as test
+import pytest
 
-
+from movienightbot.util import build_vote_embed
 from tests.utils import (
-    _do_admin_test,
     _add_movies,
+    _do_admin_test,
     _set_test_role,
 )
-from movienightbot.util import build_vote_embed
 
 
 @pytest.mark.asyncio

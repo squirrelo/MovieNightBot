@@ -4,12 +4,13 @@ import discord
 from discord import app_commands
 from peewee import DoesNotExist
 
+from movienightbot.db.controllers import ServerController, VoteController
 from movienightbot.util import (
-    get_message,
-    build_vote_embed,
     add_vote_emojis,
+    build_vote_embed,
+    get_message,
+    is_channel,
 )
-from movienightbot.db.controllers import VoteController, ServerController
 
 vote_controller = VoteController()
 server_controller = ServerController()
@@ -50,7 +51,7 @@ async def end_vote_task(interaction: discord.Interaction):
         )
         await interaction.response.send_message(
             f"The winning vote was `{winning_movie}`! "
-            f"To set the movie as watched use the command `/set_watched {winning_movie}`"
+            f"To set the movie as watched use the command `/set_watched {winning_movie}`",
         )
         await vote_msg.unpin()
     else:

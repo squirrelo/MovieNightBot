@@ -1,16 +1,15 @@
+import asyncio
 import datetime
+import logging
 import re
 from typing import Optional, Union
-import asyncio
-import logging
 
 import discord
 import imdb
 import peewee as pw
 
+from .db.controllers import MovieVote, MovieVoteController, ServerController
 from .exc import VoteError
-from .db.controllers import ServerController, MovieVoteController, MovieVote
-
 
 logger = logging.getLogger("movienightbot")
 
@@ -55,6 +54,7 @@ async def delete_thread(thread: discord.Thread, sec_delay: int = 10) -> None:
         The messages to delete
     sec_delay : int
         The number of seconds to wait before deleting the message. Default 10
+
     """
     if sec_delay <= 0:
         # want messages to stay indefinitely so do nothing
@@ -70,7 +70,7 @@ def build_vote_embed(server_id: int):
     try:
         movie_rows = MovieVoteController().get_movies_for_server_vote(server_id)
     except pw.DoesNotExist:
-        raise VoteError(f"No vote started for server {server_id}")
+        raise VoteError(f"No vote started for server {server_id}")  # noqa: B904
     embed = discord.Embed(
         title="Movie Vote!",
         description=f"""Use the emojis to vote on your preferred movies, in the order you would prefer them.
@@ -147,7 +147,7 @@ emojis_text = {
 emojis_unicode = {v: k for k, v in emojis_text.items()}
 
 
-imdb_url_regex = re.compile(r"title/tt([0-9]+)")  # noqa
+imdb_url_regex = re.compile(r"title/tt([0-9]+)")
 
 
 async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
@@ -196,7 +196,10 @@ def capitalize_movie_name(movie_name: str) -> str:
     return " ".join(clean_name)
 
 
-async def generate_invite_link(permissions=discord.Permissions(403727019072), guild=None):
+DEFAULT_PERMISSIONS = discord.Permissions(403727019072)
+
+
+async def generate_invite_link(permissions=DEFAULT_PERMISSIONS, guild=None):
     from movienightbot.application import bot
 
     app_info = await bot.application_info()

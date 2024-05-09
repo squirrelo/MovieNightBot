@@ -5,9 +5,10 @@ import discord
 from discord import app_commands
 from peewee import IntegrityError
 
+from movienightbot.db.controllers import VoteController
 from movienightbot.exc import VoteError
 from movienightbot.util import is_admin, build_vote_embed, add_vote_emojis
-from movienightbot.db.controllers import VoteController
+
 
 logger = logging.getLogger("movienightbot")
 

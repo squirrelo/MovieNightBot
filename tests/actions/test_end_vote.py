@@ -1,12 +1,11 @@
-import pytest
 import discord.ext.test as test
+import pytest
 
-
+from movienightbot.util import build_vote_embed, emojis_text
 from tests.utils import (
     _clear_test_role,
     _set_test_role,
 )
-from movienightbot.util import build_vote_embed, emojis_text
 
 
 @pytest.mark.asyncio

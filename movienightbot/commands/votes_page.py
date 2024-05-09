@@ -12,7 +12,7 @@ async def votes_page(interaction: discord.Interaction):
     from ..application import bot
 
     await interaction.response.send_message(
-        f"The active vote can be found at {bot.config.base_url}/vote.html?server={interaction.guild.id}"
+        f"The active vote can be found at {bot.config.base_url}/vote.html?server={interaction.guild.id}",
     )
 
 
