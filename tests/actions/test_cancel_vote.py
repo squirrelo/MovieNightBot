@@ -1,11 +1,10 @@
-import pytest
 import discord.ext.test as test
-
+import pytest
 
 from tests.utils import (
+    _add_movies,
     _clear_test_role,
     _set_test_role,
-    _add_movies,
 )
 
 

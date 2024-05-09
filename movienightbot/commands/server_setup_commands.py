@@ -5,8 +5,8 @@ import discord
 from discord import app_commands
 from peewee import DoesNotExist
 
+from movienightbot.db.controllers import MoviesController, ServerController
 from movienightbot.util import capitalize_movie_name
-from movienightbot.db.controllers import ServerController, MoviesController
 
 logger = logging.getLogger("movienightbot")
 
@@ -17,7 +17,7 @@ class ServerAdmin(app_commands.Group):
     time_regex = re.compile(r"^\d{1,2}:\d{2}$")
 
     @app_commands.command(
-        description="Toggles whether to allow tv shows in the IMDB search results (True) or not (False)."
+        description="Toggles whether to allow tv shows in the IMDB search results (True) or not (False).",
     )
     @app_commands.default_permissions(administrator=True)
     async def imdb_tv_shows(self, interaction: discord.Interaction, allow_tv_shows: bool):
@@ -97,7 +97,7 @@ class ServerAdmin(app_commands.Group):
         await interaction.response.send_message(content=None, embed=embed_data)
 
     @app_commands.command(
-        description="Sets the role allowed to run admin commands. Server administrators have admin by default"
+        description="Sets the role allowed to run admin commands. Server administrators have admin by default",
     )
     @app_commands.default_permissions(administrator=True)
     async def set_admin_role(self, interaction: discord.Interaction, role: str):
@@ -112,7 +112,7 @@ class ServerAdmin(app_commands.Group):
         await interaction.response.send_message(f"Admin role updated to {role}")
 
     @app_commands.command(
-        description="How long before suggestion messages are deleted, in seconds. Set to 0 to disable."
+        description="How long before suggestion messages are deleted, in seconds. Set to 0 to disable.",
     )
     @app_commands.default_permissions(administrator=True)
     async def set_message_timeout(
@@ -133,7 +133,7 @@ class ServerAdmin(app_commands.Group):
             channels = {c.name: c.id for c in interaction.guild.text_channels}
             if channel not in channels:
                 await interaction.response.send_message(
-                    f"Failed update: unknown channel {channel} given.", ephemeral=True
+                    f"Failed update: unknown channel {channel} given.", ephemeral=True,
                 )
                 return
 
@@ -147,7 +147,7 @@ class ServerAdmin(app_commands.Group):
     async def set_movie_time(self, interaction: discord.Interaction, movie_time: str):
         if not self.time_regex.search(movie_time):
             await interaction.response.send_message(
-                "Movie time given in invalid format. Must be `HH:MM`", ephemeral=True
+                "Movie time given in invalid format. Must be `HH:MM`", ephemeral=True,
             )
             return
         with self.server_controller.transaction():
@@ -157,7 +157,7 @@ class ServerAdmin(app_commands.Group):
         await interaction.response.send_message(f"Movie time updated to {movie_time} UTC")
 
     @app_commands.command(
-        description="Sets how the bot handles tied votes. `breaker`: revote with ties (default). `random`: new vote"
+        description="Sets how the bot handles tied votes. `breaker`: revote with ties (default). `random`: new vote",
     )
     @app_commands.default_permissions(administrator=True)
     async def tie_option(self, interaction: discord.Interaction, tie_option: str):

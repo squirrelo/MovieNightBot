@@ -4,11 +4,11 @@ import discord
 from discord import app_commands
 from peewee import IntegrityError
 
+from movienightbot.db.controllers import GenreController, ServerController
 from movienightbot.util import (
     capitalize_movie_name,
     is_channel,
 )
-from movienightbot.db.controllers import GenreController, ServerController
 
 genre_controller = GenreController()
 server_controller = ServerController()

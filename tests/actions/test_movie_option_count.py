@@ -1,6 +1,5 @@
-import pytest
 import discord.ext.test as test
-
+import pytest
 
 from tests.utils import (
     _clear_test_role,

@@ -1,24 +1,24 @@
-from typing import List, Union, Dict, Any, Optional
-from string import ascii_lowercase
-from collections import defaultdict
 import logging
+from collections import defaultdict
+from string import ascii_lowercase
+from typing import Any, Dict, List, Optional, Union
 
-import peewee as pw
 import discord
+import peewee as pw
 from imdb import IMDb
 from imdb._exceptions import IMDbDataAccessError
 
 from ..exc import VoteError
-from .models import (
-    Server,
-    Movie,
-    Vote,
-    MovieVote,
-    UserVote,
-    IMDBInfo,
-    MovieGenre,
-)
 from . import BaseController
+from .models import (
+    IMDBInfo,
+    Movie,
+    MovieGenre,
+    MovieVote,
+    Server,
+    UserVote,
+    Vote,
+)
 
 logger = logging.getLogger("movienightbot")
 
@@ -116,12 +116,11 @@ class MoviesController(BaseController):
             imdb_controller.create(imdb_data)
         except pw.IntegrityError as e:
             # IMDB entry already added, so ignore error
-            logger.debug("IMDB entry insert error: {}\n{}".format(imdb_data, str(e)))
-            pass
+            logger.debug(f"IMDB entry insert error: {imdb_data}\n{e!s}")
         try:
             imdb_row = imdb_controller.get_by_id(imdb_info.movieID)
         except Exception as e:
-            logger.debug("IMDB entry get error: {}\n{}".format(imdb_info.movieID, str(e)))
+            logger.debug(f"IMDB entry get error: {imdb_info.movieID}\n{e!s}")
             return 0
         logger.debug("IMDB row: " + str(imdb_row))
         return (
@@ -144,7 +143,7 @@ class MoviesController(BaseController):
                 .join(MovieGenre)
                 .order_by(pw.fn.Random())
                 .where(
-                    (Movie.server == server_id) & Movie.watched_on.is_null(True) & (MovieGenre.genre == genre.lower())
+                    (Movie.server == server_id) & Movie.watched_on.is_null(True) & (MovieGenre.genre == genre.lower()),
                 )
                 .limit(num_movies)
             )
@@ -201,7 +200,7 @@ class VoteController(BaseController):
                         "vote": vote_row,
                         "movie": movie,
                         "emoji": f":regional_indicator_{emoji_letter}:",
-                    }
+                    },
                 )
         return vote_row
 
@@ -212,7 +211,7 @@ class VoteController(BaseController):
                     "server_id": server_id,
                     "channel_id": vote_message.channel.id,
                     "message_id": vote_message.id,
-                }
+                },
             )
             movie_vote_controller = MovieVoteController()
             for movie, emoji_letter in zip(movies, ascii_lowercase):
@@ -221,7 +220,7 @@ class VoteController(BaseController):
                         "vote": vote_row,
                         "movie": movie,
                         "emoji": f":regional_indicator_{emoji_letter}:",
-                    }
+                    },
                 )
         return vote_row
 
@@ -300,7 +299,7 @@ class UserVoteController(BaseController):
             movie_vote.score += scores[user_vote.vote_rank]
             movie_vote.save()
             logger.debug(
-                f"added {scores[user_vote.vote_rank]} to MovieVote {movie_vote.id}, new score {movie_vote.score}"
+                f"added {scores[user_vote.vote_rank]} to MovieVote {movie_vote.id}, new score {movie_vote.score}",
             )
         return user_vote
 
@@ -339,7 +338,7 @@ class UserVoteController(BaseController):
                         UserVote.select(pw.fn.Distinct(UserVote.user_name))
                         .join(MovieVote)
                         .join(Vote)
-                        .where((Vote.server_id == server_id))
+                        .where(Vote.server_id == server_id)
                     )
                     # Lazy eval so force it to eval before return
                     voters = [u for u in users]

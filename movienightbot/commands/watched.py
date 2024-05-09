@@ -5,7 +5,6 @@ from discord import app_commands
 
 from movienightbot.util import is_channel
 
-
 logger = logging.getLogger("movienightbot")
 
 
@@ -15,7 +14,7 @@ async def watched(interaction: discord.Interaction):
     from ..application import bot
 
     await interaction.response.send_message(
-        f"Watched movies can be found at {bot.config.base_url}/movies.html?server={interaction.guild.id}&view=watched"
+        f"Watched movies can be found at {bot.config.base_url}/movies.html?server={interaction.guild.id}&view=watched",
     )
 
 

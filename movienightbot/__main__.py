@@ -1,6 +1,6 @@
-from pathlib import Path
-from argparse import ArgumentParser
 import logging
+from argparse import ArgumentParser
+from pathlib import Path
 from threading import Thread
 
 from .application import bot

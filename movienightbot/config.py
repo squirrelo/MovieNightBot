@@ -1,8 +1,9 @@
 from pathlib import Path
+
 import yaml
 
 
-class Config(object):
+class Config:
     @classmethod
     def from_yaml(cls, config_path: Path) -> "Config":
         with config_path.open() as f:

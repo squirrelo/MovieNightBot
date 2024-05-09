@@ -1,19 +1,19 @@
-import pathlib
-from typing import Dict, Any
-from pathlib import Path
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse, parse_qs
-import logging
 import json
+import logging
+import pathlib
 import re
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from pathlib import Path
+from typing import Any, Dict
+from urllib.parse import parse_qs, urlparse
 
 from movienightbot.db.controllers import (
-    MoviesController,
     GenreController,
-    VoteController,
+    Movie,
+    MoviesController,
     MovieVoteController,
     UserVoteController,
-    Movie,
+    VoteController,
 )
 
 logger = logging.getLogger("movienightbot")
@@ -73,7 +73,7 @@ class BotRequestHandler(BaseHTTPRequestHandler):
                     "year": movie.imdb_id.year,
                     "poster_url": movie.imdb_id.thumbnail_poster_url,
                     "full_size_poster_url": movie.imdb_id.full_size_poster_url,
-                }
+                },
             )
         movie_genres = self.genre_controller.get_genres_by_movie_id(movie.id) or []
         genre_list = []
@@ -166,12 +166,13 @@ class BotRequestHandler(BaseHTTPRequestHandler):
 def run_webserver(port: int = 8000):
     server_address = ("", port)
     httpd = HTTPServer(server_address, BotRequestHandler)
-    logger.info("Starting webserver on port {}".format(port))
+    logger.info(f"Starting webserver on port {port}")
     httpd.serve_forever()
 
 
 if __name__ == "__main__":
     from sys import argv
+
     from movienightbot.db import initialize_db
 
     sql_url = argv[1]

@@ -5,7 +5,6 @@ from discord import app_commands
 
 from movienightbot.util import is_channel
 
-
 logger = logging.getLogger("movienightbot")
 
 
@@ -15,7 +14,7 @@ async def suggested(interaction: discord.Interaction):
     from ..application import bot
 
     await interaction.response.send_message(
-        f"Suggestions can be found at {bot.config.base_url}/movies.html?server={interaction.guild.id}&view=suggested"
+        f"Suggestions can be found at {bot.config.base_url}/movies.html?server={interaction.guild.id}&view=suggested",
     )
 
 
