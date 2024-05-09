@@ -75,8 +75,6 @@ class ServerAdmin(app_commands.Group):
     def _format_server_embed(self, client: discord.Client, server_id: int) -> discord.Embed:
         ignore_attrs = {"id"}
         server_row = self.server_controller.get_by_id(server_id)
-        # Replace channel ID with the name for ease of interpretation
-        server_row.channel = client.get_channel(server_row.channel)
         guild_name = client.get_guild(server_row.id)
         embed = discord.Embed(
             title=f"{guild_name} Settings",
@@ -125,22 +123,6 @@ class ServerAdmin(app_commands.Group):
             server_row.message_timeout = timeout
             self.server_controller.update(server_row)
         await interaction.response.send_message(f"Message timeout updated to {timeout} seconds")
-
-    @app_commands.command(description="Sets the channel the bot wil listen in.")
-    @app_commands.default_permissions(administrator=True)
-    async def set_channel(self, interaction: discord.Interaction, channel: str):
-        with self.server_controller.transaction():
-            channels = {c.name: c.id for c in interaction.guild.text_channels}
-            if channel not in channels:
-                await interaction.response.send_message(
-                    f"Failed update: unknown channel {channel} given.", ephemeral=True
-                )
-                return
-
-            server_row = self.server_controller.get_by_id(interaction.guild.id)
-            server_row.channel = channels[channel]
-            self.server_controller.update(server_row)
-        await interaction.response.send_message(f"Bot channel updated to {channel}")
 
     @app_commands.command(description="Sets the time when the movie will be watched in 24 hour UTC time.")
     @app_commands.default_permissions(administrator=True)

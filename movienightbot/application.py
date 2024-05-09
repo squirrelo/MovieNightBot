@@ -80,7 +80,7 @@ class MovieNightBot(commands.Bot):
         )
 
     async def on_guild_join(self, guild: discord.Guild):
-        guild_data = {"id": guild.id, "channel": guild.text_channels[0].id}
+        guild_data = {"id": guild.id}
         self._server_controller.create(guild_data)
         self.logger.info(f"Registered on new server {guild.name}")
 

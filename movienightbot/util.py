@@ -34,19 +34,6 @@ def is_admin(interaction: discord.Interaction) -> bool:
     return False
 
 
-def is_channel(interaction: discord.Interaction) -> bool:
-    server_settings = ServerController().get_by_id(interaction.guild.id)
-    if interaction.channel.id != server_settings.channel:
-        logging.debug(
-            "User {} using non-permitted channel {} instead of {}",
-            interaction.user.name,
-            interaction.channel.name,
-            server_settings.channel,
-        )
-        return False
-    return True
-
-
 async def get_message(channel: discord.TextChannel, msg_id: int) -> Union[None, discord.Message]:
     """Retrives a message, or returns None if cannot retrieve the message"""
     try:

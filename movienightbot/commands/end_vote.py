@@ -8,7 +8,6 @@ from movienightbot.util import (
     get_message,
     build_vote_embed,
     add_vote_emojis,
-    is_channel,
 )
 from movienightbot.db.controllers import VoteController, ServerController
 
@@ -71,7 +70,6 @@ async def end_vote_task(interaction: discord.Interaction):
 
 
 @app_commands.command(description="Ends the currently running vote and displays the winning vote.")
-@app_commands.check(is_channel)
 async def end_vote(interaction: discord.Interaction):
     await end_vote_task(interaction)
 
@@ -79,7 +77,7 @@ async def end_vote(interaction: discord.Interaction):
 @end_vote.error
 async def end_vote_error(interaction: discord.Interaction, error: discord.app_commands.errors.CheckFailure):
     await interaction.response.send_message(
-        "Wrong channel used for messages. Please use the correct channel.",
+        "Something went wrong during the execution of this command. I guess you should just go do something else.",
         ephemeral=True,
     )
     logger.debug(str(error))
