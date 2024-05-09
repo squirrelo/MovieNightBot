@@ -130,7 +130,7 @@ class MoviesController(BaseController):
             .execute()
         )
 
-    def get_random_movies(self, server_id: int, num_movies: int, genres: Optional[str] = None) -> List[Movie]:
+    def get_random_movies(self, server_id: int, num_movies: int, genres: Optional[list] = None) -> List[Movie]:
         if genres is None:
             return (
                 Movie.select()
