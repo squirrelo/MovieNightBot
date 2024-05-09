@@ -13,6 +13,7 @@ from .db.controllers import (
     MovieVoteController,
 )
 
+
 class MovieNightBot(commands.Bot):
     _server_controller = ServerController()
     _vote_controller = VoteController()

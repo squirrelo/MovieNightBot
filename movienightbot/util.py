@@ -198,6 +198,7 @@ def capitalize_movie_name(movie_name: str) -> str:
 
 async def generate_invite_link(permissions=discord.Permissions(403727019072), guild=None):
     from movienightbot.application import bot
+
     app_info = await bot.application_info()
     args = dict(client_id=app_info.id, permissions=permissions)
     # Need to do it this way so we don't send guild property at all if it's None. Yay discord.py limitations.
