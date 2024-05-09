@@ -1,5 +1,4 @@
-.. image:: https://travis-ci.org/squirrelo/MovieNightBot.svg?branch=develop
-    :target: https://travis-ci.org/squirrelo/MovieNightBot
+.. image:: https://github.com/squirrelo/MovieNightBot/actions/workflows/python-tests.yml/badge.svg
 
 Movie Night Bot
 ---------------
