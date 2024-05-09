@@ -14,7 +14,8 @@ logger = logging.getLogger("movienightbot")
 vote_controller = VoteController()
 
 
-@app_commands.command(description="[ADMIN COMMAND] Starts the vote. Filters to only genre, if given.")
+@app_commands.command(description="[ADMIN COMMAND] Starts the vote. Filters to the given list of genres. Separate "
+                                  "genres by spaces within the argument.")
 @app_commands.check(is_channel)
 @app_commands.check(is_admin)
 async def start_vote(interaction: discord.Interaction, genres: Optional[str] = None):
