@@ -1,12 +1,12 @@
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 
 import discord
 import discord.ext.test as test
 
-from movienightbot.db.models import Movie, IMDBInfo
+from movienightbot.db.models import IMDBInfo, Movie
 
 
-async def _set_test_role(client, perms=discord.Permissions.all(), midx=0, gidx=0):
+async def _set_test_role(client, perms=discord.Permissions.all(), midx=0, gidx=0):  # noqa: B008
     guild = client.guilds[gidx]
     test_role = await guild.create_role(name="TestingRole", permissions=perms)
     await guild.members[midx].add_roles(test_role)
@@ -36,9 +36,8 @@ async def _add_movies(
         imdb_ids = [None for x in range(len(movie_names))]
 
     # TODO: Hookup genre addition
-    if genres is not None:
-        if len(movie_names) != len(genres):
-            raise ValueError("Mismatched lengths for movie_names and genres")
+    if genres is not None and len(movie_names) != len(genres):
+        raise ValueError("Mismatched lengths for movie_names and genres")
 
     movies = []
     for movie_name, imdb_id in zip(movie_names, imdb_ids):

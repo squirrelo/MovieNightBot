@@ -1,11 +1,11 @@
 import logging
 
 import discord
-from discord import app_commands
 import peewee as pw
+from discord import app_commands
 
 from ..db.controllers import MoviesController, ServerController
-from ..util import capitalize_movie_name, is_channel, is_admin
+from ..util import capitalize_movie_name, is_admin, is_channel
 
 server_controller = ServerController()
 movies_controller = MoviesController()

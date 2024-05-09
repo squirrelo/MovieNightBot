@@ -6,14 +6,14 @@ import imdb
 from discord import app_commands
 from peewee import DoesNotExist, IntegrityError
 
-from movienightbot.util import is_channel, capitalize_movie_name, get_imdb_info
 from movienightbot.db.controllers import (
-    MoviesController,
-    ServerController,
+    GenreController,
     IMDBInfo,
     IMDBInfoController,
-    GenreController,
+    MoviesController,
+    ServerController,
 )
+from movienightbot.util import capitalize_movie_name, get_imdb_info, is_channel
 
 logger = logging.getLogger("movienightbot")
 
@@ -48,7 +48,7 @@ def imdb_data(movie: str, kind: str) -> Tuple[Union[None, IMDBInfo], Union[None,
     try:
         imdb_row = imdb_controller.create(imdb_row_data)
     except IntegrityError as e:
-        logger.error("IMDB entry insert error: {}\n{}".format(imdb_data, str(e)))
+        logger.error(f"IMDB entry insert error: {imdb_data}\n{e!s}")
         return None, None
     return imdb_row, imdb_info
 
@@ -99,7 +99,7 @@ async def suggest(interaction: discord.Interaction, movie: str):
                 raise IntegrityError("Already suggested, but no IMDB info given")
         movies_controller.create(movie_data)
     except IntegrityError as e:
-        logger.debug("Movie insert error: {}\n{}".format(movie_data, str(e)))
+        logger.debug(f"Movie insert error: {movie_data}\n{e!s}")
         movie_status = "watched" if movie_row and movie_row.watched_on else "suggested"
         await interaction.followup.send(f"{suggestion} has already been {movie_status} in this server.")
         return

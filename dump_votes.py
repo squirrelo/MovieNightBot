@@ -15,6 +15,6 @@ if not movies:
     exit(0)
 
 for movie_vote in movies:
-    print("{}: {}".format(movie_vote.movie.movie_name, movie_vote.score))
+    print(f"{movie_vote.movie.movie_name}: {movie_vote.score}")
     for voter in movie_vote.user_votes:
-        print("\t{}: {}".format(voter.user_name, voter.vote_rank))
+        print(f"\t{voter.user_name}: {voter.vote_rank}")

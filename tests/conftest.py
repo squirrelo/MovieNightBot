@@ -1,8 +1,7 @@
-import pytest
 import discord.ext.test as test
+import pytest
 
-
-from movienightbot.application import bot as BotClient, _server_controller
+from movienightbot.application import bot as BotClient
 from movienightbot.config import Config
 from movienightbot.db import initialize_db
 
@@ -18,12 +17,11 @@ def client(event_loop):
     bclient.loop = event_loop
     bclient.config = bconfig
     initialize_db(bconfig.db_url)
-
-    test.configure(bclient, num_guilds=1, num_members=3)
+    test.configure(bclient, guilds=1, members=3, text_channels=3, voice_channels=0)
 
     guild = bclient.guilds[0]
     guild_data = {"id": guild.id, "channel": guild.text_channels[0].id}
-    _server_controller.create(guild_data)
+    bclient._server_controller.create(guild_data)
 
     yield bclient
 

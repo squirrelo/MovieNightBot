@@ -3,11 +3,11 @@ import logging
 import discord
 from discord import app_commands
 
-from movienightbot.util import (
-    is_channel,
-    capitalize_movie_name,
-)
 from movienightbot.db.controllers import MoviesController, ServerController
+from movienightbot.util import (
+    capitalize_movie_name,
+    is_channel,
+)
 
 movies_controller = MoviesController()
 server_controller = ServerController()

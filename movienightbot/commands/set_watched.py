@@ -1,15 +1,15 @@
-import logging
 import datetime
+import logging
 
 import discord
 from discord import app_commands
 from peewee import DoesNotExist
 
+from movienightbot.db.controllers import MoviesController, ServerController
 from movienightbot.util import (
-    is_channel,
     capitalize_movie_name,
+    is_channel,
 )
-from movienightbot.db.controllers import ServerController, MoviesController
 
 movies_controller = MoviesController()
 server_controller = ServerController()
