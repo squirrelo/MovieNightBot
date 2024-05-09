@@ -5,7 +5,7 @@ from discord import app_commands
 from peewee import DoesNotExist
 
 from ..db.controllers import VoteController
-from ..util import get_message, is_admin, is_channel
+from ..util import get_message, is_admin
 
 vote_controller = VoteController()
 

@@ -3,7 +3,6 @@ import logging
 import discord
 from discord import app_commands
 
-
 logger = logging.getLogger("movienightbot")
 
 

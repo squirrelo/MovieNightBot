@@ -9,7 +9,6 @@ from movienightbot.util import (
     add_vote_emojis,
     build_vote_embed,
     get_message,
-    is_channel,
 )
 
 vote_controller = VoteController()

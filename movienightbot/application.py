@@ -14,7 +14,6 @@ from .db.controllers import (
 from .util import build_vote_embed, emojis_text, emojis_unicode, generate_invite_link, is_admin
 
 
-
 class MovieNightBot(commands.Bot):
     _server_controller = ServerController()
     _vote_controller = VoteController()

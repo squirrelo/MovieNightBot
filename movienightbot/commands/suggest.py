@@ -15,7 +15,6 @@ from movienightbot.db.controllers import (
 )
 from movienightbot.util import capitalize_movie_name, get_imdb_info
 
-
 logger = logging.getLogger("movienightbot")
 
 movies_controller = MoviesController()

@@ -6,7 +6,6 @@ from discord import app_commands
 from movienightbot.db.controllers import MoviesController, ServerController
 from movienightbot.util import capitalize_movie_name
 
-
 movies_controller = MoviesController()
 server_controller = ServerController()
 

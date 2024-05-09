@@ -7,7 +7,6 @@ from discord import app_commands
 from ..db.controllers import MoviesController, ServerController
 from ..util import capitalize_movie_name, is_admin
 
-
 server_controller = ServerController()
 movies_controller = MoviesController()
 

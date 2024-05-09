@@ -7,8 +7,7 @@ from peewee import IntegrityError
 
 from movienightbot.db.controllers import VoteController
 from movienightbot.exc import VoteError
-from movienightbot.util import is_admin, build_vote_embed, add_vote_emojis
-
+from movienightbot.util import add_vote_emojis, build_vote_embed, is_admin
 
 logger = logging.getLogger("movienightbot")
 
