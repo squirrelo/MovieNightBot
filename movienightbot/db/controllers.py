@@ -177,7 +177,6 @@ class MoviesController(BaseController):
             old_split = num_movies - new_split
 
             # query the movies based on the split
-            # for the sake of not knowing how to coax sql into doing this, I'll do this with python
             new_movies = (Movie.select()
                           .order_by(pw.fn.Random())
                           .where((Movie.server == server_id)
