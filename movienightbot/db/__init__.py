@@ -1,6 +1,6 @@
 import inspect
 from contextlib import contextmanager
-from typing import Any, Dict, List, Union
+from typing import Any, Union
 
 import peewee as pw
 from playhouse import db_url
@@ -21,7 +21,7 @@ class BaseController:
     def transaction(self):
         yield self.database.atomic()
 
-    def create(self, row_data: Dict[str, Any]) -> BaseModel:
+    def create(self, row_data: dict[str, Any]) -> BaseModel:
         return self.model.create(**row_data)
 
     def get_by_id(self, id: Any, primary_key: str = "id") -> BaseModel:
@@ -37,7 +37,7 @@ class BaseController:
         row.delete_instance(recursive=recursive)
 
 
-def _get_models() -> List[BaseModel]:
+def _get_models() -> list[BaseModel]:
     """Gets a list of all model classes for tables in the DB"""
     from movienightbot.db import models
 
