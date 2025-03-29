@@ -155,39 +155,39 @@ class MoviesController(BaseController):
                 .limit(num_movies)
             )
 
-            # calculate the new vs old split
-            counts_by_votes_entered = (
-                Movie.select(Movie.num_votes_entered, pw.fn.COUNT(Movie.num_votes_entered).alias("count_value"))
-                    .group_by(Movie.num_votes_entered)
-                    .where(Movie.server == server_id)
-                    .order_by(Movie.num_votes_entered.asc())
-            )
-            if counts_by_votes_entered[0].num_votes_entered != 0:
-                # We have some weird case where every movie has been in at least one vote
-                # so short circuit and just choose at random weighted
-                return self._weighted_movie_selection(server_id, num_movies)
+        # calculate the new vs old split
+        counts_by_votes_entered = (
+            Movie.select(Movie.num_votes_entered, pw.fn.COUNT(Movie.num_votes_entered).alias("count_value"))
+                .group_by(Movie.num_votes_entered)
+                .where(Movie.server == server_id)
+                .order_by(Movie.num_votes_entered.asc())
+        )
+        if counts_by_votes_entered[0].num_votes_entered != 0:
+            # We have some weird case where every movie has been in at least one vote
+            # so short circuit and just choose at random weighted
+            return self._weighted_movie_selection(server_id, num_movies)
 
-            total_count = sum(c.count_value for c in counts_by_votes_entered)
-            new_count = counts_by_votes_entered[0].count_value
+        total_count = sum(c.count_value for c in counts_by_votes_entered)
+        new_count = counts_by_votes_entered[0].count_value
 
-            # prevent errors by limiting the total number if db has too few options
-            if total_count < num_movies:
-                num_movies = total_count
+        # prevent errors by limiting the total number if db has too few options
+        if total_count < num_movies:
+            num_movies = total_count
 
-            # calculate the actual split counts, making sure at least one new movie is in the split
-            new_split = max(1, round((new_count / total_count) * num_movies))
-            old_split = num_movies - new_split
+        # calculate the actual split counts, making sure at least one new movie is in the split
+        new_split = max(1, round((new_count / total_count) * num_movies))
+        old_split = num_movies - new_split
 
-            # query the movies based on the split
-            new_movies = (Movie.select()
-                          .order_by(pw.fn.Random())
-                          .where((Movie.server == server_id)
-                                 & Movie.watched_on.is_null(True)
-                                 & (Movie.num_votes_entered == 0))
-                          .limit(new_split))
+        # query the movies based on the split
+        new_movies = (Movie.select()
+                      .order_by(pw.fn.Random())
+                      .where((Movie.server == server_id)
+                             & Movie.watched_on.is_null(True)
+                             & (Movie.num_votes_entered == 0))
+                      .limit(new_split))
 
-            # Shuffle so it isn't ordered new -> old always
-            return random.shuffle(new_movies + self._weighted_movie_selection(server_id, old_split))
+        # Shuffle so it isn't ordered new -> old always
+        return random.shuffle(new_movies + self._weighted_movie_selection(server_id, old_split))
 
 
 def movie_score_weightings(server_id: int) -> dict[int, float]:
