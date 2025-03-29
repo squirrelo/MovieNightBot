@@ -130,7 +130,7 @@ class MoviesController(BaseController):
             .execute()
         )
 
-    def _weighted_movie_selection(self, server_id: int, num_movies: int) -> list[int]:
+    def _weighted_movie_selection(self, server_id: int, num_movies: int) -> list[Movie]:
         # weighted score so it's random but has the movie avg score taken into account
         return (
             Movie.select(Movie, ((Movie.total_score / Movie.num_votes_entered) * pw.fn.Random()).alias('weight_score'))
