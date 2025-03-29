@@ -187,7 +187,9 @@ class MoviesController(BaseController):
                       .limit(new_split))
 
         # Shuffle so it isn't ordered new -> old always
-        return random.shuffle(new_movies + self._weighted_movie_selection(server_id, old_split))
+        all_movies = new_movies + self._weighted_movie_selection(server_id, old_split)
+        random.shuffle(all_movies)
+        return all_movies
 
 
 def movie_score_weightings(server_id: int) -> dict[int, float]:
