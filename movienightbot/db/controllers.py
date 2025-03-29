@@ -187,7 +187,7 @@ class MoviesController(BaseController):
                       .limit(new_split))
 
         # Shuffle so it isn't ordered new -> old always
-        all_movies = new_movies + self._weighted_movie_selection(server_id, old_split)
+        all_movies = [x for x in new_movies] + [y for y in self._weighted_movie_selection(server_id, old_split)]
         random.shuffle(all_movies)
         return all_movies
 
