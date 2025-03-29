@@ -1,5 +1,5 @@
 import logging
-from typing import List, Tuple, Union
+from typing import Union
 
 import discord
 import imdb
@@ -23,7 +23,7 @@ imdb_controller = IMDBInfoController()
 genre_controller = GenreController()
 
 
-def imdb_data(movie: str, kind: str) -> Tuple[Union[None, IMDBInfo], Union[None, imdb.Movie.Movie]]:
+def imdb_data(movie: str, kind: str) -> tuple[Union[None, IMDBInfo], Union[None, imdb.Movie.Movie]]:
     suggestion = capitalize_movie_name(movie)
     imdb_info = get_imdb_info(suggestion, kind=kind)
     if not imdb_info:
@@ -53,7 +53,7 @@ def imdb_data(movie: str, kind: str) -> Tuple[Union[None, IMDBInfo], Union[None,
     return imdb_row, imdb_info
 
 
-def add_genre_info(server_id: int, movie_name: str, genres: List[str]) -> None:
+def add_genre_info(server_id: int, movie_name: str, genres: list[str]) -> None:
     clean_movie_name = capitalize_movie_name(movie_name)
     for genre in genres:
         genre_controller.add_genre_to_movie(server_id, clean_movie_name, genre)

@@ -2,7 +2,7 @@ import logging
 import random
 from collections import defaultdict
 from string import ascii_lowercase
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import discord
 import peewee as pw
@@ -44,7 +44,7 @@ class MoviesController(BaseController):
     def get_by_server_and_id(self, server_id: int, movie: str) -> Movie:
         return Movie.select().where((Movie.server == server_id) & (Movie.movie_name == movie)).get()
 
-    def get_watched_for_server(self, server_id: int) -> List[Movie]:
+    def get_watched_for_server(self, server_id: int) -> list[Movie]:
         obc = pw.Case(
             None,
             (
@@ -67,7 +67,7 @@ class MoviesController(BaseController):
             Movie.select().order_by(obc).where((Movie.server == server_id) & Movie.watched_on.is_null(False)).execute()
         )
 
-    def get_suggested_for_server(self, server_id: int) -> List[Movie]:
+    def get_suggested_for_server(self, server_id: int) -> list[Movie]:
         obc = pw.Case(
             None,
             (
@@ -130,18 +130,20 @@ class MoviesController(BaseController):
             .execute()
         )
 
-    def _weighted_movie_selection(self, server_id: int, num_movies: int) -> List[int]:
+    def _weighted_movie_selection(self, server_id: int, num_movies: int) -> list[int]:
         # weighted score so it's random but has the movie avg score taken into account
         return (
             Movie.select(Movie, ((Movie.total_score / Movie.num_votes_entered) * pw.fn.Random()).alias('weight_score'))
                 .order_by(pw.SQL("weight_score").desc())
-                .where((Movie.server == server_id)
+                .where(
+                    (Movie.server == server_id)
                     & Movie.watched_on.is_null(True)
-                    & (Movie.num_votes_entered > 0))
-                .limit(num_movies)
+                    & (Movie.num_votes_entered > 0)
+                )
+            .limit(num_movies)
         )
 
-    def get_random_movies(self, server_id: int, num_movies: int, genres: Optional[List[str]] = None) -> List[Movie]:
+    def get_random_movies(self, server_id: int, num_movies: int, genres: Optional[list[str]] = None) -> list[Movie]:
         if genres is not None:
             return (
                 Movie.select()
@@ -188,7 +190,7 @@ class MoviesController(BaseController):
             return random.shuffle(new_movies + self._weighted_movie_selection(server_id, old_split))
 
 
-def movie_score_weightings(server_id: int) -> Dict[int, float]:
+def movie_score_weightings(server_id: int) -> dict[int, float]:
     num_votes_allowed = ServerController().get_by_id(server_id).num_votes_per_user
     scores_dict = defaultdict(float)
     scores = [round((1 / num_votes_allowed) * x, 2) for x in range(1, num_votes_allowed + 1)][::-1]
@@ -199,10 +201,10 @@ def movie_score_weightings(server_id: int) -> Dict[int, float]:
 class GenreController(BaseController):
     model = MovieGenre
 
-    def get_by_genre(self, genre: str) -> List[MovieGenre]:
+    def get_by_genre(self, genre: str) -> list[MovieGenre]:
         return MovieGenre.select().where(MovieGenre.genre == genre.lower())
 
-    def get_movies_by_genre(self, server_id: int, genre: str) -> List[Movie]:
+    def get_movies_by_genre(self, server_id: int, genre: str) -> list[Movie]:
         return (
             Movie.select()
             .join(MovieGenre, on=(MovieGenre.movie_id == Movie.id))
@@ -214,7 +216,7 @@ class GenreController(BaseController):
             movie = MoviesController().get_by_server_and_id(server_id, movie)
             return MovieGenre.create(genre=genre.lower(), movie_id=movie)
 
-    def get_genres_by_movie_id(self, movie_id: int) -> List[MovieGenre]:
+    def get_genres_by_movie_id(self, movie_id: int) -> list[MovieGenre]:
         return MovieGenre.select().where(movie_id == MovieGenre.movie_id)
 
 
@@ -224,7 +226,7 @@ class VoteController(BaseController):
     def get_by_id(self, server_id: int) -> Union[Vote, None]:
         return super().get_by_id(id=server_id, primary_key="server_id")
 
-    def start_vote(self, server_id: int, genres: Optional[List[str]] = None) -> Vote:
+    def start_vote(self, server_id: int, genres: Optional[list[str]] = None) -> Vote:
         with self.transaction():
             server_row = ServerController().get_by_id(server_id)
             num_movies = server_row.num_movies_per_vote
@@ -243,7 +245,7 @@ class VoteController(BaseController):
                 )
         return vote_row
 
-    def start_runoff_vote(self, server_id: int, vote_message: discord.Message, movies: List[Movie]) -> Vote:
+    def start_runoff_vote(self, server_id: int, vote_message: discord.Message, movies: list[Movie]) -> Vote:
         with self.transaction():
             vote_row = self.create(
                 {
@@ -269,7 +271,7 @@ class VoteController(BaseController):
         vote_row = self.update(vote_row)
         return vote_row
 
-    def end_vote(self, server_id: int) -> List[Movie]:
+    def end_vote(self, server_id: int) -> list[Movie]:
         with self.transaction():
             vote_data = self.get_by_id(server_id)
             movie_votes = vote_data.movie_votes
@@ -301,7 +303,7 @@ class MovieVoteController(BaseController):
     def convert_emoji(self, server_id: int, emoji: str) -> MovieVote:
         return MovieVote.select().join(Vote).where((Vote.server_id == server_id) & (MovieVote.emoji == emoji)).get()
 
-    def get_movies_for_server_vote(self, server_id: int) -> List[MovieVote]:
+    def get_movies_for_server_vote(self, server_id: int) -> list[MovieVote]:
         with self.transaction():
             try:
                 vote_row = VoteController().get_by_id(server_id)
@@ -327,7 +329,7 @@ class MovieVoteController(BaseController):
 class UserVoteController(BaseController):
     model = UserVote
 
-    def create(self, row_data: Dict[str, Any]):
+    def create(self, row_data: dict[str, Any]):
         with self.transaction():
             user_vote = super().create(row_data)
             # Add score to movie
@@ -342,7 +344,7 @@ class UserVoteController(BaseController):
             )
         return user_vote
 
-    def reset_user_votes(self, server_id: int, user_id: int) -> List[MovieVote]:
+    def reset_user_votes(self, server_id: int, user_id: int) -> list[MovieVote]:
         with self.transaction():
             scores = movie_score_weightings(server_id=server_id)
             user_votes = self.get_by_server_and_user(server_id, user_id)
@@ -356,7 +358,7 @@ class UserVoteController(BaseController):
                 self.delete(user_vote_row)
         return movie_votes
 
-    def get_by_server_and_user(self, server_id: int, user_id: int) -> List[UserVote]:
+    def get_by_server_and_user(self, server_id: int, user_id: int) -> list[UserVote]:
         return [
             x
             for x in UserVote.select()
@@ -365,7 +367,7 @@ class UserVoteController(BaseController):
             .where((Vote.server_id == server_id) & (UserVote.user_id == user_id))
         ]
 
-    def get_usernames_voted(self, server_id: int) -> List[str]:
+    def get_usernames_voted(self, server_id: int) -> list[str]:
         with self.transaction():
             try:
                 vote_row = VoteController().get_by_id(server_id)

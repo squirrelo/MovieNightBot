@@ -38,6 +38,7 @@ setup(
             "webfiles/**/*.js",
         ],
     },
+    python_requires='>=3.9',
     install_requires=requirements,
     tests_require=test_requirements,
     extras_require={"test": test_requirements},

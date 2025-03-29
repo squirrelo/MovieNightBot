@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import discord
 import discord.ext.test as test
@@ -21,9 +21,9 @@ async def _clear_test_role(client, role, midx=0, gidx=0):
 
 async def _add_movies(
     client,
-    movie_names: List[str],
-    genres: Optional[List[List[str]]] = None,
-    imdb_info: Optional[List[Dict[str, Any]]] = None,
+    movie_names: list[str],
+    genres: Optional[list[list[str]]] = None,
+    imdb_info: Optional[list[dict[str, Any]]] = None,
     gidx: int = 0,
 ):
     guild_id = client.guilds[gidx].id

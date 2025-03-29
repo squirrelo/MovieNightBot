@@ -4,7 +4,7 @@ import pathlib
 import re
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 from urllib.parse import parse_qs, urlparse
 
 from movienightbot.db.controllers import (
@@ -51,7 +51,7 @@ class BotRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
 
-    def build_movie_base_info(self, movie: Movie) -> Dict[str, Any]:
+    def build_movie_base_info(self, movie: Movie) -> dict[str, Any]:
         movie_info = {
             "title": movie.movie_name,
             "suggestor": movie.suggested_by,
