@@ -2,7 +2,6 @@ import logging
 from typing import Union
 
 import discord
-import imdbinfo
 from discord import app_commands
 from peewee import DoesNotExist, IntegrityError
 
@@ -23,34 +22,25 @@ imdb_controller = IMDBInfoController()
 genre_controller = GenreController()
 
 
-def imdb_data(movie: str, kind: str) -> tuple[Union[None, IMDBInfo], Union[None, imdbinfo.services.MovieDetail]]:
+def imdb_data(server_id: int, movie: str, kind: str) -> Union[None, IMDBInfo]:
     suggestion = capitalize_movie_name(movie)
     imdb_info = get_imdb_info(suggestion, kind=kind)
     if not imdb_info:
-        return None, None
+        return None
     # see if the row already exists
     try:
         imdb_row = imdb_controller.get_by_id(imdb_info.movieID)
     except DoesNotExist:
         pass
     else:
-        return imdb_row, imdb_info
+        return imdb_row
 
-    # row doesn't exist, so add it
-    imdb_row_data = {
-        "imdb_id": imdb_info.movieID,
-        "title": imdb_info["title"],
-        "canonical_title": imdb_info.get("canonical title", imdb_info["title"]),
-        "year": imdb_info.get("year", 0),
-        "thumbnail_poster_url": imdb_info.get("cover url", ""),
-        "full_size_poster_url": imdb_info.get("full-size cover url", ""),
-    }
     try:
-        imdb_row = imdb_controller.create(imdb_row_data)
+        imdb_row = imdb_controller.update_imdb_id(server_id, movie, imdb_info.movieID)
     except IntegrityError as e:
         logger.error(f"IMDB entry insert error: {imdb_data}\n{e!s}")
-        return None, None
-    return imdb_row, imdb_info
+        return None
+    return imdb_row
 
 
 def add_genre_info(server_id: int, movie_name: str, genres: list[str]) -> None:
