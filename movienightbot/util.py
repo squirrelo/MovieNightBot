@@ -168,7 +168,7 @@ def get_imdb_info(movie_name: str, kind: Optional[str] = None, year: Optional[in
 
     if movie_name.lower().startswith("http"):
         movie_id = imdb_url_regex.findall(movie_name)
-        logger.debug(f"movie regex: `{movie_name}` >> {movie_id}")
+        logger.debug("movie regex: `{}` >> {}", movie_name, movie_id)
         if len(movie_id) == 1:
             imdb_id = movie_id[0]
             return_movie = get_imdb_info_by_id(imdb_id)
@@ -177,19 +177,19 @@ def get_imdb_info(movie_name: str, kind: Optional[str] = None, year: Optional[in
     else:
         logger.debug(f"searching for `{movie_name}`")
         results = imdbinfo.search_title(movie_name)
-        logger.debug("IMDB RESULTS: " + str(results))
+        logger.debug("IMDB RESULTS: {}", str(results))
         for r in results.titles:
             if kind and kind != r.kind:
                 continue
             if year and year != r.year:
                 continue
             if r.title.lower() == movie_name.lower():
-                logger.debug(f"{movie_name}  Matched {r}")
+                logger.debug("{} Matched {}", movie_name, r)
                 return_movie = r
                 break
         # for/else hell yeah!
         else:
-            logger.debug(movie_name + "  Unmatched")
+            logger.debug("{} Unmatched", movie_name)
             return None
 
     return return_movie
