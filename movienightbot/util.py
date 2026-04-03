@@ -162,7 +162,7 @@ def get_imdb_info_by_id(imdb_id: Union[int, str]) -> Union[None, imdbinfo.servic
     return imdbinfo.get_movie(str(imdb_id))
 
 
-def get_imdb_info(movie_name: str, kind: Optional[str] = None) -> Union[None, imdbinfo.services.MovieDetail]:
+def get_imdb_info(movie_name: str, kind: Optional[str] = None, year: Optional[int] = None) -> Union[None, imdbinfo.services.MovieDetail]:
     if not movie_name:
         return None
 
@@ -180,9 +180,11 @@ def get_imdb_info(movie_name: str, kind: Optional[str] = None) -> Union[None, im
         for r in results.titles:
             if kind and kind != r.kind:
                 continue
+            if year and year != r.year:
+                continue
             if r.title.lower() == movie_name.lower():
                 logger.debug(f"{movie_name}  Matched {r}")
-                imdb_id = r.imdb_id
+                imdb_id = r.imdbId
                 break
         # for/else hell yeah!
         else:
