@@ -23,7 +23,7 @@ imdb_controller = IMDBInfoController()
 genre_controller = GenreController()
 
 
-def imdb_data(movie: str, kind: str) -> tuple[Union[None, IMDBInfo], Union[None, imdbinfo.MovieDetail]]:
+def imdb_data(movie: str, kind: str) -> tuple[Union[None, IMDBInfo], Union[None, imdbinfo.services.MovieDetail]]:
     suggestion = capitalize_movie_name(movie)
     imdb_info = get_imdb_info(suggestion, kind=kind)
     if not imdb_info:
