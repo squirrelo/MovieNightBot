@@ -87,31 +87,31 @@ class MoviesController(BaseController):
         )
         return Movie.select().order_by(obc).where((Movie.server == server_id) & Movie.watched_on.is_null()).execute()
 
-    def update_imdb_id(self, server_id: int, movie_name: str, imdb_id: str):
+    def update_imdb_id(self, server_id: int, movie_name: str, imdb_id: str) -> int:
         imdb_info = get_imdb_info_by_id(imdb_id)
         if imdb_info is None:
             return 0
-
+        found_imdb_id = imdb_info.imdbId
         imdb_data = {
-            "imdb_id": imdb_info.movieID,
-            "title": imdb_info["title"],
-            "canonical_title": imdb_info.get("canonical title", imdb_info["title"]),
-            "year": imdb_info.get("year", 0),
-            "thumbnail_poster_url": imdb_info.get("cover url", ""),
-            "full_size_poster_url": imdb_info.get("full-size cover url", ""),
+            "imdb_id": found_imdb_id,
+            "title": imdb_info.title,
+            "canonical_title": imdb_info.canonical_title if imdb_info.canonical_title else imdb_info.title,
+            "year": imdb_info.year if imdb_info.year else 0,
+            "thumbnail_poster_url": imdb_info.cover_url if imdb_info.cover_url else "",
+            "full_size_poster_url": imdb_info.full_size_url if imdb_info.full_size_url else "",
         }
         imdb_controller = IMDBInfoController()
         try:
             imdb_controller.create(imdb_data)
         except pw.IntegrityError as e:
             # IMDB entry already added, so ignore error
-            logger.debug(f"IMDB entry insert error: {imdb_data}\n{e!s}")
+            logger.debug(f"IMDB entry insert error: {found_imdb_id}\n{e!s}")
         try:
-            imdb_row = imdb_controller.get_by_id(imdb_info.movieID)
+            imdb_row = imdb_controller.get_by_id(found_imdb_id)
         except Exception as e:
-            logger.debug(f"IMDB entry get error: {imdb_info.movieID}\n{e!s}")
+            logger.debug(f"IMDB entry get error: {found_imdb_id}\n{e!s}")
             return 0
-        logger.debug("IMDB row: " + str(imdb_row))
+        logger.debug("IMDB row: {}", str(imdb_row))
         return (
             Movie.update({Movie.imdb_id: imdb_row})
             .where((Movie.movie_name == movie_name) & (Movie.server == server_id))
