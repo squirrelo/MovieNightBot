@@ -171,6 +171,7 @@ def get_imdb_info(movie_name: str, kind: Optional[str] = None, year: Optional[in
         logger.debug(f"movie regex: `{movie_name}` >> {movie_id}")
         if len(movie_id) == 1:
             imdb_id = movie_id[0]
+            return_movie = get_imdb_info_by_id(imdb_id)
         else:
             return None
     else:
@@ -184,14 +185,14 @@ def get_imdb_info(movie_name: str, kind: Optional[str] = None, year: Optional[in
                 continue
             if r.title.lower() == movie_name.lower():
                 logger.debug(f"{movie_name}  Matched {r}")
-                imdb_id = r.imdbId
+                return_movie = r
                 break
         # for/else hell yeah!
         else:
             logger.debug(movie_name + "  Unmatched")
             return None
 
-    return get_imdb_info_by_id(imdb_id)
+    return return_movie
 
 
 def capitalize_movie_name(movie_name: str) -> str:

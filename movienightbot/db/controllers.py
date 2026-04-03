@@ -30,7 +30,7 @@ class ServerController(BaseController):
 class IMDBInfoController(BaseController):
     model = IMDBInfo
 
-    def get_by_id(self, imdb_id: int) -> Union[Vote, None]:
+    def get_by_id(self, imdb_id: str) -> Union[Vote, None]:
         return super().get_by_id(id=imdb_id, primary_key="imdb_id")
 
     def get_by_name(self, movie_name: str) -> Union[IMDBInfo, None]:
@@ -91,7 +91,7 @@ class MoviesController(BaseController):
         imdb_info = get_imdb_info_by_id(imdb_id)
         if imdb_info is None:
             return 0
-        found_imdb_id = imdb_info.imdbId
+        found_imdb_id = imdb_info.imdb_id
         imdb_data = {
             "imdb_id": found_imdb_id,
             "title": imdb_info.title,
@@ -107,7 +107,7 @@ class MoviesController(BaseController):
             # IMDB entry already added, so ignore error
             logger.debug(f"IMDB entry insert error: {found_imdb_id}\n{e!s}")
         try:
-            imdb_row = imdb_controller.get_by_id(found_imdb_id)
+            imdb_row = imdb_controller.get_by_id(imdb_info.movieID)
         except Exception as e:
             logger.debug(f"IMDB entry get error: {found_imdb_id}\n{e!s}")
             return 0
