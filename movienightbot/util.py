@@ -5,7 +5,7 @@ import re
 from typing import Optional, Union
 
 import discord
-import imdb
+import imdbinfo
 import peewee as pw
 
 from .db.controllers import MovieVote, MovieVoteController, ServerController
@@ -155,12 +155,17 @@ async def add_vote_emojis(vote_msg: discord.Message, movie_votes: MovieVote):
         await vote_msg.add_reaction(emojis_text[movie_vote.emoji])
     await vote_msg.add_reaction(emojis_text[":arrows_counterclockwise:"])
 
+def get_imdb_info_by_id(imdb_id: Union[int, str]) -> Union[None, imdbinfo.services.MovieDetail]:
+    if not imdb_id:
+        return None
 
-def get_imdb_info(movie_name: str, kind: Optional[str] = None) -> Union[None, imdb.Movie.Movie]:
+    return imdbinfo.get_movie(str(imdb_id))
+
+
+def get_imdb_info(movie_name: str, kind: Optional[str] = None) -> Union[None, imdbinfo.services.MovieDetail]:
     if not movie_name:
         return None
 
-    im_db = imdb.IMDb()
     if movie_name.lower().startswith("http"):
         movie_id = imdb_url_regex.findall(movie_name)
         logger.debug(f"movie regex: `{movie_name}` >> {movie_id}")
@@ -170,21 +175,21 @@ def get_imdb_info(movie_name: str, kind: Optional[str] = None) -> Union[None, im
             return None
     else:
         logger.debug(f"searching for `{movie_name}`")
-        results = im_db.search_movie(movie_name)
+        results = imdbinfo.search_title(movie_name)
         logger.debug("IMDB RESULTS: " + str(results))
-        for r in results:
-            if kind and kind not in r.get("kind", ""):
+        for r in results.titles:
+            if kind and kind != r.kind:
                 continue
-            if r["title"].lower() == movie_name.lower():
+            if r.title.lower() == movie_name.lower():
                 logger.debug(f"{movie_name}  Matched {r}")
-                imdb_id = r.movieID
+                imdb_id = r.imdb_id
                 break
         # for/else hell yeah!
         else:
             logger.debug(movie_name + "  Unmatched")
             return None
 
-    return im_db.get_movie(imdb_id)
+    return get_imdb_info_by_id(imdb_id)
 
 
 def capitalize_movie_name(movie_name: str) -> str:

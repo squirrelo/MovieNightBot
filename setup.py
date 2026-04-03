@@ -3,11 +3,11 @@ from setuptools import find_packages, setup
 from movienightbot import __version__ as bot_version
 
 requirements = [
-    "discord-py @ git+https://github.com/Rapptz/discord.py.git",
+    "discord-py>=2.7.1",
     "peewee",
     "marshmallow",
     "pyyaml",
-    "cinemagoer>=2022.12.27",
+    "imdbinfo>=0.8.2",
 ]
 
 test_requirements = [

@@ -6,11 +6,10 @@ from typing import Any, Optional, Union
 
 import discord
 import peewee as pw
-from imdb import IMDb
-from imdb._exceptions import IMDbDataAccessError
 
 from ..exc import VoteError
 from . import BaseController
+from ..util import get_imdb_info_by_id
 from .models import (
     IMDBInfo,
     Movie,
@@ -88,19 +87,8 @@ class MoviesController(BaseController):
         )
         return Movie.select().order_by(obc).where((Movie.server == server_id) & Movie.watched_on.is_null()).execute()
 
-    def get_imdb_info_by_id(self, imdb_id: Union[int, str]):
-        if not imdb_id:
-            return None
-
-        im_db = IMDb()
-        try:
-            result = im_db.get_movie(imdb_id)
-        except IMDbDataAccessError:
-            return None
-        return result
-
     def update_imdb_id(self, server_id: int, movie_name: str, imdb_id: str):
-        imdb_info = self.get_imdb_info_by_id(imdb_id)
+        imdb_info = get_imdb_info_by_id(imdb_id)
         if imdb_info is None:
             return 0
 

@@ -2,7 +2,7 @@ import logging
 from typing import Union
 
 import discord
-import imdb
+import imdbinfo
 from discord import app_commands
 from peewee import DoesNotExist, IntegrityError
 
@@ -23,7 +23,7 @@ imdb_controller = IMDBInfoController()
 genre_controller = GenreController()
 
 
-def imdb_data(movie: str, kind: str) -> tuple[Union[None, IMDBInfo], Union[None, imdb.Movie.Movie]]:
+def imdb_data(movie: str, kind: str) -> tuple[Union[None, IMDBInfo], Union[None, imdbinfo.MovieDetail]]:
     suggestion = capitalize_movie_name(movie)
     imdb_info = get_imdb_info(suggestion, kind=kind)
     if not imdb_info:
