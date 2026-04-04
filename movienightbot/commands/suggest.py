@@ -29,14 +29,14 @@ def imdb_data(server_id: int, movie: str, kind: str) -> Union[None, IMDBInfo]:
         return None
     # see if the row already exists
     try:
-        imdb_row = imdb_controller.get_by_id(imdb_info.movieID)
+        imdb_row = imdb_controller.get_by_id(imdb_info.id)
     except DoesNotExist:
         pass
     else:
         return imdb_row
 
     try:
-        imdb_row = imdb_controller.update_imdb_id(server_id, movie, imdb_info.movieID)
+        imdb_row = imdb_controller.create_by_imdb_id(imdb_info.id)
     except IntegrityError as e:
         logger.error(f"IMDB entry insert error: {imdb_data}\n{e!s}")
         return None
