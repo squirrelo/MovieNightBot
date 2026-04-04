@@ -39,10 +39,10 @@ class IMDBInfoController(BaseController):
         imdb_data = {
             "imdb_id": found_imdb_id,
             "title": imdb_info.title,
-            "canonical_title": imdb_info.canonical_title if imdb_info.canonical_title else imdb_info.title,
+            "canonical_title": imdb_info.title if imdb_info.title else imdb_info.title,
             "year": imdb_info.year if imdb_info.year else 0,
             "thumbnail_poster_url": imdb_info.cover_url if imdb_info.cover_url else "",
-            "full_size_poster_url": imdb_info.full_size_url if imdb_info.full_size_url else "",
+            "full_size_poster_url": imdb_info.cover_url if imdb_info.cover_url else "",
         }
         imdb_controller = IMDBInfoController()
         return self.create(imdb_data)
