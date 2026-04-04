@@ -29,14 +29,14 @@ def imdb_data(server_id: int, movie: str, kind: str) -> Union[None, IMDBInfo]:
         return None
     # see if the row already exists
     try:
-        imdb_row = imdb_controller.get_by_id(imdb_info.movieID)
+        imdb_row = imdb_controller.get_by_id(imdb_info.id)
     except DoesNotExist:
         pass
     else:
         return imdb_row
 
     try:
-        imdb_row = imdb_controller.update_imdb_id(server_id, movie, imdb_info.movieID)
+        imdb_row = imdb_controller.create_by_imdb_id(imdb_info.id)
     except IntegrityError as e:
         logger.error(f"IMDB entry insert error: {imdb_data}\n{e!s}")
         return None
@@ -61,7 +61,7 @@ async def suggest(interaction: discord.Interaction, movie: str):
     if server_row.check_movie_names:
         allow_tv_shows = server_row.allow_tv_shows
         kind = None if allow_tv_shows else "movie"
-        imdb_row, imdb_info = imdb_data(movie=movie, kind=kind)
+        imdb_row, imdb_info = imdb_data(server_id=server_id, movie=movie, kind=kind)
         suggestion = capitalize_movie_name(imdb_row.title) if imdb_row else capitalize_movie_name(movie)
         if imdb_row is None:
             await interaction.followup.send("Could not find the movie title you suggested in IMDb.", ephemeral=True)

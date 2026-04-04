@@ -9,7 +9,6 @@ import peewee as pw
 
 from ..exc import VoteError
 from . import BaseController
-from ..util import get_imdb_info_by_id
 from .models import (
     IMDBInfo,
     Movie,
@@ -31,6 +30,7 @@ class IMDBInfoController(BaseController):
     model = IMDBInfo
 
     def create_by_imdb_id(self, imdb_id: str) -> Union[None, IMDBInfo]:
+        from ..util import get_imdb_info_by_id # Causing circular import errors when done at module init
         imdb_info = get_imdb_info_by_id(imdb_id)
         if imdb_info is None:
             return 0
@@ -38,10 +38,10 @@ class IMDBInfoController(BaseController):
         imdb_data = {
             "imdb_id": found_imdb_id,
             "title": imdb_info.title,
-            "canonical_title": imdb_info.canonical_title if imdb_info.canonical_title else imdb_info.title,
+            "canonical_title": imdb_info.title if imdb_info.title else imdb_info.title,
             "year": imdb_info.year if imdb_info.year else 0,
             "thumbnail_poster_url": imdb_info.cover_url if imdb_info.cover_url else "",
-            "full_size_poster_url": imdb_info.full_size_url if imdb_info.full_size_url else "",
+            "full_size_poster_url": imdb_info.cover_url if imdb_info.cover_url else "",
         }
         imdb_controller = IMDBInfoController()
         return self.create(imdb_data)
