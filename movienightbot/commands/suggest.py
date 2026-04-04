@@ -2,6 +2,7 @@ import logging
 from typing import Union
 
 import discord
+import imdbinfo.services
 from discord import app_commands
 from peewee import DoesNotExist, IntegrityError
 
@@ -12,7 +13,8 @@ from movienightbot.db.controllers import (
     MoviesController,
     ServerController,
 )
-from movienightbot.util import capitalize_movie_name, get_imdb_info
+from movienightbot.util import capitalize_movie_name
+from movienightbot.imdb import get_imdb_info
 
 logger = logging.getLogger("movienightbot")
 
@@ -22,25 +24,25 @@ imdb_controller = IMDBInfoController()
 genre_controller = GenreController()
 
 
-def imdb_data(server_id: int, movie: str, kind: str) -> Union[None, IMDBInfo]:
+def get_or_create_imdb_data(movie: str, kind: str) -> tuple[Union[None, IMDBInfo], Union[None, imdbinfo.services.MovieDetail]]:
     suggestion = capitalize_movie_name(movie)
     imdb_info = get_imdb_info(suggestion, kind=kind)
     if not imdb_info:
-        return None
+        return None, None
     # see if the row already exists
     try:
-        imdb_row = imdb_controller.get_by_id(imdb_info.movieID)
+        imdb_row = imdb_controller.get_by_id(imdb_info.imdb_id)
     except DoesNotExist:
         pass
     else:
-        return imdb_row
+        return imdb_row, imdb_info
 
     try:
-        imdb_row = imdb_controller.update_imdb_id(server_id, movie, imdb_info.movieID)
+        imdb_row = imdb_controller.create_by_imdb_id(imdb_info.imdb_id)
     except IntegrityError as e:
-        logger.error(f"IMDB entry insert error: {imdb_data}\n{e!s}")
-        return None
-    return imdb_row
+        logger.error(f"IMDB entry insert error: {imdb_info.imdb_id}\n{e!s}")
+        return None, None
+    return imdb_row, imdb_info
 
 
 def add_genre_info(server_id: int, movie_name: str, genres: list[str]) -> None:
@@ -61,7 +63,7 @@ async def suggest(interaction: discord.Interaction, movie: str):
     if server_row.check_movie_names:
         allow_tv_shows = server_row.allow_tv_shows
         kind = None if allow_tv_shows else "movie"
-        imdb_row, imdb_info = imdb_data(movie=movie, kind=kind)
+        imdb_row, imdb_info = get_or_create_imdb_data(movie=movie, kind=kind)
         suggestion = capitalize_movie_name(imdb_row.title) if imdb_row else capitalize_movie_name(movie)
         if imdb_row is None:
             await interaction.followup.send("Could not find the movie title you suggested in IMDb.", ephemeral=True)
@@ -95,9 +97,9 @@ async def suggest(interaction: discord.Interaction, movie: str):
 
     if imdb_info:
         try:
-            add_genre_info(server_id, suggestion, imdb_info["genres"])
+            add_genre_info(server_id, suggestion, imdb_info.genres)
         except IntegrityError as e:
-            logger.error(f"Genre insert error: {server_id} {imdb_info['genres']} {suggestion}\n{e}")
+            logger.error(f"Genre insert error: {server_id} {imdb_info.genres} {suggestion}\n{e}")
             await interaction.followup.send(f"Error adding suggestion {suggestion}")
             return
 
