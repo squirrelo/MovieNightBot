@@ -21,7 +21,8 @@ async def end_vote_task(interaction: discord.Interaction):
     server_id = interaction.guild.id
     with vote_controller.transaction():
         try:
-            vote_msg_id = vote_controller.get_by_id(server_id).message_id
+            vote_obj =  vote_controller.get_by_id(server_id)
+            vote_msg_id = vote_obj.message_id
         except DoesNotExist:
             await interaction.response.send_message("No vote started!")
             return
@@ -29,11 +30,16 @@ async def end_vote_task(interaction: discord.Interaction):
     # TODO: Make more robust so we don't assume the end message and vote message are in same channel
     # probably safe for now, only happens if admin changes bot channel in the middle of a vote
     vote_msg = await get_message(interaction.channel, vote_msg_id)
+    logger.debug("vote_msg: {}", vote_msg)
     if vote_msg:
         await vote_msg.clear_reactions()
     else:
         # Vote message was deleted or is unavailable, so make a new one
         vote_msg = await interaction.channel.send("replacement vote message")
+        vote_obj.message_id = vote_msg.id
+        vote_obj.channel_id = vote_msg.channel.id
+        vote_obj.save()
+
     if len(winning_movies) == 1:
         winning_movie = winning_movies[0].movie_name
         imdb_info = winning_movies[0].imdb_id
