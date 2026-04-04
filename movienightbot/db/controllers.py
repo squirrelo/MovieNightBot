@@ -9,7 +9,6 @@ import peewee as pw
 
 from ..exc import VoteError
 from . import BaseController
-from ..util import get_imdb_info_by_id
 from .models import (
     IMDBInfo,
     Movie,
