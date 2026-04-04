@@ -7,6 +7,9 @@
 # Config files
 config.yaml
 
+# test files
+*.sql
+
 # Byte-compiled / optimized / DLL files
 *__pycache__*
 *.pyc

@@ -22,7 +22,7 @@ class Server(BaseModel):
 
 
 class IMDBInfo(BaseModel):
-    imdb_id = pw.TextField(primary_key=True)
+    imdb_id = pw.TextField(primary_key=True)  # WITHOUT the tt in front (need text because can start with 0)
     title = pw.TextField(null=False)
     canonical_title = pw.TextField()
     year = pw.IntegerField()

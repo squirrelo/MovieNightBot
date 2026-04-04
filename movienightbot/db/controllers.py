@@ -6,11 +6,10 @@ from typing import Any, Optional, Union
 
 import discord
 import peewee as pw
-from imdb import IMDb
-from imdb._exceptions import IMDbDataAccessError
 
 from ..exc import VoteError
 from . import BaseController
+from ..imdb import get_imdb_info_by_id
 from .models import (
     IMDBInfo,
     Movie,
@@ -31,7 +30,23 @@ class ServerController(BaseController):
 class IMDBInfoController(BaseController):
     model = IMDBInfo
 
-    def get_by_id(self, imdb_id: int) -> Union[Vote, None]:
+    def create_by_imdb_id(self, imdb_id: str) -> Union[None, IMDBInfo]:
+        imdb_info = get_imdb_info_by_id(imdb_id)
+        if imdb_info is None:
+            return 0
+        found_imdb_id = imdb_info.imdb_id
+        imdb_data = {
+            "imdb_id": found_imdb_id,
+            "title": imdb_info.title,
+            "canonical_title": imdb_info.title_localized if imdb_info.title_localized else imdb_info.title,
+            "year": imdb_info.year if imdb_info.year else 0,
+            "thumbnail_poster_url": imdb_info.cover_url if imdb_info.cover_url else "",
+            "full_size_poster_url": imdb_info.cover_url if imdb_info.cover_url else "",
+        }
+        imdb_controller = IMDBInfoController()
+        return imdb_controller.create(imdb_data)
+
+    def get_by_id(self, imdb_id: str) -> Union[Vote, None]:
         return super().get_by_id(id=imdb_id, primary_key="imdb_id")
 
     def get_by_name(self, movie_name: str) -> Union[IMDBInfo, None]:
@@ -88,42 +103,19 @@ class MoviesController(BaseController):
         )
         return Movie.select().order_by(obc).where((Movie.server == server_id) & Movie.watched_on.is_null()).execute()
 
-    def get_imdb_info_by_id(self, imdb_id: Union[int, str]):
-        if not imdb_id:
-            return None
-
-        im_db = IMDb()
-        try:
-            result = im_db.get_movie(imdb_id)
-        except IMDbDataAccessError:
-            return None
-        return result
-
-    def update_imdb_id(self, server_id: int, movie_name: str, imdb_id: str):
-        imdb_info = self.get_imdb_info_by_id(imdb_id)
-        if imdb_info is None:
-            return 0
-
-        imdb_data = {
-            "imdb_id": imdb_info.movieID,
-            "title": imdb_info["title"],
-            "canonical_title": imdb_info.get("canonical title", imdb_info["title"]),
-            "year": imdb_info.get("year", 0),
-            "thumbnail_poster_url": imdb_info.get("cover url", ""),
-            "full_size_poster_url": imdb_info.get("full-size cover url", ""),
-        }
+    def update_imdb_id(self, server_id: int, movie_name: str, imdb_id: str) -> int:
         imdb_controller = IMDBInfoController()
         try:
-            imdb_controller.create(imdb_data)
+            imdb_row = imdb_controller.create_by_imdb_id(imdb_id)
         except pw.IntegrityError as e:
             # IMDB entry already added, so ignore error
-            logger.debug(f"IMDB entry insert error: {imdb_data}\n{e!s}")
-        try:
-            imdb_row = imdb_controller.get_by_id(imdb_info.movieID)
-        except Exception as e:
-            logger.debug(f"IMDB entry get error: {imdb_info.movieID}\n{e!s}")
-            return 0
-        logger.debug("IMDB row: " + str(imdb_row))
+            logger.debug(f"IMDB entry insert error: {imdb_id}\n{e!s}")
+            try:
+                imdb_row = imdb_controller.get_by_id(imdb_id)
+            except Exception as e:
+                logger.debug(f"IMDB entry get error: {imdb_id}\n{e!s}")
+                return 0
+        logger.debug("IMDB row: {}", str(imdb_row))
         return (
             Movie.update({Movie.imdb_id: imdb_row})
             .where((Movie.movie_name == movie_name) & (Movie.server == server_id))
