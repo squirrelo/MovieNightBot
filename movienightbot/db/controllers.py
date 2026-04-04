@@ -31,6 +31,7 @@ class IMDBInfoController(BaseController):
     model = IMDBInfo
 
     def create_by_imdb_id(self, imdb_id: str) -> Union[None, IMDBInfo]:
+        from ..util import get_imdb_info_by_id # Causing circular import errors when done at module init
         imdb_info = get_imdb_info_by_id(imdb_id)
         if imdb_info is None:
             return 0
